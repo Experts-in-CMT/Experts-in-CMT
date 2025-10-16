@@ -1,0 +1,16 @@
+{
+  "apiVersion": 3,
+  "name": "layout/header-banner",
+  "title": "Header Banner",
+  "category": "layout",
+  "icon": "format-image",
+  "description": "Displays a banner area with optional image, title, and tagline pulled from ACF.",
+  "supports": {
+    "align": ["wide", "full"]
+  },
+  "render": "file:./index.php",
+  "acf": {
+    "mode": "preview",
+    "renderTemplate": "index.php"
+  }
+}
