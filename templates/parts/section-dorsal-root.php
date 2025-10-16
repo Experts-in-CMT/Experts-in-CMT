@@ -8,7 +8,7 @@ $current_lang = apply_filters( 'wpml_current_language', null );
 
 // Query 3 featured posts (fallback to latest if none marked featured)
 $featured_query = [
-    'post_type'         => 'dorsal-root',   // CPT slug
+    'post_type'         => 'post',   // CPT slug
     'posts_per_page'    => 3,
     'post_status'       => 'publish',
     'lang'              => $current_lang,
