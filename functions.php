@@ -450,3 +450,32 @@ add_action('admin_print_footer_scripts-edit.php', function () {
     </script>
     <?php
 });
+
+// Back to Top button markup + script
+add_action('wp_footer', function () { ?>
+  <button id="backToTop" class="back-to-top" aria-label="Back to top" hidden>↑ Top</button>
+  <script>
+    (function () {
+      var btn = document.getElementById('backToTop');
+      if (!btn) return;
+      var showAt = 300, ticking = false;
+
+      function onScroll() {
+        if (!ticking) {
+          requestAnimationFrame(function () {
+            if (window.scrollY > showAt) {
+              btn.hidden = false; btn.classList.add('is-visible');
+            } else {
+              btn.classList.remove('is-visible'); btn.hidden = true;
+            }
+            ticking = false;
+          });
+          ticking = true;
+        }
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      btn.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+    })();
+  </script>
+<?php });
+
