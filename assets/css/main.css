@@ -214,7 +214,8 @@ img, video {
 }
 .nav a:hover,
 .nav a:focus { border-bottom-color: var(--accent); }
-.nav a[aria-current="page"] { border-bottom-color: var(--accent); }
+.nav a[aria-current="page"] { border-bottom-color: var(--accent);
+}
 
 
 
@@ -1514,5 +1515,51 @@ h2.wp-block-heading{
   }
 }
 
+/* DR — card width tweak (final override) */
+.dr-grid { --dr-col: 400px; } /* optimal: 380–400 */
+
+/* =========================================================
+   🔥🔥🔥 CMTKENNYB CRITICAL Z-LAYER + NO-CLIP SAFETY NET 🔥🔥🔥
+   - Keeps nav dropdowns above the header banner
+   - Prevents Stackable wrappers from clipping submenus
+   - DO NOT SPLIT these rules; they must live together
+   ========================================================= */
+
+/* Nav block (“Nav” Stackable block) */
+.stk-454b6a7 {
+  position: relative;
+  z-index: 1001;          /* ensure this block stacks above the banner */
+  overflow: visible !important; /* do not clip dropdowns */
+}
+
+/* The actual dropdown layer */
+.stk-454b6a7 .wp-block-navigation__submenu-container {
+  position: absolute;     /* overlay, not in flow */
+  z-index: 1002;          /* above its parent block */
+  overflow: visible;
+}
+
+/* Header Banner block (“Header Banner” Stackable block) */
+.stk-9690350 {
+  position: relative;
+  z-index: 0;             /* explicitly beneath nav */
+  overflow: visible !important; /* no clipping from the banner */
+}
+
+/* If the banner shortcode outputs its own wrapper, keep it behind too */
+.header-banner {
+  position: relative;
+  z-index: 0;
+  overflow: visible;
+}
+
+/* Extra safety: cover backgrounds should never sit above nav */
+.wp-block-cover__background,
+.wp-block-cover__image-background,
+.wp-block-cover__video-background,
+.wp-block-cover__gradient-background {
+  z-index: -1;
+  pointer-events: none;
+}
 
 
