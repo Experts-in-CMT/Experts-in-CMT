@@ -136,3 +136,49 @@ PHP-Driven Filtering, Query Loop Render Card Equal-Height Logic w/ True 3-2-1 Gr
 
 The Dorsal Root now operates on a clean, scalable codebase that renders a UX card array that is perfectly centered, equalized, and free of consumer-grade plugin reliance.
 
+
+
+\##v0.6.1 — Release Date: 2025-10-21
+
+
+
+Navigation Z-Layer Fix + No-Clip Safety Net
+
+
+
+**Summary:**
+
+
+
+Resolved a layering issue where dropdown menus were appearing behind the header banner.
+
+Implemented a precise z-index hierarchy and overflow visibility rules to ensure consistent navigation behavior across all layouts.
+
+
+
+**Details:**
+
+
+
+\- Added .stk-454b6a7 z-index stack (Nav block: 1001, submenu: 1002, header banner: 0).
+
+\- Enabled overflow: visible !important on nav and banner containers to prevent submenu clipping.
+
+\- Locked safe order for cover backgrounds to sit behind interactive layers.
+
+\- Verified compatibility with Stackable column wrappers and \[header\_banner] shortcode.
+
+\- Fully responsive and accessibility-compliant.
+
+
+
+**Result:**
+
+
+
+Dropdown menus now display cleanly above the header banner at every breakpoint.
+
+
+
+
+
