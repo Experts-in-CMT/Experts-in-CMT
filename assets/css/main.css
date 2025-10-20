@@ -1090,13 +1090,10 @@ h2.wp-block-heading{
 }
 
 /* ============= The Dorsal Root — Query Loop cards (equal height) ====================
-    ========= Because all cars should always be the same height as one another ====
-===========================Kenny Approved========================================
-=================================================================================*/
-/* ============= The Dorsal Root — Query Loop cards (equal height) ====================
-    ========= Because all cards should always be the same height as one another ====
-===========================Kenny Approved========================================
-=================================================================================*/
+   ========= Because all cards should always be the same height as one another ====
+   ===========================Kenny Approved========================================
+   =================================================================================*/
+
 .dr-blog .wp-block-post,
 .wp-block-query .wp-block-post {
   display: flex;
@@ -1106,15 +1103,9 @@ h2.wp-block-heading{
   border: 1px solid #e5e7eb;
   border-radius: 12px;
   overflow: hidden;
-
   /* Subtle resting shadow */
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
-
-  transition:
-    transform 0.15s ease,
-    box-shadow 0.15s ease,
-    background-color 0.15s ease,
-    border-color 0.15s ease;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
 }
 
 /* Hover styling (matches Dorsal Root featured section) */
@@ -1134,6 +1125,7 @@ h2.wp-block-heading{
   display: block;
   background: #f1f5f9;
 }
+
 .dr-blog .wp-block-post-featured-image img,
 .wp-block-query .wp-block-post-featured-image img {
   width: 100%;
@@ -1152,6 +1144,19 @@ h2.wp-block-heading{
 .wp-block-query .wp-block-post-excerpt {
   padding-left: 1rem;
   padding-right: 1rem;
+}
+
+/* Dorsal Root: tighten space directly under the image */
+.dr-blog .wp-block-post .wp-block-post-featured-image {
+  margin-bottom: 0.25rem !important;
+}
+
+.dr-blog .wp-block-post .wp-block-post-title {
+  margin-top: 0.25rem !important;
+}
+
+.dr-blog .wp-block-post .wp-block-post-date {
+  margin-top: 0.25rem !important;
 }
 
 .dr-blog .wp-block-post-title,
@@ -1176,8 +1181,9 @@ h2.wp-block-heading{
 .dr-blog .wp-block-post-date,
 .wp-block-query .wp-block-post-date {
   margin-top: 0.35rem;
-  color: #6b7280;
+  color: var(--text, #111);
   font-size: 0.9rem;
+  font-weight: 500;
 }
 
 .dr-blog .wp-block-post-excerpt,
@@ -1206,10 +1212,39 @@ h2.wp-block-heading{
   align-items: center;
   line-height: 1.1;
   background: transparent;
-  transition:
-    background-color 0.15s ease,
-    color 0.15s ease,
-    border-color 0.15s ease;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+/* FINAL lock — center Read More in Dorsal Root cards */
+.dr-blog .wp-block-post .wp-block-read-more {
+  margin-top: auto !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  align-self: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  display: flex !important;
+  width: fit-content !important;
+}
+
+/* Ensure Read More buttons align on the same Y-axis across equal-height cards */
+.dr-blog .wp-block-post {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start; /* pushes content up and button down */
+}
+
+/* Dorsal Root: move extra space below excerpt (button stays bottom-aligned) */
+.dr-blog .wp-block-post-excerpt {
+  flex-grow: 1; /* fills vertical space above the button */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start; /* keeps text at top of excerpt area */
+}
+
+.dr-blog .wp-block-read-more {
+  margin-top: auto !important;
+  margin-bottom: 1.25rem !important; /* consistent bottom spacing */
 }
 
 .dr-blog .wp-block-read-more:hover,
@@ -1233,12 +1268,205 @@ h2.wp-block-heading{
   align-items: stretch;
 }
 
+/* ===== Dorsal Root loop — grid + spacing (append) ===== */
+/* The UL that holds cards: make it a responsive grid */
+.dr-blog .wp-block-post-template {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 2rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Tablet: 2 columns */
+@media (max-width: 980px) {
+  .dr-blog .wp-block-post-template {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Mobile: 1 column */
+@media (max-width: 640px) {
+  .dr-blog .wp-block-post-template {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Ensure the featured-image link behaves like a block */
+.dr-blog .wp-block-post-featured-image,
+.wp-block-query .wp-block-post-featured-image {
+  display: block; /* reinforce */
+}
+
+/* Pin Read More to the bottom AND center it */
+.dr-blog .wp-block-read-more,
+.wp-block-query .wp-block-read-more {
+  margin-top: auto;
+  margin-left: auto;
+  margin-right: auto;
+  align-self: center; /* was flex-start; center looks better in equal-height cards */
+}
+
+/* ===== DR rows + centered last row (PHP-driven) ===== */
+:root {
+  --dr-col: 360px;
+  --dr-gap: 2rem;
+}
+
+/* Grid wrapper just stacks rows with spacing */
+.dr-grid {
+  display: grid;
+  gap: var(--dr-gap);
+}
+
+/* Each row is a grid of exactly 3 tracks on desktop */
+.dr-row {
+  display: grid;
+  grid-template-columns: repeat(3, var(--dr-col));
+  gap: var(--dr-gap);
+  justify-content: center; /* rows are centered as a unit */
+  width: 100%; /* full width for 3-up rows */
+}
+
+/* Last row shrink-wraps to its item count */
+.dr-row--last[data-count="2"] {
+  grid-template-columns: repeat(2, var(--dr-col));
+  width: calc(2 * var(--dr-col) + var(--dr-gap)); /* exact width of 2 cards + gap */
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.dr-row--last[data-count="1"] {
+  grid-template-columns: var(--dr-col);
+  width: var(--dr-col);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ===== DR rows + centered last row (pairs with the PHP above) ===== */
+:root {
+  --dr-col: 360px;
+  --dr-gap: 2rem;
+}
+
+.dr-grid {
+  display: grid;
+  gap: var(--dr-gap);
+}
+
+/* Default desktop rows: exactly 3 tracks, row centered as a unit */
+.dr-row {
+  display: grid;
+  grid-template-columns: repeat(3, var(--dr-col));
+  gap: var(--dr-gap);
+  justify-content: center;
+}
+
+/* Last row shrink-wraps to its item count for true centering */
+.dr-row--last[data-count="2"] {
+  grid-template-columns: repeat(2, var(--dr-col));
+  width: calc(2 * var(--dr-col) + var(--dr-gap));
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.dr-row--last[data-count="1"] {
+  grid-template-columns: var(--dr-col);
+  width: var(--dr-col);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Equal-height cards with bottom-pinned button */
+.dr-card {
+  display: grid;
+  grid-template-rows: auto auto auto 1fr auto; /* image, title, date, excerpt flex, button */
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #fff;
+  overflow: hidden;
+  min-height: 100%;
+}
+
+.dr-card .wp-block-post-featured-image {
+  display: block;
+}
+
+.dr-card .wp-block-post-featured-image img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.dr-card .wp-block-read-more {
+  margin-top: auto;
+  margin-left: auto;
+  margin-right: auto;
+  display: inline-flex;
+  justify-content: center;
+}
+
+/* Tablet: rows render as 2-up */
+@media (max-width: 980px) {
+  .dr-row {
+    grid-template-columns: repeat(2, var(--dr-col));
+  }
+
+  .dr-row--last[data-count="1"] {
+    grid-template-columns: var(--dr-col);
+    width: var(--dr-col);
+  }
+}
+
+/* Mobile: rows render 1-up, full width */
+@media (max-width: 640px) {
+  .dr-row,
+  .dr-row--last[data-count="2"],
+  .dr-row--last[data-count="1"] {
+    grid-template-columns: 1fr;
+    width: 100%;
+  }
+
+  .dr-card {
+    width: 100%;
+  }
+}
+
+/* Optional: style core pagination to sit centered with spacing */
+.dr-blog .wp-block-query-pagination > ul,
+.dr-blog .wp-block-query-pagination {
+  display: flex;
+  justify-content: center;
+  gap: .5rem;
+  margin-top: 2rem;
+}
+.dr-blog .wp-block-query-pagination li {
+  list-style: none;
+}
+.dr-blog .wp-block-query-pagination a,
+.dr-blog .wp-block-query-pagination span {
+  display: inline-flex;
+  padding: .5rem .75rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  text-decoration: none;
+  color: var(--text, #111);
+}
+.dr-blog .wp-block-query-pagination .current,
+.dr-blog .wp-block-query-pagination a:hover {
+  background: #174777;
+  color: #fff;
+  border-color: #174777;
+}
+
+
 /* ===== Back to Top button =====
     ================================ */
 .back-to-top {
   position: fixed;
   right: 32px;
-  bottom: 96px;                                                                  /* 32px right / 96px bottom = optimal visual balance, passes hi-techsquish test - Kenny-approved */
+  bottom: 96px;            /* 32px right / 96px bottom = optimal visual balance, passes hi-techsquish test - Kenny-approved */
   z-index: 9999;
   border: 1px solid #174777;
   background: #fff;
@@ -1262,3 +1490,29 @@ h2.wp-block-heading{
   border-color: #174777;
 }
 @media (prefers-reduced-motion: reduce) { .back-to-top { transition: none; } }
+
+/* =========================================================
+   DORSAL ROOT FILTER — Micro Layout Adjustments (Kenny Approved)
+   ========================================================= */
+.dr-filter label {
+  padding-left: 1.10rem; /* desktop alignment */
+}
+
+/* =========================================================
+   DORSAL ROOT FILTER — Mobile Optimization (Keeps Inline Layout)
+   ========================================================= */
+@media (max-width: 640px) {
+  .dr-filter label {
+    padding-left: 0.75rem !important; /* override desktop value cleanly */
+    margin-right: 0.25rem;             /* small breathing room from select */
+    vertical-align: middle;
+  }
+
+  .dr-filter select {
+    max-width: 100%;
+    vertical-align: middle;
+  }
+}
+
+
+
