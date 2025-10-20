@@ -86,7 +86,53 @@ The Dorsal Root environment now breathes — symmetrical, responsive, and perfec
 
 
 
+**##** v0.6.0 — Release Date: 2025-10-19
+
+PHP-Driven Filtering, Query Loop Render Card Equal-Height Logic w/ True 3-2-1 Grid Alignment
 
 
 
+**Summary:**
+
+
+
+\- Elevated The Dorsal Root from plugin-dependent layout to fully PHP-driven architecture.
+
+\- Achieved consistent, equal-height cards and perfectly centered 3-2-1 row alignment to remove the reliance on expensive plugins
+
+\- Locked filter logic, label polish, and mobile micro-layout refinements.
+
+
+
+**The Dorsal Root Query Loop and Category Filtering Shortcode System Logic Architecture:**
+
+
+
+\- Built \[dr\_posts] shortcode to output PHP-chunked rows of 3 posts, automatically centering 2- and 1-card final rows.
+
+\- Built \[dr\_filter] shortcode for category selection with preserved query vars and smooth in-page reloads.
+
+\- Introduced .dr-grid and .dr-row wrappers to govern row structure and equal-height logic with surgical precision.
+
+
+
+**CSS \& Layout Consistency:**
+
+
+
+\- Preserved benchmark .dr-blog class ecosystem for legacy styling continuity.
+
+\- Unified height logic and vertical rhythm — extra spacing correctly follows excerpts, not dates.
+
+\- Centered “Read More” buttons on a shared Y-axis across all cards.
+
+\- Enforced proper mobile scaling and label alignment down to 150px (Hi-Tek Squish Test™ certified).
+
+
+
+**Result:**
+
+
+
+The Dorsal Root now operates on a clean, scalable codebase that renders a UX card array that is perfectly centered, equalized, and free of consumer-grade plugin reliance.
 

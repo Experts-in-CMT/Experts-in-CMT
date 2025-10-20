@@ -479,3 +479,156 @@ add_action('wp_footer', function () { ?>
   </script>
 <?php });
 
+/* ============================================================
+   DORSAL ROOT FILTER + POSTS SHORTCODES
+   ------------------------------------------------------------
+   Shortcodes:
+     [dr_filter]  → Dropdown filter for Dorsal Root taxonomy
+     [dr_posts]   → Query loop replacement (grid + pagination)
+   ============================================================ */
+
+/**
+ * [dr_filter] — shows the category dropdown (?dr_cat=slug)
+ */
+add_shortcode('dr_filter', function () {
+    $tax   = 'dorsal-root';
+    $terms = get_terms(['taxonomy' => $tax, 'hide_empty' => true]);
+    if (is_wp_error($terms)) return '';
+
+    $current = isset($_GET['dr_cat']) ? sanitize_text_field(wp_unslash($_GET['dr_cat'])) : '';
+    $action  = esc_url(remove_query_arg(array_keys($_GET))) . '#blog';
+
+    ob_start(); ?>
+    <form class="dr-filter" action="<?php echo $action; ?>" method="get">
+      <label for="dr-cat">Filter The Dorsal Root by Category</label>
+      <select id="dr-cat" name="dr_cat" onchange="this.form.submit()">
+        <option value="">All</option>
+        <?php foreach ($terms as $t): ?>
+          <option value="<?php echo esc_attr($t->slug); ?>" <?php selected($current, $t->slug); ?>>
+            <?php echo esc_html($t->name); ?>
+          </option>
+        <?php endforeach; ?>
+      </select>
+      <?php
+      // Preserve other query args
+      foreach ($_GET as $k => $v) {
+          if ($k === 'dr_cat') continue;
+          if (is_scalar($v)) {
+              printf('<input type="hidden" name="%s" value="%s">', esc_attr($k), esc_attr($v));
+          }
+      }
+      ?>
+      <noscript><button type="submit">Apply</button></noscript>
+    </form>
+    <?php
+    return ob_get_clean();
+});
+
+
+/**
+ * [dr_posts] — rows of 3 with centered last row; keeps legacy CSS handles for styling
+ * Usage: [dr_posts per_page="9"]
+ */
+add_shortcode('dr_posts', function ($atts = []) {
+    $a = shortcode_atts(['per_page' => 9], $atts);
+
+    $paged = max(
+        1,
+        get_query_var('paged') ? (int) get_query_var('paged')
+            : (isset($_GET['paged']) ? (int) $_GET['paged'] : 1)
+    );
+
+    $args = [
+        'post_type'      => 'post',
+        'post_status'    => 'publish',
+        'posts_per_page' => max(1, (int) $a['per_page']),
+        'paged'          => $paged,
+        'no_found_rows'  => false,
+    ];
+
+    // Optional taxonomy filter (?dr_cat=slug)
+    $tax = 'dorsal-root';
+    if (!empty($_GET['dr_cat'])) {
+        $slug = sanitize_text_field(wp_unslash($_GET['dr_cat']));
+        $args['tax_query'] = [[
+            'taxonomy' => $tax,
+            'field'    => 'slug',
+            'terms'    => $slug,
+        ]];
+    }
+
+    $q = new WP_Query($args);
+
+    // Build cards (NOTE: both classes: dr-card + wp-block-post so existing CSS applies)
+    $cards = [];
+    if ($q->have_posts()) {
+        while ($q->have_posts()) { $q->the_post();
+            ob_start(); ?>
+            <article class="dr-card wp-block-post">
+                <a class="wp-block-post-featured-image" href="<?php the_permalink(); ?>">
+                    <?php if (has_post_thumbnail()) {
+                        the_post_thumbnail('large', ['loading' => 'lazy', 'decoding' => 'async']);
+                    } ?>
+                </a>
+
+                <h2 class="wp-block-post-title">
+                    <a href="<?php the_permalink(); ?>"><?php the_title(); ?></a>
+                </h2>
+
+                <div class="wp-block-post-date"><?php echo esc_html(get_the_date()); ?></div>
+
+                <div class="wp-block-post-excerpt">
+                    <?php echo esc_html(wp_strip_all_tags(get_the_excerpt(), true)); ?>
+                </div>
+
+                <a class="wp-block-read-more" href="<?php the_permalink(); ?>">Read More</a>
+            </article>
+            <?php
+            $cards[] = ob_get_clean();
+        }
+        wp_reset_postdata();
+    }
+
+    // Chunk into rows of 3
+    $rows       = array_chunk($cards, 3);
+    $total_rows = count($rows);
+
+    ob_start(); ?>
+    <div class="wp-block-query dr-blog">
+      <div class="dr-grid">
+        <?php if (!empty($rows)) : ?>
+          <?php foreach ($rows as $i => $row_items) :
+              $is_last = ($i === $total_rows - 1);
+              $count   = count($row_items); ?>
+              <div class="dr-row<?php echo $is_last ? ' dr-row--last' : ''; ?>" <?php echo $is_last ? 'data-count="'.(int) $count.'"' : ''; ?>>
+                <?php echo implode('', $row_items); ?>
+              </div>
+          <?php endforeach; ?>
+        <?php else : ?>
+          <div class="dr-row dr-row--empty"><p>No posts found.</p></div>
+        <?php endif; ?>
+      </div>
+
+      <?php
+      // Pagination (keeps dr_cat in URL)
+      $links = paginate_links([
+          'base'      => esc_url_raw(add_query_arg('paged', '%#%')),
+          'format'    => '',
+          'current'   => $paged,
+          'total'     => max(1, (int) $q->max_num_pages),
+          'type'      => 'list',
+          'prev_text' => '« Prev',
+          'next_text' => 'Next »',
+      ]);
+      if ($links): ?>
+        <nav class="wp-block-query-pagination"><?php echo $links; ?></nav>
+      <?php endif; ?>
+    </div>
+    <?php
+
+    return ob_get_clean();
+});
+
+/* ============================================================
+   END: DORSAL ROOT FILTER + POSTS SHORTCODES
+   ============================================================ */
