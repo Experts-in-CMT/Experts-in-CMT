@@ -330,6 +330,67 @@ textarea:disabled {
 
 
 /* =========================================================
+   Global Search and Reset Button
+   ========================================================= */
+
+.dr-filter-buttons button,
+.dr-filter-buttons .wp-block-button__link,
+button[type="submit"],
+input[type="submit"],
+button[type="reset"] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--ctrl-pad-y, 0.5em) var(--ctrl-pad-x, 1.5em);
+  border: 1.5px solid var(--primary, #174777);
+  border-radius: var(--radius-ctrl, 15px);
+  background-color: transparent;
+  color: var(--primary, #174777);
+  font-family: var(--font-sans, "Albert Sans", sans-serif);
+  font-weight: 600;
+  font-size: var(--ctrl-font, 16px);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  line-height: 1.5;
+  vertical-align: middle;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+/* Hover + focus states */
+.dr-filter-buttons button:hover,
+.dr-filter-buttons .wp-block-button__link:hover,
+button[type="submit"]:hover,
+input[type="submit"]:hover,
+button[type="reset"]:hover,
+.dr-filter-buttons button:focus,
+.dr-filter-buttons .wp-block-button__link:focus,
+button[type="submit"]:focus,
+input[type="submit"]:focus,
+button[type="reset"]:focus {
+  background-color: var(--primary, #174777);
+  color: #ffffff;
+  border-color: var(--primary, #174777);
+}
+
+/* Focus ring for accessibility */
+button[type="submit"]:focus-visible,
+input[type="submit"]:focus-visible {
+  outline: 2px solid var(--primary, #174777);
+  outline-offset: 2px;
+}
+
+/* Inline layout for Search + Reset buttons */
+.dr-filter-buttons {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+
+/* =========================================================
    Single Post Tweaks
    ========================================================= */
 .meta { color: var(--muted); font-size: .95rem; margin-top: -.25rem; }
@@ -1434,31 +1495,54 @@ h2.wp-block-heading{
   }
 }
 
-/* Optional: style core pagination to sit centered with spacing */
+/* =========================================================
+   Dorsal Root Pagination — expanded spacing + visual balance
+   ========================================================= */
 .dr-blog .wp-block-query-pagination > ul,
 .dr-blog .wp-block-query-pagination {
   display: flex;
   justify-content: center;
-  gap: .5rem;
-  margin-top: 2rem;
+  gap: 2rem;                  /* increased from 0.5rem */
+  margin-top: 2.5rem;         /* adds subtle separation from cards */
 }
+
 .dr-blog .wp-block-query-pagination li {
   list-style: none;
 }
+
 .dr-blog .wp-block-query-pagination a,
 .dr-blog .wp-block-query-pagination span {
   display: inline-flex;
-  padding: .5rem .75rem;
+  align-items: center;
+  justify-content: center;
+  padding: 0.55rem 0.9rem;    /* slightly more internal space */
   border: 1px solid #e5e7eb;
-  border-radius: 10px;
+  border-radius: 12px;        /* matches button roundness */
   text-decoration: none;
   color: var(--text, #111);
+  font-family: var(--font-sans);
+  font-weight: 400;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
+
 .dr-blog .wp-block-query-pagination .current,
 .dr-blog .wp-block-query-pagination a:hover {
   background: #174777;
   color: #fff;
   border-color: #174777;
+}
+
+/* Optional: tighter layout on narrow screens */
+@media (max-width: 500px) {
+  .dr-blog .wp-block-query-pagination > ul,
+  .dr-blog .wp-block-query-pagination {
+    gap: 0.6rem;
+    margin-top: 2rem;
+  }
+  .dr-blog .wp-block-query-pagination a,
+  .dr-blog .wp-block-query-pagination span {
+    padding: 0.45rem 0.75rem;
+  }
 }
 
 
@@ -1552,6 +1636,7 @@ h2.wp-block-heading{
   z-index: 0;
   overflow: visible;
 }
+
 
 /* Extra safety: cover backgrounds should never sit above nav */
 .wp-block-cover__background,

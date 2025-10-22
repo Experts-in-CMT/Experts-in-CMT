@@ -88,7 +88,7 @@ The Dorsal Root environment now breathes — symmetrical, responsive, and perfec
 
 **##** v0.6.0 — Release Date: 2025-10-19
 
-PHP-Driven Filtering, Query Loop Render Card Equal-Height Logic w/ True 3-2-1 Grid Alignment
+\*\*PHP-Driven Filtering, Query Loop Render Card Equal-Height Logic w/ True 3-2-1 Grid Alignment\*\*
 
 
 
@@ -138,11 +138,11 @@ The Dorsal Root now operates on a clean, scalable codebase that renders a UX car
 
 
 
-\##v0.6.1 — Release Date: 2025-10-21
+\##v0.6.2 — Release Date: 2025-10-21
 
 
 
-Navigation Z-Layer Fix + No-Clip Safety Net
+\*\*Filter Enhancements — Add Search to Dropdown Filter\*\*
 
 
 
@@ -150,25 +150,29 @@ Navigation Z-Layer Fix + No-Clip Safety Net
 
 
 
-Resolved a layering issue where dropdown menus were appearing behind the header banner.
-
-Implemented a precise z-index hierarchy and overflow visibility rules to ensure consistent navigation behavior across all layouts.
+This release finalizes the Dorsal Root Filter MVP with functional search integration, a working reset button, accessibility markup, and unified styling across both form controls and global tokens. The filter is now fully responsive, accessible, and structurally stable.
 
 
 
-**Details:**
+**Changes:**
 
 
 
-\- Added .stk-454b6a7 z-index stack (Nav block: 1001, submenu: 1002, header banner: 0).
+\- Added text search field alongside category dropdown using native GET submission.
 
-\- Enabled overflow: visible !important on nav and banner containers to prevent submenu clipping.
+\- Implemented Reset button that mirrors the browser’s native clear (“×”) behavior, clearing all active filters and returning to #blog.
 
-\- Locked safe order for cover backgrounds to sit behind interactive layers.
+\- Added ARIA roles and labels (role="search", aria-label, aria-controls) for accessibility and SEO compliance.
 
-\- Verified compatibility with Stackable column wrappers and \[header\_banner] shortcode.
+\- Unified button styles (Search + Reset) using global design tokens and shared .dr-filter-buttons layout.
 
-\- Fully responsive and accessibility-compliant.
+\- Cleaned up redundant scripts and removed all legacy live search remnants.
+
+\- Passed full Hi-Tek Squish Test™ — verified equal heights, responsive scaling, and zero layout breakage.
+
+\- Retained native dropdown behavior; confirmed open-state styling limitations are browser-bound.
+
+\- Verified compatibility with Experts in CMT typography, spacing, and color tokens.
 
 
 
@@ -176,9 +180,5 @@ Implemented a precise z-index hierarchy and overflow visibility rules to ensure 
 
 
 
-Dropdown menus now display cleanly above the header banner at every breakpoint.
-
-
-
-
+A fully functional, accessible, and token-aligned filter component ready for deployment and future scaling (e.g., “Clear All,” live search, or result counts).
 
