@@ -182,3 +182,49 @@ This release finalizes the Dorsal Root Filter MVP with functional search integra
 
 A fully functional, accessible, and token-aligned filter component ready for deployment and future scaling (e.g., “Clear All,” live search, or result counts).
 
+
+
+v0.6.3 — Release Date: 2025-10-21
+
+
+
+\*\*Global Keyboard Navigation + Accessibility Polish\*\*
+
+
+
+**Summary:**
+
+
+
+This release adds full-site keyboard navigation using both arrow keys and WASD, smooth focus scrolling, and a global screen-reader live region to announce focus changes. It also introduces a unified :focus-visible style aligned with the site’s token system, ensuring clear visual feedback for keyboard users while maintaining WCAG 2.2 compliance.
+
+
+
+**Changes:**
+
+
+
+\- Added global keyboard navigation script (assets/js/global-keyboard-nav.js) supporting WASD + Arrow Keys for spatial nearest-neighbor focus movement.
+
+\- Integrated smooth scrolling and focus transitions between navigable elements.
+
+\- Added global screen-reader live region injected via wp\_body\_open (#screenreader-nav-status) for real-time accessibility feedback.
+
+\- Introduced unified :focus-visible outline and scale animation tied to --primary color token for consistent theming.
+
+\- Updated functions.php to enqueue global-keyboard-nav.js at late priority with cache-busting via filemtime().
+
+\- Maintained natural Tab order and form input behavior (no regressions).
+
+\- Added escape-key handling to exit form fields or editable contexts for improved accessibility.
+
+\- Verified compatibility across Chrome, Firefox, Safari, and Edge.
+
+
+
+**Result:**
+
+
+
+The site is now fully navigable by keyboard, providing clear focus states, smooth motion, and live screen reader updates—achieving an accessible, token-consistent, and future-proof foundation for advanced a11y features (e.g., focus trapping and skip-link restoration).
+

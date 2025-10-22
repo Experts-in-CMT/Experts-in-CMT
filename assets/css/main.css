@@ -1637,6 +1637,23 @@ h2.wp-block-heading{
   overflow: visible;
 }
 
+/* ============================================================
+   Global Keyboard Focus Outline (Keyboard-Only, Accessible)
+   ============================================================ */
+:focus-visible {
+  outline: 2px solid var(--primary, #007bff); /* Use theme color */
+  outline-offset: 3px;
+  transform: scale(1.02);
+  transition: outline 0.15s ease, transform 0.15s ease;
+  z-index: 10;
+}
+
+
+/* Optional: remove outlines from mouse clicks */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
 
 /* Extra safety: cover backgrounds should never sit above nav */
 .wp-block-cover__background,

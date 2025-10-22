@@ -150,6 +150,37 @@ add_action( 'init', function () {
 } );
 
 /**
+ * Enqueue global keyboard navigation (Arrow + WASD) site-wide.
+ */
+add_action('wp_enqueue_scripts', function () {
+	$relative = '/assets/js/global-keyboard-nav.js';
+	$path     = get_template_directory() . $relative;
+
+	if ( file_exists( $path ) ) {
+		wp_enqueue_script(
+			'global-keyboard-nav',
+			get_template_directory_uri() . $relative,
+			[], // no deps
+			filemtime( $path ),
+			true // in footer
+		);
+	}
+}, 1000);
+
+/**
+ * Global SR live region for keyboard navigation announcements.
+ * Inject once right after <body>.
+ */
+add_action('wp_body_open', function () {
+	echo '<div id="screenreader-nav-status"
+		aria-live="polite"
+		aria-atomic="true"
+		style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;">
+	</div>';
+}, 5);
+
+
+/**
  * [header_banner] — renders the ACF banner on pages.
  * Uses /templates/header-banner.php so the markup stays in one place.
  */
@@ -208,6 +239,14 @@ add_action( 'wp_enqueue_scripts', function () {
 require_once get_stylesheet_directory() . '/inc/content/filters/dr-filter.php';
 require_once get_stylesheet_directory() . '/inc/content/loops/dr-posts.php';
 
+// Global keyboard navigation (WASD + Arrow Keys)
+wp_enqueue_script(
+  'global-keyboard-nav',
+  get_stylesheet_directory_uri() . '/assets/js/global-keyboard-nav.js',
+  [],
+  '0.1.0',
+  true
+);
 
 
 
