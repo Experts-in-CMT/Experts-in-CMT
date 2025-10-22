@@ -88,7 +88,7 @@ The Dorsal Root environment now breathes — symmetrical, responsive, and perfec
 
 **##** v0.6.0 — Release Date: 2025-10-19
 
-PHP-Driven Filtering, Query Loop Render Card Equal-Height Logic w/ True 3-2-1 Grid Alignment
+\*\*PHP-Driven Filtering, Query Loop Render Card Equal-Height Logic w/ True 3-2-1 Grid Alignment\*\*
 
 
 
@@ -135,4 +135,50 @@ PHP-Driven Filtering, Query Loop Render Card Equal-Height Logic w/ True 3-2-1 Gr
 
 
 The Dorsal Root now operates on a clean, scalable codebase that renders a UX card array that is perfectly centered, equalized, and free of consumer-grade plugin reliance.
+
+
+
+\##v0.6.2 — Release Date: 2025-10-21
+
+
+
+\*\*Filter Enhancements — Add Search to Dropdown Filter\*\*
+
+
+
+**Summary:**
+
+
+
+This release finalizes the Dorsal Root Filter MVP with functional search integration, a working reset button, accessibility markup, and unified styling across both form controls and global tokens. The filter is now fully responsive, accessible, and structurally stable.
+
+
+
+**Changes:**
+
+
+
+\- Added text search field alongside category dropdown using native GET submission.
+
+\- Implemented Reset button that mirrors the browser’s native clear (“×”) behavior, clearing all active filters and returning to #blog.
+
+\- Added ARIA roles and labels (role="search", aria-label, aria-controls) for accessibility and SEO compliance.
+
+\- Unified button styles (Search + Reset) using global design tokens and shared .dr-filter-buttons layout.
+
+\- Cleaned up redundant scripts and removed all legacy live search remnants.
+
+\- Passed full Hi-Tek Squish Test™ — verified equal heights, responsive scaling, and zero layout breakage.
+
+\- Retained native dropdown behavior; confirmed open-state styling limitations are browser-bound.
+
+\- Verified compatibility with Experts in CMT typography, spacing, and color tokens.
+
+
+
+**Result:**
+
+
+
+A fully functional, accessible, and token-aligned filter component ready for deployment and future scaling (e.g., “Clear All,” live search, or result counts).
 
