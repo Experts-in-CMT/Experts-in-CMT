@@ -184,7 +184,7 @@ A fully functional, accessible, and token-aligned filter component ready for dep
 
 
 
-v0.6.3 — Release Date: 2025-10-21
+\##v0.6.3 — Release Date: 2025-10-21
 
 
 
@@ -227,4 +227,54 @@ This release adds full-site keyboard navigation using both arrow keys and WASD, 
 
 
 The site is now fully navigable by keyboard, providing clear focus states, smooth motion, and live screen reader updates—achieving an accessible, token-consistent, and future-proof foundation for advanced a11y features (e.g., focus trapping and skip-link restoration).
+
+
+
+\##v0.6.4 — Release Date: 2025-10-22
+
+
+
+\*\*Genes Database Loop + Subtype Template Persistence\*\*
+
+
+
+**Summary:**
+
+
+
+This release introduces the MVP for the Genes Database display system, including a fully functional \[genes\_loop] shortcode for subtype entries, a custom sort order for type\_classification, and a reliable fallback system for the “Single Item: Subtype” template. The update ensures consistent rendering and order of genetic subtype data while preserving visual editing flexibility in the TT25 Site Editor.
+
+
+
+**Changes:**
+
+
+
+\- Added genes-loop.php shortcode (\[genes\_loop]) for displaying subtype (subtype CPT) entries in a 3-column card layout using existing Dorsal Root CSS handles.
+
+\- Integrated ACF data fields for gene, year\_of\_discovery, and inheritance\_pattern with graceful fallbacks.
+
+\- Added subtype title display above gene metadata for consistent labeling and hierarchy.
+
+\- Implemented strict custom ASC sort order for type\_classification (CMT1 → CMT2 → CMT4 → CMTX → CMTDI → CMTRI → dHMN → dSMA → GAN → HMSN → HSAN → HSN → SMA-LEP → Unclassified).
+
+\- Center-aligned and spaced the “Update” footer text to maintain consistent card heights and layout rhythm.
+
+\- Added fallback file single-subtype.html under /templates/ to ensure the subtype single template remains available even if TT25 deactivates DB templates.
+
+\- Added ensure-single-subtype.php script to automatically republish and persist the “Single Item: Subtype” template within the Site Editor.
+
+\- Updated /functions.php modular loader to include genes-loop.php and ensure-single-subtype.php.
+
+\- Indexed performance optimization command added for future Bluehost deployment:
+
+\- CREATE INDEX idx\_postmeta\_key\_post ON wp\_postmeta (meta\_key(191), post\_id);
+
+
+
+**Result:**
+
+
+
+Subtype pages and loops now render consistently and maintain a strict biological and clinical order regardless of default WordPress sorting behavior. The new fallback system ensures subtype templates remain active and editable, providing a durable and editor-friendly foundation for future Genes Database filtering and display logic. 
 

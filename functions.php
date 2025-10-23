@@ -112,6 +112,30 @@ if ( ! function_exists( 'twentytwentyfive_format_binding' ) ) :
 	}
 endif;
 
+/**
+ * Genes DB — loop shortcode loader
+ */
+add_action('after_setup_theme', function () {
+    $rel = '/inc/content/loops/genes-loop.php';
+    $abs = get_template_directory() . $rel;
+    if (file_exists($abs)) {
+        require_once $abs;
+    }
+}, 20);
+
+// Genes DB — custom type order (global, but opt-in via query var)
+add_action('after_setup_theme', function () {
+  $rel = '/inc/content/sort/genes-type-order.php';
+  $abs = get_template_directory() . $rel;
+  if (file_exists($abs)) require_once $abs;
+}, 20);
+
+add_action('after_setup_theme', function () {
+	$rel = '/inc/content/templates/ensure-single-subtype.php';
+	$abs = get_template_directory() . $rel;
+	if (file_exists($abs)) require_once $abs;
+}, 20);
+
 
 /**
  * Experts in CMT image sizes.
