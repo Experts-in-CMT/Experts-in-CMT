@@ -255,7 +255,21 @@ add_action( 'wp_enqueue_scripts', function () {
 		$theme_version,
 		true
 	);
+
+
 } );
+
+// =========================================================
+// Genes Database Filter Array Taxonomy Includes
+// =========================================================
+require_once get_stylesheet_directory() . '/inc/taxonomies/register-subtype-taxes.php';
+require_once get_stylesheet_directory() . '/inc/filters/terms-helpers.php';
+require_once get_stylesheet_directory() . '/inc/taxonomies/order-admin-terms.php';
+require_once get_stylesheet_directory() . '/inc/filters/genes-filter.php';
+
+
+
+
 
 // =========================================================
 // Load modular includes

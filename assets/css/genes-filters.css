@@ -1,0 +1,128 @@
+/* =========================================================
+   Genes DB — FILTER UI (2×2 selects + search below)
+   Scope: .genesdb-filter-wrap only
+   ========================================================= */
+
+.genesdb-filter-wrap { max-width: 980px; margin-inline: auto; padding-inline: 12px; }
+.genesdb-filter-wrap .genes-filter { margin: 0 0 28px; }
+.genesdb-filter-wrap .genes-filter__bar { max-width: 860px; margin-inline: auto; }
+
+/* Base grid: mobile stacks everything */
+.genesdb-filter-wrap .genes-filter__row {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  align-items: end;
+}
+.genesdb-filter-wrap .genes-filter__field,
+.genesdb-filter-wrap .genes-filter__field--search,
+.genesdb-filter-wrap .genes-filter__hr { grid-column: 1 / -1; }
+
+/* Desktop layout: 2 × 2 for the selects, search full width under them */
+@media (min-width: 768px) {
+  /* Hide the “— OR —” separators on desktop */
+  .genesdb-filter-wrap .genes-filter__hr { display: none; }
+
+  /* Place the four selects into a 2×2 grid
+     DOM order in your markup:
+       1) Select Type
+       2) (hr)
+       3) Select Inheritance
+       4) Select Neuropathy
+       5) Select Chromosome
+       6) (hr)
+       7) Search
+  */
+
+  /* Row 1 */
+  .genesdb-filter-wrap .genes-filter__field:nth-of-type(1) { grid-column: 1 / span 6; }   /* Select Type */
+  .genesdb-filter-wrap .genes-filter__field:nth-of-type(3) { grid-column: 7 / span 6; }   /* Inheritance */
+
+  /* Row 2 */
+  .genesdb-filter-wrap .genes-filter__field:nth-of-type(4) { grid-column: 1 / span 6; }   /* Neuropathy */
+  .genesdb-filter-wrap .genes-filter__field:nth-of-type(5) { grid-column: 7 / span 6; }   /* Chromosome */
+
+  /* Search: full width below the two rows */
+  .genesdb-filter-wrap .genes-filter__field--search { grid-column: 1 / -1; }
+}
+
+/* Labels */
+.genesdb-filter-wrap .genes-filter__label {
+  display: block;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #1f2937;
+  margin: 0 0 8px;
+}
+
+/* Inputs */
+.genesdb-filter-wrap .genes-filter select,
+.genesdb-filter-wrap .genes-filter input[type="search"] {
+  width: 100%;
+  height: 44px;
+  padding: 10px 14px;
+  border: 1px solid #d6d9de;
+  border-radius: 10px;
+  background: #fff;
+  font-size: 16px;
+  line-height: 1.2;
+  outline: none;
+  transition: box-shadow .12s ease, border-color .12s ease;
+  appearance: none;
+  background-image:
+    url("data:image/svg+xml,%3Csvg width='12' height='8' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238E97A3' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 12px 8px;
+}
+.genesdb-filter-wrap .genes-filter input[type="search"] { background-image: none; }
+.genesdb-filter-wrap .genes-filter select:focus,
+.genesdb-filter-wrap .genes-filter input[type="search"]:focus {
+  border-color: #7aa2ff;
+  box-shadow: 0 0 0 3px rgba(45,108,223,.15);
+}
+
+/* Actions row */
+.genesdb-filter-wrap .genes-filter__actions {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: flex-start;
+}
+@media (min-width: 768px) {
+  .genesdb-filter-wrap .genes-filter__actions { justify-content: center; }
+}
+
+/* Buttons */
+.genesdb-filter-wrap .genes-filter__btn {
+  padding: 10px 16px;
+  min-height: 44px;
+  border: 1px solid #2d6cdf;
+  background: #2d6cdf;
+  color: #fff;
+  border-radius: 10px;
+  font-weight: 700;
+  letter-spacing: .02em;
+  cursor: pointer;
+  transition: filter .12s ease, transform .06s ease;
+}
+.genesdb-filter-wrap .genes-filter__btn:hover { filter: brightness(.96); }
+.genesdb-filter-wrap .genes-filter__btn:active { transform: translateY(1px); }
+
+.genesdb-filter-wrap .genes-filter__link {
+  color: #8b1b1b;
+  text-decoration: none;
+  border: 1px solid #f1bbbb;
+  padding: 10px 14px;
+  min-height: 44px;
+  border-radius: 10px;
+  background: #fff5f5;
+  font-weight: 600;
+  transition: filter .12s ease, transform .06s ease;
+}
+.genesdb-filter-wrap .genes-filter__link:hover { filter: brightness(.98); }
+.genesdb-filter-wrap .genes-filter__link:active { transform: translateY(1px); }
+
+/* Anchor offset */
+#genes-filter { scroll-margin-top: 90px; }
