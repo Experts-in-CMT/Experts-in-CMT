@@ -10,11 +10,16 @@ Thumbs.db
 # Ignore everything by default
 *
 
-# Include only our custom code directories
+# Explicitly include only our active theme and MU plugins
 !themes/
-!themes/**
+!themes/twentytwentyfive/
+!themes/twentytwentyfive/**
 !mu-plugins/
 !mu-plugins/**
+
+# Ignore all other themes
+themes/*
+themes/cmtgenes/
 
 # Ignore runtime junk inside themes
 themes/*/node_modules/
