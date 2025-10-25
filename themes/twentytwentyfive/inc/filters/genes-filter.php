@@ -100,7 +100,7 @@ add_shortcode('genes_filter', function () {
           <label class="genes-filter__field">
             <span class="genes-filter__label">Select Type</span>
             <select name="cmt_type">
-              <?php echo _eicmt_gf_options_html_single('cmt_type', $sel_cmt_type, 'Select Type'); ?>
+              <?php echo _eicmt_gf_options_html_single('cmt_type', $sel_cmt_type, 'Browse All'); ?>
             </select>
           </label>
 
