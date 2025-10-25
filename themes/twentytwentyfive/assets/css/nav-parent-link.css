@@ -1,0 +1,94 @@
+
+
+/* Hide submenus by default */
+.wp-block-navigation .has-child > .wp-block-navigation__submenu-container { display: none; }
+
+/* Desktop: open on hover and while .is-open */
+@media (hover: hover) and (pointer: fine) {
+  .wp-block-navigation .has-child:hover > .wp-block-navigation__submenu-container,
+  .wp-block-navigation .has-child.is-open > .wp-block-navigation__submenu-container {
+    display: block;
+  }
+}
+
+/* Mobile: open when toggled */
+.wp-block-navigation .has-child.is-open > .wp-block-navigation__submenu-container { display: block; }
+
+/* Parent link should look like a plain text link; never a button */
+.wp-block-navigation a.wp-block-navigation-item__content {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  outline: none;
+  position: relative;
+  z-index: 2;               /* keep above the toggle so it is clickable */
+  pointer-events: auto;
+}
+
+/* Remove hover box shadow and borders */
+.wp-block-navigation a.wp-block-navigation-item__content:hover {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  outline: none;
+}
+
+/* Slightly increase font weight on hover for feedback */
+.wp-block-navigation a.wp-block-navigation-item__content:hover {
+  font-weight: 500; /* subtle increase from normal (400) */
+}
+
+
+/* Keep focus-visible ring for keyboard users */
+.wp-block-navigation a.wp-block-navigation-item__content:focus { outline: none; }
+.wp-block-navigation a.wp-block-navigation-item__content:focus-visible {
+  outline: 2px solid rgba(23,71,119,.35);
+  outline-offset: 2px;
+}
+
+/* Underline when on its page or an ancestor page */
+.wp-block-navigation .current-menu-item > a.wp-block-navigation-item__content,
+.wp-block-navigation .current-menu-ancestor > a.wp-block-navigation-item__content {
+  text-decoration: underline;
+  text-underline-offset: .2em;
+  text-decoration-thickness: 2px;
+}
+
+/* Chevron toggle: inline, not overlapping the link */
+.wp-block-navigation .wp-block-navigation-submenu__toggle {
+  background: transparent;
+  border: 0;
+  padding-left: .35rem;
+  cursor: pointer;
+  line-height: 1;
+  position: relative;
+  z-index: 1;   /* below the link */
+}
+
+.wp-block-navigation .nav-toggle-chevron {
+  display: inline-block;
+  transform: translateY(-1px);
+}
+
+/* Belt and suspenders: never let the parent container disable clicks */
+.wp-block-navigation .has-child { pointer-events: auto; }
+
+/* Remove underline everywhere */
+.wp-block-navigation a.wp-block-navigation-item__content {
+  text-decoration: none !important;
+}
+.wp-block-navigation a.wp-block-navigation-item__content:hover,
+.wp-block-navigation a.wp-block-navigation-item__content:focus,
+.wp-block-navigation .current-menu-item > a.wp-block-navigation-item__content,
+.wp-block-navigation .current-menu-ancestor > a.wp-block-navigation-item__content {
+  text-decoration: none !important;
+}
+
+/* Ensure navigation uses primary sans font */
+.wp-block-navigation,
+.wp-block-navigation a.wp-block-navigation-item__content,
+.wp-block-navigation .wp-block-navigation-submenu__toggle {
+  font-family: "Albert Sans", system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif !important;
+  font-weight: 400; /* base weight; hover bump will still apply */
+}
+

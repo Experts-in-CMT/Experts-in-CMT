@@ -10,20 +10,20 @@ Thumbs.db
 # Ignore everything by default
 *
 
-# But include code directories
+# Include only our custom code directories
 !themes/
+!themes/**
 !mu-plugins/
-!plugins/
+!mu-plugins/**
 
-# Ignore runtime junk inside included dirs
+# Ignore runtime junk inside themes
 themes/*/node_modules/
 themes/*/dist/
 themes/*/vendor/
 themes/*/.sass-cache/
-plugins/*/node_modules/
-plugins/*/vendor/
 
 # Ignore WordPress runtime directories
+plugins/
 uploads/
 upgrade/
 cache/
