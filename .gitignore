@@ -1,6 +1,34 @@
-# OS / editor only
+# --- WordPress wp-content GitIgnore (CMTA / Kenny build) ---
+
+# OS/editor junk
 .DS_Store
 Thumbs.db
 .vscode/
 .idea/
 *.code-workspace
+
+# Ignore everything by default
+*
+
+# But include code directories
+!themes/
+!mu-plugins/
+!plugins/
+
+# Ignore runtime junk inside included dirs
+themes/*/node_modules/
+themes/*/dist/
+themes/*/vendor/
+themes/*/.sass-cache/
+plugins/*/node_modules/
+plugins/*/vendor/
+
+# Ignore WordPress runtime directories
+uploads/
+upgrade/
+cache/
+wflogs/
+ai1wm-backups/
+
+# Allow .gitkeep if you use them
+!uploads/.gitkeep
