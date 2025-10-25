@@ -90,74 +90,61 @@ add_shortcode('genes_filter', function () {
 
   ob_start(); ?>
 
-  <style>
-    /* Minimal, scoped styling */
-    .genes-filter { margin: 0 0 24px; }
-    .genes-filter__bar { max-width: 760px; margin: 0 auto; }
-    .genes-filter__row { display: grid; gap: 16px; }
-    .genes-filter__label { display:block; font-weight:600; margin: 0 0 6px; }
-    .genes-filter select, .genes-filter input[type="search"] {
-      width:100%; padding:10px 12px; border:1px solid #cfd6dc; border-radius:6px; background:#fff;
-    }
-    .genes-filter__hr { text-align:center; color:#89939a; margin:16px 0; }
-    .genes-filter__actions { display:flex; gap:10px; align-items:center; }
-    .genes-filter__btn { padding:8px 12px; border:1px solid #2d6cdf; background:#2d6cdf; color:#fff; border-radius:8px; cursor:pointer; }
-    .genes-filter__link { color:#8b1b1b; text-decoration:none; border:1px solid #f1bbbb; padding:8px 10px; border-radius:8px; background:#fff5f5; }
-    #genes-filter { scroll-margin-top: 90px; }
-  </style>
-
   <a id="genes-filter"></a>
-  <form class="genes-filter" method="get" action="<?php echo $action_url; ?>">
-    <div class="genes-filter__bar">
-      <div class="genes-filter__row">
+  <div class="genesdb-filter-wrap"><!-- REQUIRED for CSS scoping -->
+    <form class="genes-filter" method="get" action="<?php echo $action_url; ?>">
+      <div class="genes-filter__bar">
+        <div class="genes-filter__row">
 
-        <!-- Top: Select Type -->
-        <label class="genes-filter__field">
-          <span class="genes-filter__label">Select Type</span>
-          <select name="cmt_type">
-            <?php echo _eicmt_gf_options_html_single('cmt_type', $sel_cmt_type, 'Select Type'); ?>
-          </select>
-        </label>
+          <!-- Top: Select Type -->
+          <label class="genes-filter__field">
+            <span class="genes-filter__label">Select Type</span>
+            <select name="cmt_type">
+              <?php echo _eicmt_gf_options_html_single('cmt_type', $sel_cmt_type, 'Select Type'); ?>
+            </select>
+          </label>
 
-        <div class="genes-filter__hr">— OR —</div>
+          <div class="genes-filter__hr">— OR —</div>
 
-        <!-- Middle row: Inheritance / Neuropathy / Chromosome -->
-        <label class="genes-filter__field">
-          <span class="genes-filter__label">Select Inheritance</span>
-          <select name="inheritance">
-            <?php echo _eicmt_gf_options_html_single('inheritance', $sel_inherit, 'All Inheritance'); ?>
-          </select>
-        </label>
+          <!-- Middle row: Inheritance / Neuropathy / Chromosome -->
+          <label class="genes-filter__field">
+            <span class="genes-filter__label">Select Inheritance</span>
+            <select name="inheritance">
+              <?php echo _eicmt_gf_options_html_single('inheritance', $sel_inherit, 'All Inheritance'); ?>
+            </select>
+          </label>
 
-        <label class="genes-filter__field">
-          <span class="genes-filter__label">Select Neuropathy</span>
-          <select name="neuropathy">
-            <?php echo _eicmt_gf_options_html_single('neuropathy', $sel_neuro, 'All Neuropathy'); ?>
-          </select>
-        </label>
+          <label class="genes-filter__field">
+            <span class="genes-filter__label">Select Neuropathy</span>
+            <select name="neuropathy">
+              <?php echo _eicmt_gf_options_html_single('neuropathy', $sel_neuro, 'All Neuropathy'); ?>
+            </select>
+          </label>
 
-        <label class="genes-filter__field">
-          <span class="genes-filter__label">Select Chromosome</span>
-          <select name="chromosome">
-            <?php echo _eicmt_gf_options_html_single('chromosome', $sel_chrom, 'All Chromosomes'); ?>
-          </select>
-        </label>
+          <label class="genes-filter__field">
+            <span class="genes-filter__label">Select Chromosome</span>
+            <select name="chromosome">
+              <?php echo _eicmt_gf_options_html_single('chromosome', $sel_chrom, 'All Chromosomes'); ?>
+            </select>
+          </label>
 
-        <div class="genes-filter__hr">— OR —</div>
+          <div class="genes-filter__hr">— OR —</div>
 
-        <!-- Bottom: text search -->
-        <label class="genes-filter__field">
-          <span class="genes-filter__label">Search by Gene, by Subtype, or by Year of Discovery</span>
-          <input type="search" name="qs" value="<?php echo esc_attr($search_text); ?>" placeholder='ex: PMP22, SORD, CMTDIG, dHMN-2C, 1999 (type "All" to show everything)'>
-        </label>
+          <!-- Bottom: text search -->
+          <label class="genes-filter__field genes-filter__field--search"><!-- REQUIRED for full-width rule -->
+            <span class="genes-filter__label">Search by Gene, by Subtype, or by Year of Discovery</span>
+            <input type="search" name="qs" value="<?php echo esc_attr($search_text); ?>" placeholder='ex: PMP22, SORD, CMTDIG, dHMN-2C, 1999 (type "All" to show everything)'>
+          </label>
 
-        <div class="genes-filter__actions">
-          <button type="submit" class="genes-filter__btn">APPLY FILTERS</button>
-          <a class="genes-filter__link" href="<?php echo $reset_url; ?>">RESET</a>
+          <div class="genes-filter__actions">
+            <button type="submit" class="genes-filter__btn">APPLY FILTERS</button>
+            <a class="genes-filter__link" href="<?php echo $reset_url; ?>">RESET</a>
+          </div>
+
         </div>
       </div>
-    </div>
-  </form>
+    </form>
+  </div>
 
   <?php
   return ob_get_clean();

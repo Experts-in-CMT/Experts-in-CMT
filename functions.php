@@ -164,6 +164,40 @@ add_action( 'wp_enqueue_scripts', function () {
 }, 999);
 
 /**
+ * Enqueue Genes Filters stylesheet — load only when needed.
+ */
+add_action('wp_enqueue_scripts', function () {
+	if (is_admin()) return;
+
+	$rel  = '/assets/css/genes-filters.css';
+	$path = get_stylesheet_directory() . $rel;
+	if (!file_exists($path)) return;
+
+	$should_load = false;
+
+	$post = get_post();
+	if ($post) {
+		$content = (string) $post->post_content;
+		if (strpos($content, '[genes_filter') !== false || has_shortcode($content, 'genes_filter')) {
+			$should_load = true;
+		}
+	}
+
+	if (is_page(array('genes', 'cmt-genetics-database'))) {
+		$should_load = true;
+	}
+
+	if ($should_load) {
+		wp_enqueue_style(
+			'genes-filters',
+			get_stylesheet_directory_uri() . $rel,
+			array('experts-main'),
+			filemtime($path)
+		);
+	}
+}, 1001);
+
+/**
  * Register header banner from /blocks/header-banner/block.json
  * (Close this callback right after the register call.)
  */
@@ -216,7 +250,6 @@ function cmt_layout_header_banner_shortcode() {
 	$post_id = (int) get_queried_object_id();
 
 	ob_start();
-	// Make $post_id visible to the template.
 	include get_template_directory() . '/templates/header-banner.php';
 	return ob_get_clean();
 }
@@ -239,25 +272,21 @@ add_filter( 'render_block', function( $content, $block ) {
 add_action( 'wp_enqueue_scripts', function () {
 	$theme_version = wp_get_theme()->get( 'Version' );
 
-	// CSS
 	wp_enqueue_style(
 		'cmtgenes-nav-parent-link',
 		get_stylesheet_directory_uri() . '/assets/css/nav-parent-link.css',
-		array( 'experts-main' ), // ensure it loads after your main.css
+		array( 'experts-main' ),
 		$theme_version
 	);
 
-	// JS
 	wp_enqueue_script(
 		'cmtgenes-nav-parent-link',
 		get_stylesheet_directory_uri() . '/assets/js/nav-parent-link.js',
-		array(), // no deps
+		array(),
 		$theme_version,
 		true
 	);
-
-
-} );
+}, 1002);
 
 // =========================================================
 // Genes Database Filter Array Taxonomy Includes
@@ -266,10 +295,6 @@ require_once get_stylesheet_directory() . '/inc/taxonomies/register-subtype-taxe
 require_once get_stylesheet_directory() . '/inc/filters/terms-helpers.php';
 require_once get_stylesheet_directory() . '/inc/taxonomies/order-admin-terms.php';
 require_once get_stylesheet_directory() . '/inc/filters/genes-filter.php';
-
-
-
-
 
 // =========================================================
 // Load modular includes
@@ -285,6 +310,7 @@ wp_enqueue_script(
   '0.1.0',
   true
 );
+
 
 
 

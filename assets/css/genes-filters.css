@@ -18,32 +18,41 @@
 .genesdb-filter-wrap .genes-filter__field--search,
 .genesdb-filter-wrap .genes-filter__hr { grid-column: 1 / -1; }
 
-/* Desktop layout: 2 × 2 for the selects, search full width under them */
+/* =========================================================
+   Desktop layout: 2 × 2 for the selects, search full width under them
+   ========================================================= */
 @media (min-width: 768px) {
   /* Hide the “— OR —” separators on desktop */
   .genesdb-filter-wrap .genes-filter__hr { display: none; }
 
-  /* Place the four selects into a 2×2 grid
-     DOM order in your markup:
+  /* Actual DOM order in your markup:
        1) Select Type
-       2) (hr)
-       3) Select Inheritance
-       4) Select Neuropathy
-       5) Select Chromosome
-       6) (hr)
-       7) Search
+       2) Select Inheritance
+       3) Select Neuropathy
+       4) Select Chromosome
+       5) Search
   */
 
   /* Row 1 */
-  .genesdb-filter-wrap .genes-filter__field:nth-of-type(1) { grid-column: 1 / span 6; }   /* Select Type */
-  .genesdb-filter-wrap .genes-filter__field:nth-of-type(3) { grid-column: 7 / span 6; }   /* Inheritance */
+  .genesdb-filter-wrap .genes-filter__field:nth-of-type(1) {
+    grid-column: 1 / span 6; /* Select Type */
+  }
+  .genesdb-filter-wrap .genes-filter__field:nth-of-type(2) {
+    grid-column: 7 / span 6; /* Inheritance */
+  }
 
   /* Row 2 */
-  .genesdb-filter-wrap .genes-filter__field:nth-of-type(4) { grid-column: 1 / span 6; }   /* Neuropathy */
-  .genesdb-filter-wrap .genes-filter__field:nth-of-type(5) { grid-column: 7 / span 6; }   /* Chromosome */
+  .genesdb-filter-wrap .genes-filter__field:nth-of-type(3) {
+    grid-column: 1 / span 6; /* Neuropathy */
+  }
+  .genesdb-filter-wrap .genes-filter__field:nth-of-type(4) {
+    grid-column: 7 / span 6; /* Chromosome */
+  }
 
-  /* Search: full width below the two rows */
-  .genesdb-filter-wrap .genes-filter__field--search { grid-column: 1 / -1; }
+  /* Search: full width under both rows */
+  .genesdb-filter-wrap .genes-filter__field--search {
+    grid-column: 1 / -1;
+  }
 }
 
 /* Labels */
