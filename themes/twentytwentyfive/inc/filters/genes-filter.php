@@ -3,7 +3,7 @@
  * [genes_filter] — Genes DB filter UI only (no results)
  * - Renders the Wix-style single-selects + search bar
  * - Submits GET params that your [genes_loop] shortcode reads
- * - Action points to #cmt-genetics-database so the page jumps to the loop
+ * - Action now points to the clean page URL (no anchors)
  *
  * GET params used by the loop:
  *   cmt_type (int), inheritance (int), neuropathy (int), chromosome (int), qs (string)
@@ -77,16 +77,16 @@ add_shortcode('genes_filter', function () {
   $sel_chrom    = isset($_GET['chromosome']) ? (int) $_GET['chromosome'] : 0;
   $search_text  = isset($_GET['qs']) ? sanitize_text_field((string) $_GET['qs']) : '';
 
-  // Build base URL with anchor for form action (points to the loop section)
+  // Build base URL for form action (NO ANCHORS)
   $base = get_permalink(get_queried_object_id());
   if (!$base) {
     $genes_page = get_page_by_path('genes'); // optional fallback
     $base = $genes_page ? get_permalink($genes_page->ID) : home_url('/genes/');
   }
-  $action_url = esc_url($base . '#cmt-genetics-database');
+  $action_url = esc_url($base);
 
-  // Reset URL (strip GET) and jump back to the filter itself
-  $reset_url = esc_url( remove_query_arg( array_keys($_GET), $base ) . '#genes-filter' );
+  // Reset URL (strip GET) — NO ANCHORS
+  $reset_url = esc_url( remove_query_arg( array_keys($_GET), $base ) );
 
   ob_start(); ?>
 

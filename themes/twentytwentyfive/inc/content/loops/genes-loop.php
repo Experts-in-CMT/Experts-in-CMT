@@ -1,80 +1,69 @@
 <?php
 /* ============================================================
    GENES DATABASE LOOP SHORTCODE (responsive to filter UI)
-   - Reads GET params from [genes_filter]: cmt_type, inheritance, neuropathy, chromosome, qs
-   - Backward-compatible with old params: gd_q, gd_type, gd_inherit
-   - Case-insensitive meta search over specific ACF fields
-   - Custom order by type_classification (FIELD()) preserved
-   - Pagination via ?gd_paged=
-   - Adds #cmt-genetics-database anchor jump
+   Simplified, reliable search using qs= and ACF/meta/tax filters.
+   Keeps all layout + styling from original.
+   ============================================================ */
+
+
+/* ============================================================
+   ============================================================
+   ===================== [ SECTION: SORT LOGIC ] ===============
+   ============================================================
    ============================================================ */
 
 /**
- * [genes_loop] — rows of 3 with centered last row; preserves CSS classes
- * Usage: [genes_loop per_page="12"]
+ * Custom sorter for 'type_classification' — immutable order.
+ * Empties FIRST (debug), then FIELD() sequence, then post_title ASC.
  */
-
-// Fields we want to search (ACF/meta keys)
-function eic_gl_search_meta_fields() {
-	return [
-		'type_classification',
-		'subtype',
-		'gene',
-		'alternate_gene_1',
-		'alternate_gene_2',
-		'alternate_gene_3',
-		'year_of_discovery',
-	];
-}
-
-// Custom sorter for 'type_classification'
 function eic_genes_custom_sort_clauses($clauses, $wp_query) {
 	if (!$wp_query->get('eic_genes_custom_sort')) return $clauses;
 
 	global $wpdb;
 	$custom_type_order = [
-		'CMT1','CMT2','CMT4','CMTX','CMTDI','CMTRI',
+		'CMT1','CMT2','CMTX','CMT4','CMTDI','CMTRI',
 		'dHMN','dSMA','GAN','HMSN','HSAN','HSN','SMA-LEP','Unclassified'
 	];
 
+	// Ensure join alias `mt1` exists for type_classification
 	if (strpos($clauses['join'] ?? '', ' mt1 ') === false) {
 		$clauses['join'] .= " LEFT JOIN {$wpdb->postmeta} mt1
 		                      ON (mt1.post_id = {$wpdb->posts}.ID AND mt1.meta_key = 'type_classification')";
 	}
 
+	// Build FIELD() list
 	$quoted = array_map(function ($v) use ($wpdb) {
 		return trim($wpdb->prepare('%s', $v), "'");
 	}, $custom_type_order);
 	$field_list = "'" . implode("','", $quoted) . "'";
 
+	// Empties first → then FIELD() order → then title ASC
 	$clauses['orderby'] =
-		"CASE WHEN mt1.meta_value IS NULL OR mt1.meta_value = '' THEN 1 ELSE 0 END ASC, " .
+		"CASE WHEN mt1.meta_value IS NULL OR mt1.meta_value = '' THEN 0 ELSE 1 END ASC, " .
 		"FIELD(mt1.meta_value, {$field_list}) ASC, " .
 		"{$wpdb->posts}.post_title ASC";
 
 	return $clauses;
 }
 
-function eic_gl_get_paged() {
-	$p = isset($_GET['gd_paged']) ? (int) $_GET['gd_paged'] : 0;
-	if ($p < 1) $p = (int) get_query_var('paged', 1);
-	if ($p < 1) $p = (int) get_query_var('page', 1);
-	return $p > 0 ? $p : 1;
-}
+
+/* ============================================================
+   ============================================================
+   ===================== [ SECTION: SHORTCODE ] ================
+   ============================================================
+   ============================================================ */
 
 add_shortcode('genes_loop', function ($atts = []) {
 	$a = shortcode_atts([
-		'per_page'    => 12,
-		'page_window' => 2,
-		'edge_count'  => 1,
+		'per_page' => 12,
 	], $atts);
 
-	// -------------------------------------------------------
-	// Inputs
-	// -------------------------------------------------------
-	$qs_raw = $_GET['qs'] ?? $_GET['gd_q'] ?? '';
-	$qs = sanitize_text_field($qs_raw);
-	$qs_all = (trim($qs) !== '' && strtolower(trim($qs)) === 'all');
+	/* --------------------------------------------------------
+	   INPUTS (GET params)
+	   -------------------------------------------------------- */
+	$qs_raw = isset($_GET['qs']) ? (string) $_GET['qs'] : '';
+	$qs     = sanitize_text_field($qs_raw);
+	$qs_all = (strtolower(trim($qs)) === 'all');
 
 	$sel = [
 		'cmt_type'    => isset($_GET['cmt_type'])    ? (int) $_GET['cmt_type']    : 0,
@@ -83,181 +72,210 @@ add_shortcode('genes_loop', function ($atts = []) {
 		'chromosome'  => isset($_GET['chromosome'])  ? (int) $_GET['chromosome']  : 0,
 	];
 
-	if (!$sel['cmt_type'] && !empty($_GET['gd_type'])) {
-		$term = get_term_by('slug', sanitize_title(wp_unslash($_GET['gd_type'])), 'cmt_type');
-		if ($term && !is_wp_error($term)) $sel['cmt_type'] = (int) $term->term_id;
-	}
-	if (!$sel['inheritance'] && !empty($_GET['gd_inherit'])) {
-		$term = get_term_by('slug', sanitize_title(wp_unslash($_GET['gd_inherit'])), 'inheritance');
-		if ($term && !is_wp_error($term)) $sel['inheritance'] = (int) $term->term_id;
-	}
-
-	// -------------------------------------------------------
-	// Taxonomy filters
-	// -------------------------------------------------------
+	/* --------------------------------------------------------
+	   TAXONOMY FILTERS (AND)
+	   -------------------------------------------------------- */
 	$tax_query = ['relation' => 'AND'];
-	foreach ($sel as $tax => $term_id) {
-		if ($term_id) {
+	foreach ($sel as $tax => $id) {
+		if ($id) {
 			$tax_query[] = [
 				'taxonomy' => $tax,
 				'field'    => 'term_id',
-				'terms'    => [$term_id],
-				'operator' => 'IN',
+				'terms'    => [$id],
 			];
 		}
 	}
 	if (count($tax_query) === 1) $tax_query = [];
 
-	// Optional: broaden search with term matches
-	if (!$qs_all && $qs !== '') {
-		$or = ['relation' => 'OR'];
-		foreach (['cmt_type', 'inheritance', 'neuropathy', 'chromosome'] as $tax) {
-			if ($sel[$tax]) continue;
-			$ids = get_terms(['taxonomy'=>$tax,'hide_empty'=>false,'search'=>$qs,'fields'=>'ids']);
-			if (!is_wp_error($ids) && $ids) {
-				$or[] = [
-					'taxonomy' => $tax,
-					'field'    => 'term_id',
-					'terms'    => array_map('intval', $ids),
-					'operator' => 'IN',
-				];
-			}
-		}
-		if (count($or) > 1) {
-			if (empty($tax_query)) $tax_query = ['relation'=>'AND'];
-			$tax_query[] = $or;
-		}
-	}
-
-	// -------------------------------------------------------
-	// Meta query (case-insensitive LIKE)
-	// -------------------------------------------------------
-	$meta_query = [];
-	if (!$qs_all && $qs !== '') {
-		$meta_query = ['relation' => 'OR'];
-		foreach (eic_gl_search_meta_fields() as $key) {
-			$meta_query[] = [
-				'key'     => $key,
-				'value'   => $qs,
-				'compare' => 'LIKE',
-			];
-		}
-	}
-
-	// -------------------------------------------------------
-	// Query args
-	// -------------------------------------------------------
+	/* --------------------------------------------------------
+	   META SEARCH (always OR)
+	   -------------------------------------------------------- */
 	$args = [
-		'post_type'           => 'subtype',
-		'post_status'         => 'publish',
-		'posts_per_page'      => (int) $a['per_page'],
-		'paged'               => eic_gl_get_paged(),
-		'orderby'             => 'title',
-		'order'               => 'ASC',
+		'post_type'      => 'subtype',
+		'post_status'    => 'publish',
+		'posts_per_page' => max(1, (int) $a['per_page']),
+		'paged'          => max(1, (int) ($_GET['gd_paged'] ?? 1)),
+		'orderby'        => 'title',
+		'order'          => 'ASC',
+		// >>> Activate canonical sort <<<
 		'eic_genes_custom_sort' => 1,
 	];
 
 	if (!empty($tax_query)) $args['tax_query'] = $tax_query;
-	if (!empty($meta_query)) $args['meta_query'] = $meta_query;
-	if (!$qs_all && $qs !== '') {
-		$args['s'] = $qs;
-		$args['eic_gd_search'] = 1;
-	}
-
-	// -------------------------------------------------------
-	// Optional SQL filters (meta_value lower, taxonomy names)
-	// -------------------------------------------------------
-	global $wpdb;
-	if (!empty($meta_query)) {
-		add_filter('posts_where', function($where) {
-			return preg_replace('/(\b)meta_value(\s+)LIKE(\s+)/i', 'LOWER(meta_value) LIKE ', $where);
-		}, 999);
-	}
 
 	if (!$qs_all && $qs !== '') {
-		add_filter('posts_join', function ($join) use ($wpdb) {
-			return $join
-				. " LEFT JOIN {$wpdb->term_relationships} tr ON tr.object_id = {$wpdb->posts}.ID"
-				. " LEFT JOIN {$wpdb->term_taxonomy}   tt ON tt.term_taxonomy_id = tr.term_taxonomy_id"
-				. " LEFT JOIN {$wpdb->terms}            t ON t.term_id = tt.term_id";
-		});
-		add_filter('posts_search', function ($search, $wp_query) use ($wpdb, $qs) {
-			if (!$wp_query->get('eic_gd_search')) return $search;
-			$like = '%' . $wpdb->esc_like($qs) . '%';
-			return preg_replace('/\)\s*$/', $wpdb->prepare(" OR (t.name LIKE %s))", $like), $search, 1);
-		}, 10, 2);
-		add_filter('posts_distinct', fn() => 'DISTINCT');
+		$args['meta_query'] = [
+			'relation' => 'OR',
+			[ 'key' => 'gene',              'value' => $qs, 'compare' => '=' ],
+			[ 'key' => 'gene_symbol',       'value' => $qs, 'compare' => '=' ],
+			[ 'key' => 'subtype',           'value' => $qs, 'compare' => 'LIKE' ],
+			[ 'key' => 'year_of_discovery', 'value' => $qs, 'compare' => 'LIKE' ],
+			[ 'key' => 'alternate_gene_1',  'value' => $qs, 'compare' => 'LIKE' ],
+			[ 'key' => 'alternate_gene_2',  'value' => $qs, 'compare' => 'LIKE' ],
+			[ 'key' => 'alternate_gene_3',  'value' => $qs, 'compare' => 'LIKE' ],
+		];
 	}
 
+	/* --------------------------------------------------------
+	   RUN QUERY (with canonical sorter attached)
+	   -------------------------------------------------------- */
 	add_filter('posts_clauses', 'eic_genes_custom_sort_clauses', 10, 2);
-
 	$q = new WP_Query($args);
-
-	// -------------------------------------------------------
-	// Cleanup
-	// -------------------------------------------------------
 	remove_filter('posts_clauses', 'eic_genes_custom_sort_clauses', 10);
 
-	// -------------------------------------------------------
-	// Output (cards with pagination)
-	// -------------------------------------------------------
-	ob_start(); ?>
-	<a id="cmt-genetics-database"></a>
-	<div class="wp-block-query dr-blog">
+/* ========================================================
+   ========================================================
+   =============== [ SECTION: OUTPUT MARKUP ] ==============
+   ========================================================
+   ======================================================== */
+
+ob_start(); ?>
+<div class="wp-block-query dr-blog" style="scroll-margin-top:100px;">
 	<?php
 	$cards = [];
 	if ($q->have_posts()) {
 		while ($q->have_posts()) {
 			$q->the_post();
 
-			$gene = get_field('gene') ?: get_post_meta(get_the_ID(), 'gene_symbol', true) ?: get_the_title();
-			$discovery = get_field('year_of_discovery') ?: '';
-			$inherit = get_field('inheritance_pattern') ?: implode(', ', wp_get_post_terms(get_the_ID(), 'inheritance', ['fields'=>'names']));
+			$gene_symbol    = get_field('gene') ?: get_post_meta(get_the_ID(), 'gene_symbol', true);
+			$display_gene   = $gene_symbol ?: get_the_title();
+			$year_discovery = get_field('year_of_discovery') ?: '';
+			$inherit_label  = get_field('inheritance_pattern') ?: implode(', ', wp_get_post_terms(get_the_ID(), 'inheritance', ['fields' => 'names']));
 
 			ob_start(); ?>
 			<article class="dr-card wp-block-post">
-				<?php if (has_post_thumbnail()): ?>
+				<?php if (has_post_thumbnail()) : ?>
 					<a class="wp-block-post-featured-image" href="<?php the_permalink(); ?>">
-						<?php the_post_thumbnail('large', ['loading' => 'lazy']); ?>
+						<?php the_post_thumbnail('large', ['loading' => 'lazy', 'decoding' => 'async']); ?>
 					</a>
 				<?php endif; ?>
+
 				<h2 class="wp-block-post-title">
 					<a href="<?php the_permalink(); ?>"><?php the_title(); ?></a>
 				</h2>
+
 				<div class="wp-block-post-excerpt">
-					<p><strong>Gene:</strong> <?php echo esc_html($gene); ?></p>
-					<?php if ($discovery): ?><p><strong>Discovered:</strong> <?php echo esc_html($discovery); ?></p><?php endif; ?>
-					<?php if ($inherit): ?><p><strong>Inheritance:</strong> <?php echo esc_html($inherit); ?></p><?php endif; ?>
+					<p><strong>Gene:</strong> <?php echo esc_html($display_gene); ?></p>
+					<?php if ($year_discovery): ?>
+						<p><strong>Discovered:</strong> <?php echo esc_html($year_discovery); ?></p>
+					<?php endif; ?>
+					<?php if ($inherit_label): ?>
+						<p><strong>Inheritance:</strong> <?php echo esc_html($inherit_label); ?></p>
+					<?php endif; ?>
+
 					<a class="wp-block-read-more" href="<?php the_permalink(); ?>">Learn More</a>
+
 					<div class="wp-block-post-date" style="text-align:center; margin-top:12px;">
 						<small>Update: <?php echo esc_html(get_the_modified_date(get_option('date_format'))); ?></small>
 					</div>
+
 					<div style="height:20px;" aria-hidden="true" class="wp-block-spacer"></div>
 				</div>
 			</article>
-			<?php $cards[] = ob_get_clean();
+			<?php
+			$cards[] = ob_get_clean();
 		}
 		wp_reset_postdata();
 	}
 
-	$rows = array_chunk($cards, 3);
+	$rows       = array_chunk($cards, 3);
+	$total_rows = count($rows);
 	?>
+
+	<?php if (empty($rows)): ?>
+		<div id="genes-no-results" class="dr-row dr-row--empty"
+			style="
+				margin: -100px auto 64px auto;
+				display: flex;
+				justify-content: center;
+				align-items: flex-start;
+				max-width: 700px;
+				width: 100%;
+			">
+			<p style="font-size:1.1rem; color:#333; text-align:left;">
+				No results found.<br>Try adjusting your filters or search term.
+			</p>
+		</div>
+	<?php endif; ?>
+
 	<div class="dr-grid">
-		<?php if ($rows): foreach ($rows as $i => $items):
-			$is_last = ($i === count($rows) - 1);
-			$count = count($items); ?>
-			<div class="dr-row<?php echo $is_last ? ' dr-row--last' : ''; ?>" <?php echo $is_last ? 'data-count="'.$count.'"' : ''; ?>>
-				<?php echo implode('', $items); ?>
-			</div>
-		<?php endforeach; else: ?>
-			<div class="dr-row dr-row--empty"><p>No results found.</p></div>
+		<?php if (!empty($rows)): ?>
+			<?php foreach ($rows as $i => $row_items):
+				$is_last = ($i === $total_rows - 1);
+				$count   = count($row_items); ?>
+				<div class="dr-row<?php echo $is_last ? ' dr-row--last' : ''; ?>" <?php echo $is_last ? 'data-count="'.(int) $count.'"' : ''; ?>>
+					<?php echo implode('', $row_items); ?>
+				</div>
+			<?php endforeach; ?>
 		<?php endif; ?>
 	</div>
+
+	
+<script>
+/* ============================================================
+   =========== [ SECTION: SMOOTH SCROLL TO RESULTS ] ===========
+   ============================================================ */
+(function () {
+  // Tweak this number to land lower/higher
+  var OFFSET = 320; // smaller = land lower (filters higher). larger = land higher.
+
+  function findResults() {
+    return document.querySelector('.wp-block-query.dr-blog');
+  }
+
+  function scrollToResults(offset) {
+    var el = findResults();
+    if (!el) return;
+    requestAnimationFrame(function () {
+      var rect = el.getBoundingClientRect();
+      var y = rect.top + window.scrollY - (typeof offset === 'number' ? offset : OFFSET);
+      window.scrollTo({ top: y, behavior: 'smooth' });
+    });
+  }
+
+  // Observe AJAX injections into results
+  var container = findResults();
+  if (container) {
+    var observer = new MutationObserver(function () {
+      setTimeout(function () { scrollToResults(OFFSET); }, 100);
+    });
+    observer.observe(container, { childList: true, subtree: true });
+  }
+
+  // Pagination clicks
+  document.addEventListener('click', function (e) {
+    if (e.target.closest('a.page-numbers')) {
+      setTimeout(function () { scrollToResults(OFFSET); }, 350);
+    }
+  }, true);
+
+  // Filter form submissions
+  var form = document.querySelector('form.genes-filter');
+  if (form) {
+    form.addEventListener('submit', function () {
+      setTimeout(function () { scrollToResults(OFFSET); }, 100);
+    });
+  }
+
+  // On reload with query params (so pagination/filters land correctly)
+  window.addEventListener('DOMContentLoaded', function () {
+    var p = new URLSearchParams(window.location.search);
+    if (['qs','cmt_type','inheritance','neuropathy','chromosome','gd_paged']
+        .some(function (k) { return p.has(k) && p.get(k) !== ''; })) {
+      setTimeout(function () { scrollToResults(OFFSET); }, 100);
+    }
+  });
+})();
+</script>
+
+
 	<?php
-	// Pagination
+	/* ====================================================
+	   =============== [ SECTION: PAGINATION ] =============
+	   ==================================================== */
 	$total_pages = max(1, (int) $q->max_num_pages);
 	if ($total_pages > 1) {
-		$current  = max(1, (int) eic_gl_get_paged());
+		$current  = max(1, (int) ($_GET['gd_paged'] ?? 1));
 		$base_url = get_permalink(get_queried_object_id()) ?: home_url('/genes/');
 		$qs_params = $_GET;
 		unset($qs_params['gd_paged']);
@@ -265,40 +283,39 @@ add_shortcode('genes_loop', function ($atts = []) {
 		$page_url = function (int $n) use ($base_url, $qs_params) {
 			$qs2 = $qs_params;
 			$qs2['gd_paged'] = $n;
-			return esc_url(add_query_arg($qs2, $base_url) . '#cmt-genetics-database');
+			return esc_url(add_query_arg($qs2, $base_url));
 		};
 
 		$items = [];
-		if ($current > 1)
-			$items[] = '<li><a class="prev page-numbers" href="' . $page_url($current - 1) . '">« Prev</a></li>';
-		else
-			$items[] = '<li><span class="prev page-numbers">« Prev</span></li>';
+		if ($current > 1) $items[] = '<li><a class="prev page-numbers" href="'.$page_url($current - 1).'">« Prev</a></li>';
+		else $items[] = '<li><span class="prev page-numbers">« Prev</span></li>';
 
+		$end   = $total_pages;
 		$start = max(1, $current - 2);
-		$end   = min($total_pages, $current + 2);
+		$stop  = min($end, $current + 2);
 
 		if ($start > 1) {
-			$items[] = '<li><a class="page-numbers" href="' . $page_url(1) . '">1</a></li>';
+			$items[] = '<li><a class="page-numbers" href="'.$page_url(1).'">1</a></li>';
 			if ($start > 2) $items[] = '<li><span class="page-numbers dots">…</span></li>';
 		}
-		for ($i = $start; $i <= $end; $i++) {
-			if ($i === $current)
-				$items[] = '<li><span class="page-numbers current">' . $i . '</span></li>';
-			else
-				$items[] = '<li><a class="page-numbers" href="' . $page_url($i) . '">' . $i . '</a></li>';
+		for ($i = $start; $i <= $stop; $i++) {
+			if ($i === $current) $items[] = '<li><span class="page-numbers current">'.$i.'</span></li>';
+			else $items[] = '<li><a class="page-numbers" href="'.$page_url($i).'">'.$i.'</a></li>';
 		}
-		if ($end < $total_pages) {
-			if ($end < $total_pages - 1) $items[] = '<li><span class="page-numbers dots">…</span></li>';
-			$items[] = '<li><a class="page-numbers" href="' . $page_url($total_pages) . '">' . $total_pages . '</a></li>';
+		if ($stop < $end) {
+			if ($stop < $end - 1) $items[] = '<li><span class="page-numbers dots">…</span></li>';
+			$items[] = '<li><a class="page-numbers" href="'.$page_url($end).'">'.$end.'</a></li>';
 		}
 		if ($current < $total_pages)
-			$items[] = '<li><a class="next page-numbers" href="' . $page_url($current + 1) . '">Next »</a></li>';
+			$items[] = '<li><a class="next page-numbers" href="'.$page_url($current + 1).'">Next »</a></li>';
 		else
 			$items[] = '<li><span class="next page-numbers">Next »</span></li>';
 
-		echo '<nav class="wp-block-query-pagination"><ul class="page-numbers">' . implode('', $items) . '</ul></nav>';
+		echo '<nav class="wp-block-query-pagination"><ul class="page-numbers">'.implode('', $items).'</ul></nav>';
 	}
 	?>
-	</div>
-	<?php return ob_get_clean();
+</div>
+<?php
+return ob_get_clean();
+
 });
