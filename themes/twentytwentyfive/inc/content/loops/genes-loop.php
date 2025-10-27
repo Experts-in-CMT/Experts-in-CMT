@@ -130,7 +130,7 @@ add_shortcode('genes_loop', function ($atts = []) {
    ======================================================== */
 
 ob_start(); ?>
-<div class="wp-block-query dr-blog" style="scroll-margin-top:100px;">
+<div id="results" class="wp-block-query dr-blog" style="scroll-margin-top:100px;">
 	<?php
 	$cards = [];
 	if ($q->have_posts()) {
@@ -210,65 +210,6 @@ ob_start(); ?>
 		<?php endif; ?>
 	</div>
 
-	
-<script>
-/* ============================================================
-   =========== [ SECTION: SMOOTH SCROLL TO RESULTS ] ===========
-   ============================================================ */
-(function () {
-  // Tweak this number to land lower/higher
-  var OFFSET = 320; // smaller = land lower (filters higher). larger = land higher.
-
-  function findResults() {
-    return document.querySelector('.wp-block-query.dr-blog');
-  }
-
-  function scrollToResults(offset) {
-    var el = findResults();
-    if (!el) return;
-    requestAnimationFrame(function () {
-      var rect = el.getBoundingClientRect();
-      var y = rect.top + window.scrollY - (typeof offset === 'number' ? offset : OFFSET);
-      window.scrollTo({ top: y, behavior: 'smooth' });
-    });
-  }
-
-  // Observe AJAX injections into results
-  var container = findResults();
-  if (container) {
-    var observer = new MutationObserver(function () {
-      setTimeout(function () { scrollToResults(OFFSET); }, 100);
-    });
-    observer.observe(container, { childList: true, subtree: true });
-  }
-
-  // Pagination clicks
-  document.addEventListener('click', function (e) {
-    if (e.target.closest('a.page-numbers')) {
-      setTimeout(function () { scrollToResults(OFFSET); }, 350);
-    }
-  }, true);
-
-  // Filter form submissions
-  var form = document.querySelector('form.genes-filter');
-  if (form) {
-    form.addEventListener('submit', function () {
-      setTimeout(function () { scrollToResults(OFFSET); }, 100);
-    });
-  }
-
-  // On reload with query params (so pagination/filters land correctly)
-  window.addEventListener('DOMContentLoaded', function () {
-    var p = new URLSearchParams(window.location.search);
-    if (['qs','cmt_type','inheritance','neuropathy','chromosome','gd_paged']
-        .some(function (k) { return p.has(k) && p.get(k) !== ''; })) {
-      setTimeout(function () { scrollToResults(OFFSET); }, 100);
-    }
-  });
-})();
-</script>
-
-
 	<?php
 	/* ====================================================
 	   =============== [ SECTION: PAGINATION ] =============
@@ -283,7 +224,7 @@ ob_start(); ?>
 		$page_url = function (int $n) use ($base_url, $qs_params) {
 			$qs2 = $qs_params;
 			$qs2['gd_paged'] = $n;
-			return esc_url(add_query_arg($qs2, $base_url));
+			return esc_url(add_query_arg($qs2, $base_url) . '#results');
 		};
 
 		$items = [];

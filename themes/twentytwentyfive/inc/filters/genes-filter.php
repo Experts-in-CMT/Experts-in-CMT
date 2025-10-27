@@ -1,9 +1,9 @@
 <?php
 /**
  * [genes_filter] — Genes DB filter UI only (no results)
- * - Renders the Wix-style single-selects + search bar
+ * - Renders the single-selects + search bar
  * - Submits GET params that your [genes_loop] shortcode reads
- * - Action now points to the clean page URL (no anchors)
+ * - Action appends #results so the browser jumps to results
  *
  * GET params used by the loop:
  *   cmt_type (int), inheritance (int), neuropathy (int), chromosome (int), qs (string)
@@ -22,14 +22,12 @@ function _eicmt_gf_get_terms_ordered($taxonomy, $args = []) {
   ];
   $terms = get_terms(wp_parse_args($args, $defaults));
 
-  // If any term has 'sort' meta, use it.
   if (!is_wp_error($terms) && !empty($terms)) {
     foreach ($terms as $t) {
       if (get_term_meta($t->term_id, 'sort', true) !== '') return $terms;
     }
   }
 
-  // Fallback: Chromosome logical order
   if ($taxonomy === 'chromosome') {
     $wanted = ['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20','21','22','X','Y'];
     $map = [];
@@ -50,7 +48,6 @@ function _eicmt_gf_get_terms_ordered($taxonomy, $args = []) {
     }
   }
 
-  // Final fallback: name ASC
   return get_terms(['taxonomy'=>$taxonomy,'hide_empty'=>false,'orderby'=>'name','order'=>'ASC']);
 }
 
@@ -70,33 +67,31 @@ function _eicmt_gf_options_html_single($taxonomy, $selected = '', $placeholder =
 }
 
 add_shortcode('genes_filter', function () {
-  // Current selections
   $sel_cmt_type = isset($_GET['cmt_type']) ? (int) $_GET['cmt_type'] : 0;
   $sel_inherit  = isset($_GET['inheritance']) ? (int) $_GET['inheritance'] : 0;
   $sel_neuro    = isset($_GET['neuropathy']) ? (int) $_GET['neuropathy'] : 0;
   $sel_chrom    = isset($_GET['chromosome']) ? (int) $_GET['chromosome'] : 0;
   $search_text  = isset($_GET['qs']) ? sanitize_text_field((string) $_GET['qs']) : '';
 
-  // Build base URL for form action (NO ANCHORS)
+  $anchor = 'results';
+
   $base = get_permalink(get_queried_object_id());
   if (!$base) {
-    $genes_page = get_page_by_path('genes'); // optional fallback
+    $genes_page = get_page_by_path('genes');
     $base = $genes_page ? get_permalink($genes_page->ID) : home_url('/genes/');
   }
-  $action_url = esc_url($base);
 
-  // Reset URL (strip GET) — NO ANCHORS
-  $reset_url = esc_url( remove_query_arg( array_keys($_GET), $base ) );
+  $action_url = esc_url($base . '#' . $anchor);
+  $reset_url  = esc_url($base . '#' . $anchor);
 
   ob_start(); ?>
 
   <a id="genes-filter"></a>
-  <div class="genesdb-filter-wrap"><!-- REQUIRED for CSS scoping -->
+  <div class="genesdb-filter-wrap">
     <form class="genes-filter" method="get" action="<?php echo $action_url; ?>">
       <div class="genes-filter__bar">
         <div class="genes-filter__row">
 
-          <!-- Top: Select Type -->
           <label class="genes-filter__field">
             <span class="genes-filter__label">Select Type</span>
             <select name="cmt_type">
@@ -106,7 +101,6 @@ add_shortcode('genes_filter', function () {
 
           <div class="genes-filter__hr">— OR —</div>
 
-          <!-- Middle row: Inheritance / Neuropathy / Chromosome -->
           <label class="genes-filter__field">
             <span class="genes-filter__label">Select Inheritance</span>
             <select name="inheritance">
@@ -130,16 +124,43 @@ add_shortcode('genes_filter', function () {
 
           <div class="genes-filter__hr">— OR —</div>
 
-          <!-- Bottom: text search -->
-          <label class="genes-filter__field genes-filter__field--search"><!-- REQUIRED for full-width rule -->
+          <label class="genes-filter__field genes-filter__field--search">
             <span class="genes-filter__label">Search by Gene, by Subtype, or by Year of Discovery</span>
-            <input type="search" name="qs" value="<?php echo esc_attr($search_text); ?>" placeholder='ex: PMP22, SORD, CMTDIG, dHMN-2C, 1999 (type "All" to show everything)'>
+            <input
+              type="search"
+              name="qs"
+              value="<?php echo esc_attr($search_text); ?>"
+              placeholder='ex: PMP22, SORD, CMTDIG, dHMN-2C, 1999 (type "All" to show everything)'
+              autocomplete="off"
+              aria-describedby="genes-filter-hint"
+            />
           </label>
 
-          <div class="genes-filter__actions">
+          <div class="genes-filter__actions" id="genes-filter-hint">
             <button type="submit" class="genes-filter__btn">APPLY FILTERS</button>
             <a class="genes-filter__link" href="<?php echo $reset_url; ?>">RESET</a>
           </div>
+
+          <?php
+          foreach ($_GET as $k => $v) {
+            if (in_array($k, ['cmt_type','inheritance','neuropathy','chromosome','qs'], true)) continue;
+            if (is_scalar($v)) {
+              printf('<input type="hidden" name="%s" value="%s">', esc_attr($k), esc_attr($v));
+            }
+          }
+          ?>
+
+          <noscript><button type="submit">Apply</button></noscript>
+
+          <script>
+          document.addEventListener('DOMContentLoaded', function () {
+            var input = document.querySelector('form.genes-filter input[name="qs"]');
+            if (!input) return;
+            input.addEventListener('search', function () {
+              if (input.value === '') window.location.href = <?php echo json_encode($reset_url); ?>;
+            });
+          });
+          </script>
 
         </div>
       </div>

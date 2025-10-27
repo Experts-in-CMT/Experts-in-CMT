@@ -10,7 +10,7 @@
 /* Base grid: mobile stacks everything */
 .genesdb-filter-wrap .genes-filter__row {
   display: grid;
-  gap: 18px;
+  gap: 16px; /* tightened slightly */
   grid-template-columns: repeat(12, minmax(0, 1fr));
   align-items: end;
 }
@@ -22,46 +22,23 @@
    Desktop layout: 2 × 2 for the selects, search full width under them
    ========================================================= */
 @media (min-width: 768px) {
-  /* Hide the “— OR —” separators on desktop */
   .genesdb-filter-wrap .genes-filter__hr { display: none; }
 
-  /* Actual DOM order in your markup:
-       1) Select Type
-       2) Select Inheritance
-       3) Select Neuropathy
-       4) Select Chromosome
-       5) Search
-  */
-
-  /* Row 1 */
-  .genesdb-filter-wrap .genes-filter__field:nth-of-type(1) {
-    grid-column: 1 / span 6; /* Select Type */
-  }
-  .genesdb-filter-wrap .genes-filter__field:nth-of-type(2) {
-    grid-column: 7 / span 6; /* Inheritance */
-  }
-
-  /* Row 2 */
-  .genesdb-filter-wrap .genes-filter__field:nth-of-type(3) {
-    grid-column: 1 / span 6; /* Neuropathy */
-  }
-  .genesdb-filter-wrap .genes-filter__field:nth-of-type(4) {
-    grid-column: 7 / span 6; /* Chromosome */
-  }
-
-  /* Search: full width under both rows */
-  .genesdb-filter-wrap .genes-filter__field--search {
-    grid-column: 1 / -1;
-  }
+  .genesdb-filter-wrap .genes-filter__field:nth-of-type(1) { grid-column: 1 / span 6; }
+  .genesdb-filter-wrap .genes-filter__field:nth-of-type(2) { grid-column: 7 / span 6; }
+  .genesdb-filter-wrap .genes-filter__field:nth-of-type(3) { grid-column: 1 / span 6; }
+  .genesdb-filter-wrap .genes-filter__field:nth-of-type(4) { grid-column: 7 / span 6; }
+  .genesdb-filter-wrap .genes-filter__field--search { grid-column: 1 / -1; }
 }
 
 /* Labels */
 .genesdb-filter-wrap .genes-filter__label {
   display: block;
-  font-weight: 600;
-  font-size: 0.95rem;
+  font-weight: 500;
+  font-size: 0.9rem; /* reduced by 1px */
   color: #1f2937;
-  margin: 0 0 8px;
+  margin: 0 0 4px 2px; /* adjusted to align visually with input text */
+  text-align: left; /* ensures left alignment */
 }
 
 /* Inputs */
@@ -71,9 +48,9 @@
   height: 44px;
   padding: 10px 14px;
   border: 1px solid #d6d9de;
-  border-radius: 10px;
+  border-radius: 12px; /* slightly more rounded to match buttons */
   background: #fff;
-  font-size: 16px;
+  font-size: 15px; /* reduced by 1px */
   line-height: 1.2;
   outline: none;
   transition: box-shadow .12s ease, border-color .12s ease;
@@ -87,51 +64,74 @@
 .genesdb-filter-wrap .genes-filter input[type="search"] { background-image: none; }
 .genesdb-filter-wrap .genes-filter select:focus,
 .genesdb-filter-wrap .genes-filter input[type="search"]:focus {
-  border-color: #7aa2ff;
-  box-shadow: 0 0 0 3px rgba(45,108,223,.15);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 20%, transparent);
 }
 
 /* Actions row */
 .genesdb-filter-wrap .genes-filter__actions {
   grid-column: 1 / -1;
   display: flex;
+  flex-wrap: wrap;
   gap: 12px;
   align-items: center;
-  justify-content: flex-start;
-}
-@media (min-width: 768px) {
-  .genesdb-filter-wrap .genes-filter__actions { justify-content: center; }
+  justify-content: center;
+  margin-top: 8px;
 }
 
-/* Buttons */
+/* Apply Button — match universal button system */
 .genesdb-filter-wrap .genes-filter__btn {
-  padding: 10px 16px;
-  min-height: 44px;
-  border: 1px solid #2d6cdf;
-  background: #2d6cdf;
-  color: #fff;
-  border-radius: 10px;
-  font-weight: 700;
-  letter-spacing: .02em;
-  cursor: pointer;
-  transition: filter .12s ease, transform .06s ease;
-}
-.genesdb-filter-wrap .genes-filter__btn:hover { filter: brightness(.96); }
-.genesdb-filter-wrap .genes-filter__btn:active { transform: translateY(1px); }
-
-.genesdb-filter-wrap .genes-filter__link {
-  color: #8b1b1b;
-  text-decoration: none;
-  border: 1px solid #f1bbbb;
-  padding: 10px 14px;
-  min-height: 44px;
-  border-radius: 10px;
-  background: #fff5f5;
+  background: transparent;
+  border: 1.5px solid var(--primary);
+  color: var(--primary);
+  border-radius: 16px;
+  padding: 0.75em 2.5em;
+  line-height: 1.5;
+  font-size: 16px;
   font-weight: 600;
-  transition: filter .12s ease, transform .06s ease;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  transition: background-color .15s ease, color .15s ease, border-color .15s ease, box-shadow .25s ease;
 }
-.genesdb-filter-wrap .genes-filter__link:hover { filter: brightness(.98); }
-.genesdb-filter-wrap .genes-filter__link:active { transform: translateY(1px); }
+.genesdb-filter-wrap .genes-filter__btn:hover,
+.genesdb-filter-wrap .genes-filter__btn:focus {
+  background-color: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
+/* Reset Button — match global button sizing + style */
+.genesdb-filter-wrap .genes-filter__link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+
+  padding: 0.75em 2.5em;      /* same as main.css buttons */
+  line-height: 1.5;
+  min-block-size: 48px;       /* ensures identical height */
+  border-radius: 16px;        /* match global radius */
+
+  border: 1.5px solid #f1bbbb;
+  background: #fff5f5;
+  color: #8b1b1b;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color .15s ease, color .15s ease, border-color .15s ease;
+}
+.genesdb-filter-wrap .genes-filter__link:hover,
+.genesdb-filter-wrap .genes-filter__link:focus {
+  background-color: #fbecec;
+  border-color: #d33;
+}
 
 /* Anchor offset */
 #genes-filter { scroll-margin-top: 90px; }

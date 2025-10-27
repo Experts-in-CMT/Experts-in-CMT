@@ -19,22 +19,27 @@ add_shortcode('dr_filter', function () {
 
     ob_start(); ?>
     <form
-      class="dr-filter"
-      role="search"
-      aria-label="Filter Dorsal Root posts"
-      aria-controls="blog"
-      action="<?php echo $action; ?>"
-      method="get"
-    >
-      <label for="dr-cat">Filter The Dorsal Root by Category</label>
-      <select id="dr-cat" name="dr_cat" onchange="this.form.submit()">
-        <option value="">All</option>
-        <?php foreach ($terms as $t): ?>
-          <option value="<?php echo esc_attr($t->slug); ?>" <?php selected($current, $t->slug); ?>>
-            <?php echo esc_html($t->name); ?>
-          </option>
-        <?php endforeach; ?>
-      </select>
+  class="dr-filter"
+  role="search"
+  aria-label="Filter Dorsal Root posts"
+  aria-controls="blog"
+  action="<?php echo $action; ?>"
+  method="get"
+>
+  <!-- Add inline style here -->
+  <label for="dr-cat" style="display:block;margin-bottom:2px;">
+    Filter The Dorsal Root by Category
+  </label>
+
+  <select id="dr-cat" name="dr_cat" onchange="this.form.submit()">
+    <option value="">All</option>
+    <?php foreach ($terms as $t): ?>
+      <option value="<?php echo esc_attr($t->slug); ?>" <?php selected($current, $t->slug); ?>>
+        <?php echo esc_html($t->name); ?>
+      </option>
+    <?php endforeach; ?>
+  </select>
+
 
       <!-- Text search (title/content + taxonomy terms via loop-side logic) -->
       <label class="screen-reader-text" for="dr-q">Search The Dorsal Root</label>
