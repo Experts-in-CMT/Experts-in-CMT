@@ -86,55 +86,109 @@ add_shortcode('genes_filter', function () {
 
   ob_start(); ?>
 
-  <a id="genes-filter"></a>
-  <div class="genesdb-filter-wrap">
-    <form class="genes-filter" method="get" action="<?php echo $action_url; ?>">
-      <div class="genes-filter__bar">
-        <div class="genes-filter__row">
+ <a id="genes-filter"></a>
+<div class="genesdb-filter-wrap">
+  <form class="genes-filter" method="get" action="<?php echo $action_url; ?>">
+    <div class="genes-filter__bar">
+      <div class="genes-filter__row">
 
-          <label class="genes-filter__field">
-            <span class="genes-filter__label">Select Type</span>
-            <select name="cmt_type">
-              <?php echo _eicmt_gf_options_html_single('cmt_type', $sel_cmt_type, 'Browse All'); ?>
-            </select>
-          </label>
+<!-- TYPE -->
+<label class="genes-filter__field">
+  <span class="genes-filter__label">Select Type</span>
+  <?php
+  $type_terms = _eicmt_gf_get_terms_ordered('cmt_type');
+  $type_curr  = isset($_GET['cmt_type']) ? (int) $_GET['cmt_type'] : 0;
+  ?>
+  <select name="cmt_type" id="gf-type" class="genes-filter__select">
+    <option value="0"<?php selected($type_curr, 0); ?>>Browse All</option>
+    <?php foreach ($type_terms as $term):
+      $tid  = is_object($term) ? (int)$term->term_id : (int)($term['term_id'] ?? 0);
+      $tobj = $tid ? get_term($tid, 'cmt_type') : null;
+      $tname = ($tobj && !is_wp_error($tobj)) ? (string)$tobj->name : '';
+    ?>
+      <option value="<?php echo $tid; ?>" <?php selected($type_curr, $tid); ?>>
+        <?php echo esc_html($tname); ?>
+      </option>
+    <?php endforeach; ?>
+  </select>
+</label>
 
-          <div class="genes-filter__hr">— OR —</div>
 
-          <label class="genes-filter__field">
-            <span class="genes-filter__label">Select Inheritance</span>
-            <select name="inheritance">
-              <?php echo _eicmt_gf_options_html_single('inheritance', $sel_inherit, 'All Inheritance'); ?>
-            </select>
-          </label>
+<!-- INHERITANCE -->
+<label class="genes-filter__field">
+  <span class="genes-filter__label">Select Inheritance</span>
+  <?php
+  $inheritance_terms = _eicmt_gf_get_terms_ordered('inheritance');
+  $inheritance_curr  = isset($_GET['inheritance']) ? (int) $_GET['inheritance'] : 0;
+  ?>
+  <select name="inheritance" id="gf-inheritance" class="genes-filter__select">
+    <option value="0"<?php selected($inheritance_curr, 0); ?>>All Inheritance</option>
+    <?php foreach ($inheritance_terms as $term):
+      $tid  = is_object($term) ? (int)$term->term_id : (int)($term['term_id'] ?? 0);
+      $tobj = $tid ? get_term($tid, 'inheritance') : null;
+      $tname = ($tobj && !is_wp_error($tobj)) ? (string)$tobj->name : '';
+    ?>
+      <option value="<?php echo $tid; ?>" <?php selected($inheritance_curr, $tid); ?>>
+        <?php echo esc_html($tname); ?>
+      </option>
+    <?php endforeach; ?>
+  </select>
+</label>
 
-          <label class="genes-filter__field">
-            <span class="genes-filter__label">Select Neuropathy</span>
-            <select name="neuropathy">
-              <?php echo _eicmt_gf_options_html_single('neuropathy', $sel_neuro, 'All Neuropathy'); ?>
-            </select>
-          </label>
+<!-- NEUROPATHY -->
+<label class="genes-filter__field">
+  <span class="genes-filter__label">Select Neuropathy</span>
+  <?php
+  $neuropathy_terms = _eicmt_gf_get_terms_ordered('neuropathy');
+  $neuropathy_curr  = isset($_GET['neuropathy']) ? (int) $_GET['neuropathy'] : 0;
+  ?>
+  <select name="neuropathy" id="gf-neuropathy" class="genes-filter__select">
+    <option value="0"<?php selected($neuropathy_curr, 0); ?>>All Neuropathy</option>
+    <?php foreach ($neuropathy_terms as $term):
+      $tid  = is_object($term) ? (int)$term->term_id : (int)($term['term_id'] ?? 0);
+      $tobj = $tid ? get_term($tid, 'neuropathy') : null;
+      $tname = ($tobj && !is_wp_error($tobj)) ? (string)$tobj->name : '';
+    ?>
+      <option value="<?php echo $tid; ?>" <?php selected($neuropathy_curr, $tid); ?>>
+        <?php echo esc_html($tname); ?>
+      </option>
+    <?php endforeach; ?>
+  </select>
+</label>
 
-          <label class="genes-filter__field">
-            <span class="genes-filter__label">Select Chromosome</span>
-            <select name="chromosome">
-              <?php echo _eicmt_gf_options_html_single('chromosome', $sel_chrom, 'All Chromosomes'); ?>
-            </select>
-          </label>
+<!-- CHROMOSOME -->
+<label class="genes-filter__field">
+  <span class="genes-filter__label">Select Chromosome</span>
+  <?php
+  $chromosome_terms = _eicmt_gf_get_terms_ordered('chromosome');
+  $chromosome_curr  = isset($_GET['chromosome']) ? (int) $_GET['chromosome'] : 0;
+  ?>
+  <select name="chromosome" id="gf-chromosome" class="genes-filter__select">
+    <option value="0"<?php selected($chromosome_curr, 0); ?>>All Chromosomes</option>
+    <?php foreach ($chromosome_terms as $term):
+      $tid  = is_object($term) ? (int) $term->term_id : (int) ($term['term_id'] ?? 0);
+      $tobj = $tid ? get_term($tid, 'chromosome') : null;
+      $tname = ($tobj && !is_wp_error($tobj)) ? (string) $tobj->name : '';
+    ?>
+      <option value="<?php echo $tid; ?>" <?php selected($chromosome_curr, $tid); ?>>
+        <?php echo esc_html($tname); ?>
+      </option>
+    <?php endforeach; ?>
+  </select>
+</label>
 
-          <div class="genes-filter__hr">— OR —</div>
 
-          <label class="genes-filter__field genes-filter__field--search">
-            <span class="genes-filter__label">Search by Gene, by Subtype, or by Year of Discovery</span>
-            <input
-              type="search"
-              name="qs"
-              value="<?php echo esc_attr($search_text); ?>"
-              placeholder='ex: PMP22, SORD, CMTDIG, dHMN-2C, 1999 (type "All" to show everything)'
-              autocomplete="off"
-              aria-describedby="genes-filter-hint"
-            />
-          </label>
+<label class="genes-filter__field genes-filter__field--search">
+  <span class="genes-filter__label">Search by Gene, by Subtype, or by Year of Discovery</span>
+  <input
+    type="search"
+    name="qs"
+    value="<?php echo esc_attr($search_text); ?>"
+    placeholder='ex: PMP22, SORD, CMTDIG, dHMN-2C, 1999 (type "All" to show everything)'
+    autocomplete="off"
+    aria-describedby="genes-filter-hint"
+  />
+</label>
 
           <div class="genes-filter__actions" id="genes-filter-hint">
             <button type="submit" class="genes-filter__btn">APPLY FILTERS</button>

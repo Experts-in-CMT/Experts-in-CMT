@@ -1840,3 +1840,60 @@ h2.wp-block-heading{
   border-top-left-radius: inherit;        /* keep rounded corners */
   border-top-right-radius: inherit;
 }
+
+/* === Genes Totals — responsive, viewport-centered === */
+.genes-totals {
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+  top: -100px; /* lifts it upward */
+  text-align: center;
+  font-weight: 600;
+  font-size: clamp(0.9rem, 1vw + 0.6rem, 1.2rem);
+  line-height: 1.3;
+  width: 100%;
+  max-width: 90vw; /* avoids overflow on small screens */
+}
+
+/* mobile tuning: lower the offset for short screens */
+@media (max-width: 600px) {
+  .genes-totals {
+    top: -60px;
+    font-size: clamp(0.9rem, 2vw + 0.6rem, 1rem);
+  }
+}
+
+.genes-totals-inline {
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: left;
+  font-family: var(--font-body, "Albert Sans", sans-serif);
+  font-weight: 500;
+  font-size: clamp(1rem, 1vw + 0.6rem, 1.25rem);
+  line-height: 1.2;   /* tightened */
+  color: var(--primary);
+  width: 100%;
+  max-width: 90vw;
+  opacity: 0.9;
+}
+
+.genes-totals-label {
+  display: block;
+  text-align: left;
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(1rem, 1vw + 0.6rem, 1.25rem);
+  color: var(--primary);
+  margin-bottom: -1.5rem;   /* closes gap */
+  opacity: 0.9;
+}
+
+
+
+@media (max-width: 600px) {
+  .genes-totals-inline {
+    font-size: clamp(0.95rem, 2vw + 0.6rem, 1.05rem);
+  }
+}
+

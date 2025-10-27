@@ -131,6 +131,29 @@ add_shortcode('genes_loop', function ($atts = []) {
 
 ob_start(); ?>
 <div id="results" class="wp-block-query dr-blog" style="scroll-margin-top:100px;">
+
+<?php
+// Totals row — uses current filters, not limited by pagination
+$__eic_ids  = eic_gl_current_post_ids();
+$__total    = count($__eic_ids);
+$__uniq     = eic_gl_count_unique_genes($__eic_ids);   // distinct gene, excluding "Unknown"
+$__unknown  = eic_gl_count_unknown_genes($__eic_ids);  // subtypes flagged via ACF toggle
+?>
+<div class="genes-totals" aria-live="polite">
+  <?php
+    echo esc_html( eic_gl_plural($__total, 'Subtype') );
+    echo ' • ';
+    echo esc_html( eic_gl_plural($__uniq, 'Gene') );
+
+    if ($__unknown > 0) {
+      echo ' • ';
+      echo esc_html( eic_gl_plural($__unknown, 'Subtype with an Unknown Gene', 'Subtypes with Unknown Genes') );
+    }
+  ?>
+</div>
+
+
+
 	<?php
 	$cards = [];
 	if ($q->have_posts()) {

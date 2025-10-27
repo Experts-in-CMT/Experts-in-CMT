@@ -276,5 +276,69 @@ This release introduces the MVP for the Genes Database display system, including
 
 
 
-Subtype pages and loops now render consistently and maintain a strict biological and clinical order regardless of default WordPress sorting behavior. The new fallback system ensures subtype templates remain active and editable, providing a durable and editor-friendly foundation for future Genes Database filtering and display logic. 
+Subtype pages and loops now render consistently and maintain a strict biological and clinical order regardless of default WordPress sorting behavior. The new fallback system ensures subtype templates remain active and editable, providing a durable and editor-friendly foundation for future Genes Database filtering and display logic.
+
+
+
+\##v0.7.0 — Release Date: 2025-10-27
+
+
+
+\*\*Genes Database Filter + Totals Integration\*\*
+
+
+
+**Summary:**
+
+
+
+This release completes the Genes Database filtering and display system, connecting \[genes\_filter] and \[genes\_loop] into a cohesive, data-driven experience. It adds ACF-based logic for subtype filtering, accurate totals output, and a flexible shortcode for global totals display. The update also refines site organization and styling consistency, aligning every component with the CMT. Curated. aesthetic while ensuring version control integrity and predictable UX.
+
+
+
+**Changes:**
+
+
+
+\- Added real-time counts and totals logic for the Genes Database with plural handling (result(s), gene(s), subtypes with unknown gene(s)).
+
+\- Introduced \[genes\_filter] refinements: fixed term-ID normalization, corrected taxonomy mapping to cmt\_type, and restored stable dropdown widths.
+
+\- Re-arranged the Genes Database filter array into a 2×2 grid with the search field repositioned in row 3, spanning the full width below the dropdowns for optimal layout balance.
+
+\- Removed per-option counts from dropdowns for a cleaner, more intuitive interface.
+
+\- Validated text-search filter functions and stabilized URL outputs—anchor behavior and query strings are now clean and reproducible.
+
+\- Implemented ACF True/False field unknown\_gene to flag subtypes with unconfirmed genes.
+
+\- Updated totals output in \[genes\_loop] to show “Subtype with an Unknown Gene” only when applicable.
+
+\- Added \[genes\_totals\_inline] shortcode for global use (footer, sidebar, standalone sections) with responsive centering.
+
+\- Matched totals typography and spacing to "CMT. Curated." styling—light weight, centered alignment, responsive sizing.
+
+\- Final beauty passes on all loops and filters: consistent padding, grid alignment, and typography across breakpoints.
+
+\- Cleared wayward JS executions from legacy scrollTo logic; implemented lightweight anchor-only navigation for filters and pagination.
+
+\- Disabled global-keyboard-nav.js (WASD navigation) site-wide to prevent editor conflicts; left script dormant for future triaging and re-enable.
+
+
+
+**Repository structure:**
+
+
+
+\- Restructured repo to include the /mu-plugins/ directory for versioning.
+
+\- Updated .gitignore to track only the active theme (twentytwentyfive) and must use utilities, excluding deprecated builds.
+
+
+
+**Result:**
+
+
+
+The Genes Database is now production-ready: filters, search, and totals operate predictably; styling is unified with the site’s brand aesthetic; and the codebase is version-controlled with a clean, durable structure for ongoing development.
 
