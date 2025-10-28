@@ -1,0 +1,179 @@
+{
+    "key": "group_footer_options",
+    "title": "Footer Options",
+    "fields": [
+        {
+            "key": "field_footer_logo",
+            "label": "Footer Logo",
+            "name": "footer_logo",
+            "aria-label": "",
+            "type": "image",
+            "instructions": "Optional logo to show in the footer.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "return_format": "id",
+            "library": "all",
+            "min_width": "",
+            "min_height": "",
+            "min_size": "",
+            "max_width": "",
+            "max_height": "",
+            "max_size": "",
+            "mime_types": "",
+            "preview_size": "medium",
+            "allow_in_bindings": 0
+        },
+        {
+            "key": "field_footer_cta_one_label",
+            "label": "CTA One Label",
+            "name": "footer_cta_one_label",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "50",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "maxlength": "",
+            "placeholder": "",
+            "allow_in_bindings": 0,
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_footer_cta_one_url",
+            "label": "CTA One URL",
+            "name": "footer_cta_one_url",
+            "aria-label": "",
+            "type": "url",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "50",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "placeholder": "https:\/\/example.com",
+            "allow_in_bindings": 0
+        },
+        {
+            "key": "field_footer_cta_two_label",
+            "label": "CTA Two Label",
+            "name": "footer_cta_two_label",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "50",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "maxlength": "",
+            "placeholder": "",
+            "allow_in_bindings": 0,
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_footer_cta_two_url",
+            "label": "CTA Two URL",
+            "name": "footer_cta_two_url",
+            "aria-label": "",
+            "type": "url",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "50",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "placeholder": "https:\/\/example.com",
+            "allow_in_bindings": 0
+        },
+        {
+            "key": "field_footer_text_left",
+            "label": "Footer Text (Left)",
+            "name": "footer_text_left",
+            "aria-label": "",
+            "type": "wysiwyg",
+            "instructions": "Rich text allowed. Good for addresses or disclaimers.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "50",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "tabs": "all",
+            "toolbar": "basic",
+            "media_upload": 0,
+            "delay": 0,
+            "allow_in_bindings": 0
+        },
+        {
+            "key": "field_footer_text_right",
+            "label": "Footer Text (Right)",
+            "name": "footer_text_right",
+            "aria-label": "",
+            "type": "wysiwyg",
+            "instructions": "Rich text allowed. Good for accreditation or small print.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "50",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "tabs": "all",
+            "toolbar": "basic",
+            "media_upload": 0,
+            "delay": 0,
+            "allow_in_bindings": 0
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "options_page",
+                "operator": "==",
+                "value": ""
+            }
+        ],
+        [
+            {
+                "param": "options_page",
+                "operator": "==",
+                "value": ""
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "hide_on_screen": "",
+    "active": true,
+    "description": "Global footer settings for this site.",
+    "show_in_rest": 0,
+    "display_title": "",
+    "modified": 1761685576
+}
