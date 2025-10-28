@@ -296,11 +296,15 @@ require_once get_stylesheet_directory() . '/inc/filters/terms-helpers.php';
 require_once get_stylesheet_directory() . '/inc/taxonomies/order-admin-terms.php';
 require_once get_stylesheet_directory() . '/inc/filters/genes-filter.php';
 
+
+
 // =========================================================
 // Load modular includes
 // =========================================================
+
 require_once get_stylesheet_directory() . '/inc/content/filters/dr-filter.php';
 require_once get_stylesheet_directory() . '/inc/content/loops/dr-posts.php';
+require_once get_stylesheet_directory() . '/inc/acf/subtype-fields.php';
 
 // Global keyboard navigation (WASD + Arrow Keys)
 wp_enqueue_script(
@@ -312,12 +316,10 @@ wp_enqueue_script(
 );
 
 
-
-
-// =========================================================
-// [context_nav] shortcode (Prev / Back / Next) — Locked Baseline
-// Experts in CMT / Dorsal Root Unified Version
-// =========================================================
+/**
+ * [context_nav] shortcode (Prev / Back / Next) — Locked Baseline
+ * Experts in CMT / Dorsal Root Unified Version
+ */
 add_shortcode('context_nav', function() {
     if (!is_singular() || is_admin()) return '';
 
@@ -352,26 +354,19 @@ add_shortcode('context_nav', function() {
         ],
     ];
 
-    // Back URL logic (archives first, with anchors for direct landings)
-    $back_url = home_url('/');
+    // Back URL logic — explicit anchors per your request
     if ($post_type === 'post') {
-        $dr_page = get_page_by_path('dorsal-root');
-        if ($dr_page instanceof WP_Post) {
-            $back_url = get_permalink($dr_page->ID);
-        } else {
-            $posts_page_id = (int) get_option('page_for_posts');
-            if ($posts_page_id) $back_url = get_permalink($posts_page_id);
-        }
-        $back_url .= '#blog';
+        $back_url = home_url('/dorsal-root/#blog');
     } elseif ($post_type === 'subtype') {
-        $archive = get_post_type_archive_link('subtype');
-        $back_url = ($archive ?: home_url('/cmt-genetics-database/')) . '#subtypes';
+        $back_url = home_url('/cmt-genetics-database/#results');
     } elseif ($post_type === 'glossary') {
-        $archive = get_post_type_archive_link('glossary');
+        $archive  = get_post_type_archive_link('glossary');
         $back_url = ($archive ?: home_url('/glossary')) . '#glossary';
     } elseif ($post_type === 'resource') {
-        $archive = get_post_type_archive_link('resource');
+        $archive  = get_post_type_archive_link('resource');
         $back_url = ($archive ?: home_url('/resources')) . '#resources';
+    } else {
+        $back_url = home_url('/');
     }
 
     // Determine previous/next IDs
@@ -565,29 +560,31 @@ add_action('admin_print_footer_scripts-edit.php', function () {
 });
 
 // Back to Top button markup + script
-add_action('wp_footer', function () { ?>
-  <button id="backToTop" class="back-to-top" aria-label="Back to top" hidden>↑ Top</button>
-  <script>
-    (function () {
-      var btn = document.getElementById('backToTop');
-      if (!btn) return;
-      var showAt = 300, ticking = false;
+add_action('wp_footer', function () {
+    ?>
+    <button id="backToTop" class="back-to-top" aria-label="Back to top" hidden>↑ Top</button>
+    <script>
+      (function () {
+        var btn = document.getElementById('backToTop');
+        if (!btn) return;
+        var showAt = 300, ticking = false;
 
-      function onScroll() {
-        if (!ticking) {
-          requestAnimationFrame(function () {
-            if (window.scrollY > showAt) {
-              btn.hidden = false; btn.classList.add('is-visible');
-            } else {
-              btn.classList.remove('is-visible'); btn.hidden = true;
-            }
-            ticking = false;
-          });
-          ticking = true;
+        function onScroll() {
+          if (!ticking) {
+            requestAnimationFrame(function () {
+              if (window.scrollY > showAt) {
+                btn.hidden = false; btn.classList.add('is-visible');
+              } else {
+                btn.classList.remove('is-visible'); btn.hidden = true;
+              }
+              ticking = false;
+            });
+            ticking = true;
+          }
         }
-      }
-      window.addEventListener('scroll', onScroll, { passive: true });
-      btn.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: 'smooth' }); });
-    })();
-  </script>
-<?php });
+        window.addEventListener('scroll', onScroll, { passive: true });
+        btn.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+      })();
+    </script>
+    <?php
+});
