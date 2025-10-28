@@ -37,3 +37,8 @@ ai1wm-backups/
 
 # Allow .gitkeep if you use them
 !uploads/.gitkeep
+
+# Whitelist ACF local JSON groups
+!acf-json/
+!acf-json/*.json
+
