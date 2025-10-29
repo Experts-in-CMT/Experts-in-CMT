@@ -67,7 +67,7 @@ if (!function_exists('eic_gl_build_base_query_args')) {
       if (!function_exists('eic_gl_search_meta_fields')) {
         // Fallback list if the theme’s function isn’t loaded yet
         function eic_gl_search_meta_fields() {
-          return ['type_classification','subtype','gene','alternate_gene_1','alternate_gene_2','alternate_gene_3','year_of_discovery'];
+          return ['type_classification','subtype','gene_symbol','alternate_gene_1','alternate_gene_2','alternate_gene_3','year_of_discovery'];
         }
       }
       foreach (eic_gl_search_meta_fields() as $key) {
@@ -168,7 +168,7 @@ if (!function_exists('eic_gl_count_unique_genes')) {
     $sql = "SELECT COUNT(DISTINCT UPPER(TRIM(pm.meta_value)))
             FROM $pm pm
             WHERE pm.post_id IN ($ids_csv)
-              AND pm.meta_key = 'gene'
+              AND pm.meta_key = 'gene_symbol'
               AND UPPER(TRIM(pm.meta_value)) <> 'UNKNOWN'";
     return (int) $wpdb->get_var($sql);
   }
@@ -192,25 +192,50 @@ if (!function_exists('eic_gl_count_unknown_genes')) {
 
 // [genes_totals_inline] — show grand totals anywhere (centered, curated aesthetic)
 add_shortcode('genes_totals_inline', function () {
-  $ids      = eic_gl_current_post_ids(['cmt_type'=>0,'inheritance'=>0,'neuropathy'=>0,'chromosome'=>0,'qs'=>'']);
-  $total    = count($ids);
-  $uniq     = eic_gl_count_unique_genes($ids);
-  $unknown  = eic_gl_count_unknown_genes($ids);
+    $ids     = eic_gl_current_post_ids(['cmt_type'=>0,'inheritance'=>0,'neuropathy'=>0,'chromosome'=>0,'qs'=>'']);
+    $total   = count($ids);
+    $uniq    = eic_gl_count_unique_genes($ids);
+    $unknown = eic_gl_count_unknown_genes($ids);
 
-  ob_start(); ?>
-  <div class="genes-totals-inline" aria-live="polite">
-    <span class="genes-totals-label">CMT. Curated.</span><br>
-    <?php
-      echo esc_html( eic_gl_plural($total, 'Subtype') );
-      echo ' • ';
-      echo esc_html( eic_gl_plural($uniq, 'Gene') );
-      if ($unknown > 0) {
+    ob_start(); ?>
+    <div class="genes-totals-inline" aria-live="polite">
+      <span class="genes-totals-label">CMT. Curated.</span><br>
+      <?php
+        echo esc_html( eic_gl_plural($total, 'Subtype') );
         echo ' • ';
-        echo esc_html( eic_gl_plural($unknown, 'Subtype with an Unknown Gene', 'Subtypes with Unknown Genes') );
-      }
-    ?>
-  </div>
-  <?php
-  return ob_get_clean();
+        echo esc_html( eic_gl_plural($uniq, 'Gene') );
+        if ($unknown > 0) {
+          echo ' • ';
+          echo esc_html( eic_gl_plural($unknown, 'Subtype with an Unknown Gene', 'Subtypes with Unknown Genes') );
+        }
+      ?>
+    </div>
+    <?php
+    return ob_get_clean();
 });
+
+// Uniqueness: 'subtype' ACF field must be unique across posts of type 'subtype'
+add_filter('acf/validate_value/name=subtype', function ($valid, $value, $field, $input) {
+    if ($valid !== true) return $valid; // honor other validation
+    $value = trim((string)$value);
+    if ($value === '') return 'Subtype is required.';
+
+    $post_id = isset($_POST['post_ID']) ? (int)$_POST['post_ID'] : 0;
+    if ($post_id && get_post_type($post_id) !== 'subtype') return $valid;
+
+    $dupe = new WP_Query([
+        'post_type'      => 'subtype',
+        'post_status'    => ['publish','pending','draft','future','private'],
+        'posts_per_page' => 1,
+        'post__not_in'   => $post_id ? [$post_id] : [],
+        'meta_query'     => [[ 'key' => 'subtype', 'value' => $value, 'compare' => '=' ]], // case-insensitive on default collations
+        'fields'         => 'ids',
+        'no_found_rows'  => true,
+    ]);
+
+    if ($dupe->have_posts()) {
+        return 'A record for this Subtype already exists. Please update the existing record instead of creating a duplicate.';
+    }
+    return true;
+}, 20, 4);
 
