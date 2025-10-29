@@ -342,3 +342,65 @@ This release completes the Genes Database filtering and display system, connecti
 
 The Genes Database is now production-ready: filters, search, and totals operate predictably; styling is unified with the site’s brand aesthetic; and the codebase is version-controlled with a clean, durable structure for ongoing development.
 
+
+
+\## v0.7.1 — Release Date: 2025-10-28
+
+\*\*Subtype Integrity + ACF PHP Migration\*\*
+
+
+
+**Data Integrity**
+
+
+
+\- Enforced one-record-per-Subtype rule.
+
+\- Added ACF validation filter in `cmtgenes-helpers.php` to prevent duplicate subtype entries before save.
+
+\- Added must-use plugin `cmtgenes-subtype-uniqueness.php` for hard-stop duplicate prevention at save time.
+
+\- Introduced SQL index `idx\_postmeta\_subtype\_unique` for rapid duplicate checks.
+
+\- Confirmed all core indexes active:  
+
+&nbsp; `idx\_postmeta\_key\_post`, `idx\_term\_relationships`, `idx\_postmeta\_subtype\_unique`.
+
+
+
+**ACF → PHP Conversion**
+
+
+
+\- Converted Subtype field group to code-registered PHP (`inc/acf/subtype-fields.php`); deactivated the old ACF UI group.
+
+\- Mapped all core meta fields to new schema (`gene → gene\_symbol`, `alternate\_gene\_#`, etc.).
+
+\- Verified all search, filter, and count logic reference updated field names.
+
+
+
+**Query + Filter Layer**
+
+
+
+\- Validated `genes-loop.php` and `genes-filter.php` under new field mapping.
+
+\- Confirmed accurate live counts and grand totals.
+
+\- Taxonomy filters (`cmt\_type`, `inheritance`, `neuropathy`, `chromosome`) verified functional and performant.
+
+
+
+**Result**
+
+
+
+\- Subtype database now structurally sound and self-validating.
+
+\- No duplicate subtype records are possible.
+
+\- Baseline version for all future subtype, gene-mapping, and admin-integrity enhancements.
+
+
+
