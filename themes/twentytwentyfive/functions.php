@@ -305,6 +305,8 @@ require_once get_stylesheet_directory() . '/inc/filters/genes-filter.php';
 require_once get_stylesheet_directory() . '/inc/content/filters/dr-filter.php';
 require_once get_stylesheet_directory() . '/inc/content/loops/dr-posts.php';
 require_once get_stylesheet_directory() . '/inc/acf/subtype-fields.php';
+require_once get_theme_file_path( 'inc/shortcodes/subtype-fields-shortcode.php' );
+
 
 // Global keyboard navigation (WASD + Arrow Keys)
 wp_enqueue_script(

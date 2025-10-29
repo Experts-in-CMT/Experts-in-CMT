@@ -1889,11 +1889,105 @@ h2.wp-block-heading{
   opacity: 0.9;
 }
 
-
-
 @media (max-width: 600px) {
   .genes-totals-inline {
     font-size: clamp(0.95rem, 2vw + 0.6rem, 1.05rem);
   }
+}
+
+/* ============================================================
+   SUBTYPE — POSITION ADJUSTMENT
+   ============================================================ */
+.eic-subtype-fields {
+  margin-top: -100px;  /* shift section upward */
+  padding-top: 0;      /* neutralize any padding if needed */
+}
+
+
+/* ============================================================
+   SUBTYPE — SECTION & TYPOGRAPHY
+   ============================================================ */
+.eic-subtype-fields { padding: .5rem 0 3.5rem; }
+.eic-block { margin: 2.5rem 0 3rem; position: relative; }
+.eic-block-title {
+  font-size: clamp(1.35rem, 1.1rem + 0.8vw, 1.6rem);
+  line-height: 1.25;
+  color: var(--primary, #174777);
+  margin: 0 0 1rem;
+}
+
+/* ============================================================
+   BLOCK SEPARATORS (EIC light blue, refined)
+   ============================================================ */
+.eic-block {
+  position: relative;
+  margin: 0 1rem .05rem;
+}
+
+/* remove the top divider from the very first block */
+.eic-block:first-of-type::before {
+  content: none;
+}
+
+/* default hidden until triggered below */
+.eic-block::before {
+  content: "";
+  display: block;
+  position: absolute;
+  top: -25px;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: var(--primary-light, #5EA0C9);
+  opacity: .5;
+}
+
+/* show dividers only between blocks, and add 25px spacing below them */
+.eic-block + .eic-block {
+  border-top: 1px solid var(--primary-light, #5EA0C9);
+  opacity: .5;
+  padding-top: 25px; /* 25px below divider */
+}
+
+
+/* ============================================================
+   FACT GRID (indented, compact vertical rhythm)
+   ============================================================ */
+.eic-facts {
+  display: grid;
+  gap: 0.25rem 2rem;   /* tighter rows, keep column space */
+  margin-left: 2.5rem;
+}
+
+@media (min-width: 900px) {
+  .eic-facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-left: 3rem;
+  }
+}
+
+.eic-fact {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;        /* smaller label/value spacing */
+  padding: 0.35rem 0;  /* closer row spacing */
+}
+
+/* Label */
+.eic-fact dt {
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  font-weight: 600;
+  color: var(--primary, #174777);
+}
+
+/* Value */
+.eic-fact dd {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.4;    /* slightly tighter line height */
+  color: var(--text, #1d2a33);
+  word-break: break-word;
 }
 

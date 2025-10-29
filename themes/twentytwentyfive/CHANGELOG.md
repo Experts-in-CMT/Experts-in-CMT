@@ -344,7 +344,7 @@ The Genes Database is now production-ready: filters, search, and totals operate 
 
 
 
-\## v0.7.1 — Release Date: 2025-10-28
+\##v0.7.1 — Release Date: 2025-10-28
 
 \*\*Subtype Integrity + ACF PHP Migration\*\*
 
