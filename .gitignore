@@ -1,4 +1,5 @@
-# --- WordPress wp-content GitIgnore (CMTA / Kenny build) ---
+# --- WordPress wp-content GitIgnore (Experts in CMT / Kenny build) ---
+
 
 # OS/editor junk
 .DS_Store
@@ -10,16 +11,16 @@ Thumbs.db
 # Ignore everything by default
 *
 
+# Ignore all other themes (put BEFORE the whitelist so it doesn't override)
+themes/*
+themes/cmtgenes/
+
 # Explicitly include only our active theme and MU plugins
 !themes/
 !themes/twentytwentyfive/
 !themes/twentytwentyfive/**
 !mu-plugins/
 !mu-plugins/**
-
-# Ignore all other themes
-themes/*
-themes/cmtgenes/
 
 # Ignore runtime junk inside themes
 themes/*/node_modules/
@@ -41,4 +42,3 @@ ai1wm-backups/
 # Whitelist ACF local JSON groups
 !acf-json/
 !acf-json/*.json
-
