@@ -8,7 +8,8 @@
  * Blocks:
  *   1. Subtype Overview
  *   2. Clinical & Genetic Context
- *   3. Key Publication(s) (+ optional Alt Publication)
+ *   3. More Info (CTA's)
+ *   4. Key Publication(s) (First required pub + (5th block) optional Alt Publication))
  *
  * @package ExpertsInCMT
  * @since 1.0
@@ -36,14 +37,25 @@ $zygosity = get_field("zygosity");
 $neuropathy = get_the_terms(get_the_ID(), "neuropathy");
 $inheritance = get_the_terms(get_the_ID(), "inheritance");
 
+/* More Info — CTA buttons */
+$research_url = trim((string) get_field("research_url"));
+$research_label = trim((string) get_field("research_label"));
+$symptoms_url = trim((string) get_field("symptoms_url"));
+$what_is_cmtx_url = trim((string) get_field("what_is_cmtx_url"));
+$what_is_intermediate_url = trim(
+    (string) get_field("what_is_intermediate_url")
+);
+
 /* Publications — Primary */
 $publication_ttl = get_field("publication_title");
+$publication_note = get_field("publication_note");
 $authors = get_field("authors");
 $pub_date = get_field("publication_date");
 $doi_url = get_field("doi_url");
 
 /* Publications — Alt */
 $alt_publication_ttl = get_field("alt_publication_title");
+$alt_publication_note = get_field("alt_publication_note");
 $alt_authors = get_field("alt_authors");
 $alt_date = get_field("alt_date"); // ACF key name is 'alt_date'
 $alt_doi_raw = get_field("alt_doi_url");
@@ -115,7 +127,7 @@ $pub_heading = $pub_count === 1 ? "Key Publication" : "Key Publications";
        BLOCK 2: CLINICAL & GENETIC CONTEXT
        ======================================================== -->
   <section class="eic-block eic-block--context">
-    <h2 class="eic-block-title">Clinical Genetic Context</h2>
+    <h2 class="eic-block-title">Genetic Context</h2>
     <dl class="eic-facts">
 
       <?php if ($gene_symbol): ?>
@@ -156,12 +168,116 @@ $pub_heading = $pub_count === 1 ? "Key Publication" : "Key Publications";
     </dl>
   </section>
 
-  <!-- ========================================================
-       BLOCK 3: KEY PUBLICATION(S)
+<?php
+/* ============================================================
+   Box 3: "More Info"
+   ============================================================ */
+
+// Gate the section if at least one CTA is available
+$has_cta =
+    !empty($symptoms_url) ||
+    !empty($research_url) ||
+    !empty($what_is_cmtx_url) ||
+    !empty($what_is_intermediate_url);
+
+if ($has_cta): ?>
+<section class="eic-block eic-block--cta">
+  <h2 class="eic-block-title">More Info</h2>
+
+  <dl class="eic-facts">
+
+    <?php if (!empty($symptoms_url)): ?>
+      <div class="eic-fact">
+        <dt>Symptoms</dt>
+        <dd>
+          <a class="dr-more"
+             href="<?php echo esc_url($symptoms_url); ?>"
+             target="_blank"
+             rel="noopener noreferrer">
+            <?php echo esc_html($subtype); ?> Symptoms
+          </a>
+        </dd>
+      </div>
+    <?php endif; ?>
+
+    <?php if (!empty($research_url)):
+        // Label fallback if custom label is empty
+
+
+        $btn_text =
+            $research_label !== ""
+                ? $research_label
+                : "View Research Opportunity";
+        // Sanitize and strip rogue <br> or HTML
+        $btn_text = trim(
+            wp_strip_all_tags(preg_replace("/<br\s*\/?>/i", "", $btn_text))
+        );
+        ?>
+      <div class="eic-fact">
+        <dt>Research Opportunity</dt>
+        <dd>
+          <a class="dr-more"
+             href="<?php echo esc_url($research_url); ?>"
+             target="_blank"
+             rel="noopener noreferrer">
+            <?php echo esc_html($btn_text); ?>
+          </a>
+        </dd>
+      </div>
+    <?php
+    endif; ?>
+
+    <?php if (!empty($what_is_cmtx_url)): ?>
+      <div class="eic-fact">
+        <dt>CMTX</dt>
+        <dd>
+          <a class="dr-more"
+             href="<?php echo esc_url($what_is_cmtx_url); ?>"
+             target="_blank"
+             rel="noopener noreferrer">
+            What is CMTX?
+          </a>
+        </dd>
+      </div>
+    <?php endif; ?>
+
+    <?php if (!empty($what_is_intermediate_url)): ?>
+      <div class="eic-fact">
+        <dt>Intermediate CMT</dt>
+        <dd>
+          <a class="dr-more"
+             href="<?php echo esc_url($what_is_intermediate_url); ?>"
+             target="_blank"
+             rel="noopener noreferrer">
+            What is Intermediate CMT?
+          </a>
+        </dd>
+      </div>
+    <?php endif; ?>
+
+  </dl>
+</section>
+<?php endif;
+?>
+
+
+
+   <!-- ========================================================
+       BLOCK 4: KEY PUBLICATION(S)
        ======================================================== -->
   <section class="eic-block eic-block--publication">
     <h2 class="eic-block-title"><?php echo esc_html($pub_heading); ?></h2>
     <dl class="eic-facts">
+
+    <?php if (!empty(trim(strip_tags($publication_note ?? "")))): ?>
+  <div class="eic-fact eic-fact--inline-note">
+    <dt class="eic-fact__label-inline">Note:</dt>
+    <dd class="eic-fact__value-inline"><?php echo wp_kses_post(
+        $publication_note
+    ); ?></dd>
+  </div>
+<?php endif; ?>
+
 
       <?php if ($publication_ttl): ?>
         <div class="eic-fact">
@@ -218,11 +334,20 @@ $pub_heading = $pub_count === 1 ? "Key Publication" : "Key Publications";
 
   <?php if ($has_alt_pub): ?>
   <!-- ========================================================
-       BLOCK 4: ALT PUBLICATION(S)
+       BLOCK 5: ALT PUBLICATION(S)
        ======================================================== -->
   <section class="eic-block eic-block--alt-publication">
-    <h2 class="eic-block-title"></h2>
     <dl class="eic-facts">
+
+    <?php if (!empty(trim(strip_tags($alt_publication_note ?? "")))): ?>
+  <div class="eic-fact eic-fact--inline-note eic-alt-publication-note">
+    <dt class="eic-fact__label-inline">Note:</dt>
+    <dd class="eic-fact__value-inline"><?php echo wp_kses_post(
+        $alt_publication_note
+    ); ?></dd>
+  </div>
+<?php endif; ?>
+
 
       <?php if ($alt_publication_ttl): ?>
         <div class="eic-fact">
@@ -248,17 +373,17 @@ $pub_heading = $pub_count === 1 ? "Key Publication" : "Key Publications";
       <?php endif; ?>
 
       <?php
-      // Normalize Alt DOI/URL
+      // Normalize DOI/URL (alt)
       $alt_doi_display = "";
       $alt_doi_href = "";
       if ($alt_doi_raw) {
-          $alt_id = trim($alt_doi_raw);
-          if (preg_match('~^https?://(dx\.)?doi\.org/(.+)$~i', $alt_id, $m)) {
+          $id = trim($alt_doi_raw);
+          if (preg_match('~^https?://(dx\.)?doi\.org/(.+)$~i', $id, $m)) {
               $alt_doi_display = $m[2];
               $alt_doi_href = $m[0];
           } else {
-              $alt_doi_display = $alt_id;
-              $alt_doi_href = "https://doi.org/" . ltrim($alt_id, "/");
+              $alt_doi_display = $id;
+              $alt_doi_href = "https://doi.org/" . ltrim($id, "/");
           }
       }
 
@@ -276,5 +401,13 @@ $pub_heading = $pub_count === 1 ? "Key Publication" : "Key Publications";
     </dl>
   </section> <!-- /eic-block--alt-publication -->
   <?php endif; ?>
+
+<?php // Footer metadata: Updated date + curator byline
+
+$updated = get_the_modified_date("F j, Y"); ?>
+<p class="eic-updated">Updated: <?php echo esc_html(
+    $updated
+); ?> | By: K. Raymond</p>
+
 
 </main>
