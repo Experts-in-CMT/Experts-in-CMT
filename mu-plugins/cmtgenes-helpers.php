@@ -4,13 +4,13 @@
  * Path: /wp-content/mu-plugins/cmtgenes-helpers.php
  *
  * NOTE: This file powers:
- *  - Inline totals (subtypes / genes / unknown)
+ *  - Inline totals (subtypes/genes/unknown)
  *  - Facet counts per taxonomy
  *  - Query ID caching with content-change invalidation
  */
 
 /* ============================================================
-   [A] SIMPLE TEXT HELPERS
+   SIMPLE TEXT HELPERS
    ============================================================ */
 if (!function_exists('eic_gl_plural')) {
   function eic_gl_plural($n, $singular, $plural = null) {
@@ -20,7 +20,7 @@ if (!function_exists('eic_gl_plural')) {
 }
 
 /* ============================================================
-   [B] CACHE VERSIONING — BUST TRANSIENTS ON CONTENT CHANGES
+   CACHE VERSIONING — BUST TRANSIENTS ON CONTENT CHANGES
    - eic_gl_ids_version(): reads numeric version from options
    - eic_gl_bump_ids_version(): bump version when subtype changes
    - Hooks on save/trashed/untrashed/deleted for 'subtype'
@@ -46,7 +46,7 @@ add_action('untrashed_post',  'eic_gl_bump_ids_version', 10, 1);
 add_action('deleted_post',    'eic_gl_bump_ids_version', 10, 1);
 
 /* ============================================================
-   [C] REQUEST SIGNATURE (FOR CACHING)
+   REQUEST SIGNATURE (FOR CACHING)
    - Only the filters we honor + a global cache 'ver' to bust on changes
    - Accepts $overrides to neutralize one filter when computing facet counts
    ============================================================ */
@@ -71,7 +71,7 @@ if (!function_exists('eic_gl_request_signature')) {
 }
 
 /* ============================================================
-   [D] BASE QUERY ARGUMENTS (MVP LOOP PARITY)
+   BASE QUERY ARGUMENTS (MVP LOOP PARITY)
    - CPT: subtype
    - Tax filters: cmt_type, inheritance, neuropathy, chromosome (term_id)
    - Search: qs across eic_gl_search_meta_fields()
@@ -143,7 +143,7 @@ if (!function_exists('eic_gl_build_base_query_args')) {
 }
 
 /* ============================================================
-   [E] CURRENT MATCHING IDS (CACHED + DEDUPED)
+   CURRENT MATCHING IDS (CACHED + DEDUPED)
    - Returns unique post IDs matching current filters (or overrides)
    - Transient key includes request signature + version
    - Dev bypass via ?nocache=1 for instant refresh while iterating
@@ -171,7 +171,7 @@ if (!function_exists('eic_gl_current_post_ids')) {
 }
 
 /* ============================================================
-   [F] FACET COUNTS FOR A TAXONOMY (STANDARD FACETING)
+   FACET COUNTS FOR A TAXONOMY (STANDARD FACETING)
    - Counts are computed with the target taxonomy neutralized
    - Returns: [term_id => count]
    ============================================================ */
@@ -210,7 +210,7 @@ if (!function_exists('eic_gl_counts_for_tax')) {
 }
 
 /* ============================================================
-   [G] UI LABEL HELPER FOR OPTIONS ("Name (n)")
+   UI LABEL HELPER FOR OPTIONS ("Name (n)")
    ============================================================ */
 if (!function_exists('eic_gl_option_label_with_count')) {
   function eic_gl_option_label_with_count($term, $counts) {
@@ -220,7 +220,7 @@ if (!function_exists('eic_gl_option_label_with_count')) {
 }
 
 /* ============================================================
-   [H] DISTINCT GENE COUNT (EXCLUDING 'UNKNOWN')
+   DISTINCT GENE COUNT (EXCLUDING 'UNKNOWN')
    - Canonical meta key: gene_symbol
    - Normalizes with TRIM + UPPER
    ============================================================ */
@@ -240,7 +240,7 @@ if (!function_exists('eic_gl_count_unique_genes')) {
 }
 
 /* ============================================================
-   [I] COUNT SUBTYPES EXPLICITLY FLAGGED AS UNKNOWN GENE
+   COUNT SUBTYPES EXPLICITLY FLAGGED AS UNKNOWN GENE
    - ACF true/false: meta_key 'unknown_gene' = '1'
    ============================================================ */
 if (!function_exists('eic_gl_count_unknown_genes')) {
@@ -259,7 +259,7 @@ if (!function_exists('eic_gl_count_unknown_genes')) {
 }
 
 /* ============================================================
-   [J] INLINE TOTALS SHORTCODE
+   INLINE TOTALS SHORTCODE
    - Usage: [genes_totals_inline]
    - Uses current filters (neutralized for grand totals in UI header)
    - Outputs: "CMT. Curated." + "X Subtypes • Y Genes • Z Subtypes with Unknown Genes"
@@ -293,7 +293,7 @@ add_shortcode('genes_totals_inline', function () {
 });
 
 /* ============================================================
-   [K] ACF VALIDATION — UNIQUE 'subtype' FIELD WITHIN CPT
+   ACF VALIDATION — UNIQUE 'subtype' FIELD WITHIN CPT
    - Enforces: the ACF 'subtype' field must be unique for post_type=subtype
    ============================================================ */
 add_filter('acf/validate_value/name=subtype', function ($valid, $value, $field, $input) {

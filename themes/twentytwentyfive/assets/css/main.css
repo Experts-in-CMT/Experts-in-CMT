@@ -1917,37 +1917,50 @@ h2.wp-block-heading{
 }
 
 /* ============================================================
-   BLOCK SEPARATORS (EIC light blue, refined)
-   ============================================================ */
+================================================================
+=====================  EIC BLOCK SEPARATORS  ===================
+================================================================
+================================================================
+===============================================================
+*/
+
 .eic-block {
   position: relative;
-  margin: 0 1rem .05rem;
+  margin: 0 1rem 0.05rem;
 }
 
-/* remove the top divider from the very first block */
+/* Remove the top divider from the very first block */
 .eic-block:first-of-type::before {
   content: none;
 }
 
-/* default hidden until triggered below */
+/* Centered hairline before each block (appears automatically) */
 .eic-block::before {
   content: "";
-  display: block;
   position: absolute;
-  top: -25px;
-  left: 0;
-  width: 100%;
+  top: -2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 24rem;
   height: 1px;
-  background: var(--primary-light, #5EA0C9);
-  opacity: .5;
+  background-color: var(--primary, #174777);
+  opacity: 0.25;
+  pointer-events: none;
 }
 
-/* show dividers only between blocks, and add 25px spacing below them */
+/* Show dividers only between blocks, and keep spacing clean */
 .eic-block + .eic-block {
-  border-top: 1px solid var(--primary-light, #5EA0C9);
-  opacity: .5;
-  padding-top: 25px; /* 25px below divider */
+  border-top: 0;           /* disable old top border divider */
+  padding-top: 2.5rem;     /* consistent vertical rhythm */
+  opacity: 1;
 }
+
+/* Disable any legacy HR hairline variants to prevent double lines */
+.eic-separator--hairline,
+.eic-separator--hairline.eic-separator--pub {
+  display: none !important;
+}
+
 
 
 /* ============================================================
@@ -1955,7 +1968,7 @@ h2.wp-block-heading{
    ============================================================ */
 .eic-facts {
   display: grid;
-  gap: 0.25rem 2rem;   /* tighter rows, keep column space */
+  gap: 0.25rem 2rem;           /* tighter rows, keep column space */
   margin-left: 2.5rem;
 }
 
@@ -1966,28 +1979,71 @@ h2.wp-block-heading{
   }
 }
 
+/* ============================================================
+   FACT ITEM — Base style for each field pair
+   ============================================================ */
 .eic-fact {
   display: flex;
-  flex-direction: column;
-  gap: 0.25rem;        /* smaller label/value spacing */
-  padding: 0.35rem 0;  /* closer row spacing */
+  flex-direction: column;      /* default: label above value */
+  gap: 0.25rem;                /* smaller label/value spacing */
+  padding: 0.35rem 0;          /* consistent vertical rhythm */
 }
 
-/* Label */
+/* Label (dt) */
 .eic-fact dt {
   font-size: 0.9rem;
   text-transform: uppercase;
   letter-spacing: 0.02em;
   font-weight: 600;
   color: var(--primary, #174777);
+  margin: 0;
 }
 
-/* Value */
+/* Value (dd) */
 .eic-fact dd {
   margin: 0;
   font-size: 1rem;
-  line-height: 1.4;    /* slightly tighter line height */
+  line-height: 1.4;
   color: var(--text, #1d2a33);
   word-break: break-word;
 }
+
+/* ============================================================
+   DOI FACT (stacked label + link, consistent rhythm)
+   ============================================================ */
+.eic-fact--doi {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;        /* same vertical rhythm as other facts */
+  padding: 0.35rem 0;  /* consistent spacing */
+}
+
+.eic-fact--doi dt {
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  font-weight: 600;
+  color: var(--primary, #174777);
+  margin: 0;
+}
+
+.eic-fact--doi dd {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.4;
+  color: var(--text, #1d2a33);
+}
+
+.eic-fact--doi dd a {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+
+/* Normalize WYSIWYG spacing inside values */
+.eic-fact dd p { margin: 0; }                 /* kill default p margins */
+.eic-fact dd p + p { margin-top: 0.35rem; }   /* controlled paragraph gap */
+.eic-fact dd a { text-underline-offset: 2px; }/* keep link look consistent */
 
