@@ -243,13 +243,27 @@ add_action(
     1001
 );
 
-/**
- * Register header banner from /blocks/header-banner/block.json
- * (Close this callback right after the register call.)
- */
-add_action("init", function () {
+// =========================================================
+// Load Glossary CPT + Taxonomies + Fields (must load early for ACF visibility)
+// =========================================================
+
+// Register the Glossary post type
+require_once get_stylesheet_directory() . '/inc/cpt/glossary.php';
+
+// Register the hidden Glossary Letter taxonomy (A–Z, 0–9 autosync)
+require_once get_stylesheet_directory() . '/inc/taxonomies/glossary-letter.php';
+
+// Register Glossary ACF field group (Canonical Term, Short Definition, etc.)
+require_once get_stylesheet_directory() . '/inc/acf/glossary-fields.php';
+
+
+
+// =========================================================
+// Register header banner from /blocks/header-banner/block.json
+// =========================================================
+add_action( 'init', function() {
     register_block_type_from_metadata(
-        get_template_directory() . "/blocks/header-banner"
+        get_template_directory() . '/blocks/header-banner'
     );
 });
 
@@ -378,6 +392,9 @@ require_once get_stylesheet_directory() . "/inc/content/filters/dr-filter.php";
 require_once get_stylesheet_directory() . "/inc/content/loops/dr-posts.php";
 require_once get_stylesheet_directory() . "/inc/acf/subtype-fields.php";
 require_once get_theme_file_path("inc/shortcodes/subtype-fields-shortcode.php");
+require_once get_theme_file_path('inc/shortcodes/glossary-fields-shortcode.php');
+require_once get_stylesheet_directory() . '/inc/content/loops/glossary-loop.php';
+
 
 // Global keyboard navigation (WASD + Arrow Keys)
 wp_enqueue_script(
@@ -435,12 +452,12 @@ add_shortcode("context_nav", function () {
     // Back URL logic — explicit anchors per your request
     if ($post_type === "post") {
         $back_url = home_url("/dorsal-root/#blog");
-    } elseif ($post_type === "subtype") {
-        $back_url = home_url("/cmt-genetics-database/#results");
-    } elseif ($post_type === "glossary") {
-        $archive = get_post_type_archive_link("glossary");
-        $back_url = ($archive ?: home_url("/glossary")) . "#glossary";
-    } elseif ($post_type === "resource") {
+   } elseif ( $post_type === 'subtype' ) {
+    $back_url = home_url( '/cmt-genetics-database/#results' );
+} elseif ( $post_type === 'glossary' ) {
+    // Match subtype behavior: go to the glossary PAGE, not the CPT archive, and use #results
+    $back_url = home_url( '/cmt-words/#results' );
+} elseif ( $post_type === 'resource' ) {
         $archive = get_post_type_archive_link("resource");
         $back_url = ($archive ?: home_url("/resources")) . "#resources";
     } else {

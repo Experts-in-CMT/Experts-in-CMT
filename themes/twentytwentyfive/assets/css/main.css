@@ -2464,3 +2464,14 @@ h2.wp-block-heading {
 .eic-fact dd a {
   font-family: inherit;
 }
+
+/* Glossary — Source button alignment + spacing */
+.eic-glossary-fields { margin-top: 1.25rem; }
+.eic-glossary-source { display: flex; justify-content: center; }
+.eic-glossary-source .dr-more { margin-top: 0.25rem; }
+
+/* Kill TT25 blockGap on the first child from shortcode output */
+:where(.wp-site-blocks) .eic-glossary-fields > *:first-child { 
+  margin-block-start: 0 !important; 
+}
+
