@@ -108,6 +108,13 @@
                 "operator": "==",
                 "value": "subtype"
             }
+        ],
+        [
+            {
+                "param": "post_type",
+                "operator": "==",
+                "value": "glossary"
+            }
         ]
     ],
     "menu_order": 999,
@@ -120,5 +127,5 @@
     "description": "",
     "show_in_rest": 0,
     "display_title": "",
-    "modified": 1761686473
+    "modified": 1761937739
 }
