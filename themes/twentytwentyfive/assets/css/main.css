@@ -2466,12 +2466,140 @@ h2.wp-block-heading {
 }
 
 /* Glossary — Source button alignment + spacing */
-.eic-glossary-fields { margin-top: 1.25rem; }
-.eic-glossary-source { display: flex; justify-content: center; }
-.eic-glossary-source .dr-more { margin-top: 0.25rem; }
-
-/* Kill TT25 blockGap on the first child from shortcode output */
-:where(.wp-site-blocks) .eic-glossary-fields > *:first-child { 
-  margin-block-start: 0 !important; 
+.eic-glossary-fields {
+  margin-top: 1.25rem;
+}
+.eic-glossary-source {
+  display: flex;
+  justify-content: center;
+}
+.eic-glossary-source .dr-more {
+  margin-top: 0.25rem;
 }
 
+/* Kill TT25 blockGap on the first child from shortcode output */
+:where(.wp-site-blocks) .eic-glossary-fields > *:first-child {
+  margin-block-start: 0 !important;
+}
+
+/* =========================================================
+   SEARCH SHORTCODE — PARITY WITH GENES
+   ========================================================= */
+
+/* ========== Layout & Container ========== */
+.site-searchwrap {
+  max-width: 980px; /* overall container width */
+  margin: 16px auto 0; /* top spacing + centered */
+  padding: 0 12px; /* slight horizontal breathing room */
+}
+
+.site-searchwrap .site-search__bar {
+  max-width: 720px; /* matches Genes filter width */
+  margin-inline: auto; /* centers inner form */
+}
+
+.site-searchwrap .site-search__row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px; /* space between rows */
+  align-items: end;
+}
+
+/* ========== Label & Input Field ========== */
+.site-searchwrap .site-search__label {
+  display: block;
+  margin: 0 0 6px 2px;
+  line-height: 1.25;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #1f2937; /* neutral dark gray */
+}
+
+.site-searchwrap .site-search input[type="search"] {
+  height: 46px;
+  padding: 10px 14px;
+  border: 1.5px solid #d6d9de;
+  border-radius: 14px;
+  background: #fff;
+  font-size: 15px;
+  line-height: 1.2;
+  outline: none;
+  transition: box-shadow 0.12s, border-color 0.12s;
+}
+
+/* placeholder text styling */
+.site-searchwrap .site-search input[type="search"]::placeholder {
+  color: #9aa2af;
+  font-size: 14px;
+}
+
+/* focus ring (blue glow) */
+.site-searchwrap .site-search input[type="search"]:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 22%, transparent);
+}
+
+/* ========== Action Buttons Row ========== */
+.site-searchwrap .site-search__actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px; /* space between buttons */
+  margin-top: 8px;
+}
+
+/* ========== Button Base (shared) ========== */
+.site-searchwrap .site-search__btn,
+.site-searchwrap .site-search__reset {
+  box-sizing: border-box; /* fixes anchor vs button height drift */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  height: 44px; /* fixed height for perfect alignment */
+  padding: 0 2em; /* horizontal padding only */
+  border-radius: 14px;
+
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s,
+    box-shadow 0.25s;
+}
+
+/* ========== Primary Button (SEARCH) ========== */
+.site-searchwrap .site-search__btn {
+  border: 1px solid var(--primary);
+  background: #fff;
+  color: var(--primary);
+}
+
+.site-searchwrap .site-search__btn:hover,
+.site-searchwrap .site-search__btn:focus {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
+/* ========== Secondary Button (RESET) ========== */
+.site-searchwrap .site-search__reset {
+  border: 1.5px solid #f1bbbb;
+  background: #fff5f5;
+  color: #8b1b1b;
+}
+
+.site-searchwrap .site-search__reset:hover,
+.site-searchwrap .site-search__reset:focus {
+  background: #fbecec;
+  border-color: #d33;
+}
+
+/* ========== WordPress / Gutenberg Adjustment ========== */
+.wp-block-shortcode .site-searchwrap {
+  margin-top: 8px; /* tighten extra space added by block */
+}

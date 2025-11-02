@@ -434,7 +434,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	<?php if (empty($rows)): ?>
 		<div id="genes-no-results" class="dr-row dr-row--empty"
 			style="
-				margin: -100px auto 64px auto;
+				margin: 0px auto 64px auto;
 				display: flex;
 				justify-content: center;
 				align-items: flex-start;

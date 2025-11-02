@@ -1,190 +1,201 @@
 <?php
 /**
  * Glossary Loop (Shortcode)
- * Renders a paginated grid of Glossary terms with title-only search,
- * alpha-range filtering (A–E, F–J, K–O, P–T, U–Z, 0–9), and uniform cards.
+ * Genes-loop parity: sort-only toolbar, no search, genes-style DOM/classes.
  *
  * Shortcode: [glossary_loop]
  *
  * @package ExpertsInCMT
  */
 
-if (!defined('ABSPATH')) {
+if (!defined("ABSPATH")) {
     exit();
 }
 
-add_shortcode('glossary_loop', function ($atts = []) {
-    // ----------------------------
-    // Resolve URL + query params
-    // ----------------------------
-    $qs    = isset($_GET['qs']) ? trim((string) wp_unslash($_GET['qs'])) : '';
-    $alpha = isset($_GET['alpha']) ? strtoupper(trim((string) wp_unslash($_GET['alpha']))) : '';
-    $paged = isset($_GET['g_paged']) ? max(1, (int) $_GET['g_paged']) : max(1, get_query_var('paged'));
+add_shortcode("glossary_loop", function ($atts = []) {
+    // --------------------------------
+    // Query params
+    // --------------------------------
+    $alpha = isset($_GET["alpha"])
+        ? strtoupper(trim((string) wp_unslash($_GET["alpha"])))
+        : "";
+    $paged = isset($_GET["g_paged"])
+        ? max(1, (int) $_GET["g_paged"])
+        : max(1, (int) get_query_var("paged"));
 
-    // Base page URL (no query), for reset links
+    // Capture search text so it’s defined everywhere below
+    $qs = isset($_GET["qs"]) ? trim((string) wp_unslash($_GET["qs"])) : "";
+
+    // Base page URL (canonical; no query)
     $page_url = get_permalink();
     if (!$page_url) {
-        $page_url = home_url(add_query_arg([], $GLOBALS['wp']->request));
+        $page_url = home_url(add_query_arg([], $GLOBALS["wp"]->request));
     }
 
-    // Append #results anchor helper
-    $with_anchor = function ($url) {
-        if (strpos($url, '#results') === false) {
-            $url .= '#results';
-        }
-        return $url;
+    $with_results_anchor = function (string $url): string {
+        return strpos($url, "#results") === false ? $url . "#results" : $url;
     };
 
-    // ----------------------------
-    // Map alpha ranges to terms
-    // ----------------------------
+    // --------------------------------
+    // Alpha map (hidden taxonomy: glossary_letter)
+    // --------------------------------
     $alpha_map = [
-        'AE' => range('A', 'E'),
-        'FJ' => range('F', 'J'),
-        'KO' => range('K', 'O'),
-        'PT' => range('P', 'T'),
-        'UZ' => range('U', 'Z'),
-        '09' => ['0-9'],
+        "AE" => range("A", "E"),
+        "FJ" => range("F", "J"),
+        "KO" => range("K", "O"),
+        "PT" => range("P", "T"),
+        "UZ" => range("U", "Z"),
+        "09" => ["0-9"],
     ];
-    $alpha_terms = [];
-    if ($alpha && isset($alpha_map[$alpha])) {
-        $alpha_terms = $alpha_map[$alpha];
-    }
+    $alpha_terms =
+        $alpha && isset($alpha_map[$alpha]) ? $alpha_map[$alpha] : [];
 
-    // ----------------------------
-    // Build query
-    // ----------------------------
+    // --------------------------------
+    // Build WP_Query
+    // --------------------------------
     $args = [
-        'post_type'      => 'glossary',
-        'post_status'    => 'publish',
-        'orderby'        => 'title',
-        'order'          => 'ASC',
-        'posts_per_page' => 12,
-        'paged'          => $paged,
+        "post_type" => "glossary", // CPT lock
+        "post_status" => "publish",
+        "orderby" => "title",
+        "order" => "ASC",
+        "posts_per_page" => 12,
+        "paged" => $paged,
     ];
 
-    // Title-only search for THIS query
-    $remove_filter = null;
-    if ($qs !== '') {
-        $args['s'] = $qs;
+    // Title OR (canonical_term OR synonyms) when qs present
+    $remove_filters = null;
+    if ($qs !== "") {
+        global $wpdb;
+        $like = "%" . $wpdb->esc_like($qs) . "%";
 
-        $title_only_cb = function ($search, \WP_Query $q) {
-            global $wpdb;
-            if ($q->get('post_type') === 'glossary' && $q->get('s') !== '') {
-                $like   = '%' . $wpdb->esc_like($q->get('s')) . '%';
-                $search = $wpdb->prepare(" AND {$wpdb->posts}.post_title LIKE %s ", $like);
+        // LEFT JOIN postmeta (alias: gmeta) so title-only matches still work
+        $join_cb = function ($join) use ($wpdb) {
+            if (strpos($join, "JOIN {$wpdb->postmeta} AS gmeta") === false) {
+                $join .= " LEFT JOIN {$wpdb->postmeta} AS gmeta ON ({$wpdb->posts}.ID = gmeta.post_id) ";
             }
-            return $search;
+            return $join;
         };
-        add_filter('posts_search', $title_only_cb, 10, 2);
+        add_filter("posts_join", $join_cb, 10, 1);
 
-        // Ensure we remove it after our custom query
-        $remove_filter = function () use ($title_only_cb) {
-            remove_filter('posts_search', $title_only_cb, 10);
+        // WHERE: title LIKE OR (meta_key in [canonical_term, synonyms] AND meta_value LIKE)
+        $where_cb = function ($where) use ($wpdb, $like) {
+            $where .= $wpdb->prepare(
+                " AND (
+                {$wpdb->posts}.post_title LIKE %s
+                OR (gmeta.meta_key IN ('canonical_term','synonyms') AND gmeta.meta_value LIKE %s)
+            )",
+                $like,
+                $like
+            );
+            return $where;
         };
+        add_filter("posts_where", $where_cb, 10, 1);
 
-        // NOTE: intentionally no meta_query here (reverted to working behavior)
+        // Avoid duplicates if both meta rows match
+        $distinct_cb = function ($distinct) {
+            return "DISTINCT";
+        };
+        add_filter("posts_distinct", $distinct_cb, 10, 1);
+
+        // One-stop cleanup
+        $remove_filters = function () use ($join_cb, $where_cb, $distinct_cb) {
+            remove_filter("posts_join", $join_cb, 10);
+            remove_filter("posts_where", $where_cb, 10);
+            remove_filter("posts_distinct", $distinct_cb, 10);
+        };
     }
-
-    // Alpha letter tax filter (hidden taxonomy, pre-indexed)
     if (!empty($alpha_terms)) {
-        $args['tax_query'] = [
+        $args["tax_query"] = [
             [
-                'taxonomy' => 'glossary_letter',
-                'field'    => 'name',
-                'terms'    => $alpha_terms,
-                'operator' => 'IN',
+                "taxonomy" => "glossary_letter",
+                "field" => "name",
+                "terms" => $alpha_terms,
+                "operator" => "IN",
             ],
         ];
     }
 
-    // ----------------------------
-    // Run query
-    // ----------------------------
+    // Run query and clean up our temporary filters
     $q = new WP_Query($args);
+    if ($remove_filters) {
+        $remove_filters();
+    }
+
     if ($remove_filter) {
         $remove_filter();
     }
 
-    // Build pagination base that preserves filters
+    // Pagination base that preserves filters
     $page_base = add_query_arg(
         array_filter([
-            'qs'    => $qs !== '' ? $qs : null,
-            'alpha' => $alpha !== '' ? $alpha : null,
+            "alpha" => $alpha !== "" ? $alpha : null,
+            "qs" => $qs !== "" ? $qs : null,
         ]),
         $page_url
     );
 
-    // ----------------------------
+    // --------------------------------
     // Helpers
-    // ----------------------------
-    $get_img = function ($post_id) {
-        $img_id = (int) get_field('term_image', $post_id);
+    // --------------------------------
+    $get_fallback_img = function (int $post_id): string {
+        $img_id = (int) get_field("term_image", $post_id);
         if ($img_id) {
-            $alt_override = trim((string) get_field('alt_text_override', $post_id));
-            $alt = $alt_override !== ''
-                ? $alt_override
-                : trim((string) get_post_meta($img_id, '_wp_attachment_image_alt', true));
-            $html = wp_get_attachment_image($img_id, 'medium', false, [
-                'alt'      => esc_attr($alt ?: get_the_title($post_id)),
-                'class'    => 'dr-card__media',
-                'loading'  => 'lazy',
-                'decoding' => 'async',
+            $alt_override = trim(
+                (string) get_field("alt_text_override", $post_id)
+            );
+            $alt =
+                $alt_override !== ""
+                    ? $alt_override
+                    : trim(
+                        (string) get_post_meta(
+                            $img_id,
+                            "_wp_attachment_image_alt",
+                            true
+                        )
+                    );
+            $html = wp_get_attachment_image($img_id, "large", false, [
+                "alt" => esc_attr($alt ?: get_the_title($post_id)),
+                "class" => "dr-card__media",
+                "loading" => "lazy",
+                "decoding" => "async",
             ]);
             if ($html) {
                 return $html;
             }
         }
-        // Fallback empty box keeps card heights uniform
         return '<div class="dr-card__media dr-card__media--empty" aria-hidden="true"></div>';
     };
 
-    // ----------------------------
-    // Render (markup aligned to Genes)
-    // ----------------------------
     ob_start();
     ?>
 
-  <div id="results" class="wp-block-query dr-blog" style="scroll-margin-top:100px;">
-
-    <!-- Build genes-style action URL that includes #results -->
-    <?php
-      $anchor     = 'results';
-      $base       = strtok($_SERVER['REQUEST_URI'], '?'); // current path without query
-      $action_url = esc_url($base . '#' . $anchor);
-    ?>
-
-    <!-- Toolbar: mirror Genes container/classes; keep existing behavior/fields -->
+    <!-- Toolbar (genes-style) -->
     <div class="genes-sort genes-sort--results">
-      <form class="genes-sort__form" method="get" action="<?php echo $action_url; ?>">
-        <div class="genes-filter__row">
-          <input
-            type="text"
-            name="qs"
-            value="<?php echo esc_attr($qs); ?>"
-            class="genes-filter__search"
-            placeholder="Common Words Search..."
-            inputmode="search"
-            aria-label="Search glossary by word"
-          />
+      <form class="genes-sort__form" method="get" action="<?php echo esc_url(
+          $page_url
+      ); ?>">
+        <span class="genes-sort__label">Sort by</span>
+        <select name="alpha" class="genes-sort__select" aria-label="Filter by starting letter range">
+          <option value="">All (A–Z)</option>
+          <option value="AE" <?php selected($alpha, "AE"); ?>>A–E</option>
+          <option value="FJ" <?php selected($alpha, "FJ"); ?>>F–J</option>
+          <option value="KO" <?php selected($alpha, "KO"); ?>>K–O</option>
+          <option value="PT" <?php selected($alpha, "PT"); ?>>P–T</option>
+          <option value="UZ" <?php selected($alpha, "UZ"); ?>>U–Z</option>
+          <option value="09" <?php selected($alpha, "09"); ?>>0–9</option>
+        </select>
 
-          <select name="alpha" class="genes-filter__select" aria-label="Filter by starting letter range">
-            <option value="">All (A–Z)</option>
-            <option value="AE" <?php selected($alpha, 'AE'); ?>>A–E</option>
-            <option value="FJ" <?php selected($alpha, 'FJ'); ?>>F–J</option>
-            <option value="KO" <?php selected($alpha, 'KO'); ?>>K–O</option>
-            <option value="PT" <?php selected($alpha, 'PT'); ?>>P–T</option>
-            <option value="UZ" <?php selected($alpha, 'UZ'); ?>>U–Z</option>
-            <option value="09" <?php selected($alpha, '09'); ?>>0–9</option>
-          </select>
-
-          <button type="submit" class="genes-filter__submit">Search</button>
-         <a class="genes-filter__reset genes-sort__clear" href="<?php echo esc_url($page_url); ?>">Reset</a>
-
-        </div>
+        <a class="genes-sort__clear"
+           href="<?php echo esc_url(
+               $with_results_anchor(
+                   remove_query_arg(["alpha", "g_paged"], $page_url)
+               )
+           ); ?>">
+          CLEAR
+        </a>
       </form>
 
-  <script>
+<script>
 document.addEventListener('DOMContentLoaded', function () {
   const form = document.querySelector('.genes-sort__form');
   if (!form) return;
@@ -229,154 +240,219 @@ document.addEventListener('DOMContentLoaded', function () {
 
     </div>
 
-    <?php if ($q->have_posts()): ?>
+    <!-- Results container (genes-style wrapper) -->
+    <div id="results" class="wp-block-query dr-blog" style="scroll-margin-top:100px;">
 
-      <?php
-      // ============================================================
-      // Build cards first (Genes/Subtype structure applied to Glossary)
-      // ============================================================
-      $cards = [];
-      while ($q->have_posts()) {
-          $q->the_post();
-          $pid = get_the_ID();
+      <?php if ($q->have_posts()): ?>
 
-          ob_start();
-          ?>
-          <article class="dr-card wp-block-post">
-            <?php if (has_post_thumbnail()): ?>
-              <a class="wp-block-post-featured-image" href="<?php the_permalink(); ?>">
-                <?php the_post_thumbnail('large', [
-                    'loading'  => 'lazy',
-                    'decoding' => 'async',
-                ]); ?>
-              </a>
-            <?php else: ?>
-              <!-- Fallback for cards without a featured image -->
-              <a class="wp-block-post-featured-image is-placeholder" href="<?php the_permalink(); ?>">
-                <?php echo $get_img($pid); ?>
-              </a>
-            <?php endif; ?>
+        <?php
+        // Build cards (genes/subtype card skeleton)
+        $cards = [];
+        while ($q->have_posts()) {
 
-            <h2 class="wp-block-post-title">
-              <a href="<?php the_permalink(); ?>"><?php the_title(); ?></a>
-            </h2>
+            $q->the_post();
+            $pid = get_the_ID();
 
-            <div class="wp-block-post-excerpt">
-              <p>
-                <?php
-                $short = trim((string) get_field('short_definition', $pid));
-                if ($short !== '') {
-                    echo esc_html($short);
-                } else {
-                    echo esc_html(
-                        wp_trim_words(
-                            wp_strip_all_tags(get_post_field('post_content', $pid)),
-                            28,
-                            ' …'
-                        )
-                    );
-                }
-                ?>
-              </p>
+            ob_start();
+            ?>
+            <article class="dr-card wp-block-post">
+              <?php if (has_post_thumbnail()): ?>
+                <a class="wp-block-post-featured-image" href="<?php the_permalink(); ?>">
+                  <?php the_post_thumbnail("large", [
+                      "loading" => "lazy",
+                      "decoding" => "async",
+                  ]); ?>
+                </a>
+              <?php else: ?>
+                <a class="wp-block-post-featured-image is-placeholder" href="<?php the_permalink(); ?>">
+                  <?php echo $get_fallback_img($pid); ?>
+                </a>
+              <?php endif; ?>
 
-              <a class="wp-block-read-more" href="<?php the_permalink(); ?>">Definition</a>
+              <h2 class="wp-block-post-title">
+                <a href="<?php the_permalink(); ?>"><?php the_title(); ?></a>
+              </h2>
 
-              <div class="wp-block-post-date" style="text-align:center; margin-top:12px;">
-                <small>Update: <?php echo esc_html(get_the_modified_date(get_option('date_format'))); ?></small>
+              <div class="wp-block-post-excerpt">
+                <p>
+                  <?php
+                  $short = trim((string) get_field("short_definition", $pid));
+                  if ($short !== "") {
+                      echo esc_html($short);
+                  } else {
+                      echo esc_html(
+                          wp_trim_words(
+                              wp_strip_all_tags(
+                                  get_post_field("post_content", $pid)
+                              ),
+                              28,
+                              " …"
+                          )
+                      );
+                  }
+                  ?>
+                </p>
+
+                <a class="wp-block-read-more" href="<?php the_permalink(); ?>">Definition</a>
+
+                <div class="wp-block-post-date" style="text-align:center;margin-top:12px;">
+                  <small>Update: <?php echo esc_html(
+                      get_the_modified_date(get_option("date_format"))
+                  ); ?></small>
+                </div>
+
+                <div class="wp-block-spacer" style="height:20px;" aria-hidden="true"></div>
               </div>
+            </article>
+            <?php $cards[] = ob_get_clean();
+        }
+        wp_reset_postdata();
 
-              <div style="height:20px;" aria-hidden="true" class="wp-block-spacer"></div>
+        // Chunk into rows of 3 (genes grid pattern)
+        $rows = array_chunk($cards, 3);
+        $total_rows = count($rows);
+        ?>
+
+        <div class="dr-grid">
+          <?php foreach ($rows as $i => $items): ?>
+            <?php
+            $is_last = $i === $total_rows - 1;
+            $count = count($items);
+            ?>
+            <div class="dr-row<?php echo $is_last
+                ? " dr-row--last"
+                : ""; ?>" <?php echo $is_last
+    ? 'data-count="' . (int) $count . '"'
+    : ""; ?>>
+              <?php echo implode("", $items); ?>
             </div>
-          </article>
-          <?php
-          $cards[] = ob_get_clean();
+          <?php endforeach; ?>
+        </div>
+
+        <?php
+        // Pagination (genes-style wrapper/classes)
+        $total_pages = max(1, (int) $q->max_num_pages);
+        if ($total_pages > 1) {
+            $current = max(1, (int) $paged);
+
+            // Preserve alpha; set g_paged; always include #results
+            $page_url_fn = function (int $n) use (
+                $page_base,
+                $with_results_anchor
+            ): string {
+                $qs = ["g_paged" => $n];
+                return $with_results_anchor(
+                    esc_url(add_query_arg($qs, $page_base))
+                );
+            };
+
+            $items = [];
+            if ($current > 1) {
+                $items[] =
+                    '<li><a class="prev page-numbers" href="' .
+                    $page_url_fn($current - 1) .
+                    '">« Prev</a></li>';
+            } else {
+                $items[] =
+                    '<li><span class="prev page-numbers">« Prev</span></li>';
+            }
+
+            $end = $total_pages;
+            $start = max(1, $current - 2);
+            $stop = min($end, $current + 2);
+
+            if ($start > 1) {
+                $items[] =
+                    '<li><a class="page-numbers" href="' .
+                    $page_url_fn(1) .
+                    '">1</a></li>';
+                if ($start > 2) {
+                    $items[] =
+                        '<li><span class="page-numbers dots">…</span></li>';
+                }
+            }
+            for ($i = $start; $i <= $stop; $i++) {
+                if ($i === $current) {
+                    $items[] =
+                        '<li><span class="page-numbers current">' .
+                        $i .
+                        "</span></li>";
+                } else {
+                    $items[] =
+                        '<li><a class="page-numbers" href="' .
+                        $page_url_fn($i) .
+                        '">' .
+                        $i .
+                        "</a></li>";
+                }
+            }
+            if ($stop < $end) {
+                if ($stop < $end - 1) {
+                    $items[] =
+                        '<li><span class="page-numbers dots">…</span></li>';
+                }
+                $items[] =
+                    '<li><a class="page-numbers" href="' .
+                    $page_url_fn($end) .
+                    '">' .
+                    $end .
+                    "</a></li>";
+            }
+            if ($current < $total_pages) {
+                $items[] =
+                    '<li><a class="next page-numbers" href="' .
+                    $page_url_fn($current + 1) .
+                    '">Next »</a></li>';
+            } else {
+                $items[] =
+                    '<li><span class="next page-numbers">Next »</span></li>';
+            }
+
+            echo '<nav class="wp-block-query-pagination"><ul class="page-numbers">' .
+                implode("", $items) .
+                "</ul></nav>";
+        }
+        ?>
+
+      <?php else: ?>
+        <div id="genes-no-results" class="dr-row dr-row--empty"
+             style="margin:0 auto 64px auto;display:flex;justify-content:center;align-items:flex-start;max-width:700px;width:100%;">
+          <p style="font-size:1.1rem;color:#333;text-align:left;">
+            No Matching Glossary Entries Were Found<br>
+          </p>
+        </div>
+      <?php endif; ?>
+
+    </div><!-- /#results -->
+
+    <script>
+    // Genes-style behavior: auto-submit on alpha change and keep #results
+    document.addEventListener('DOMContentLoaded', function () {
+      const form = document.querySelector('.genes-sort__form');
+      if (!form) return;
+
+      // Auto-submit when alpha changes
+      const alpha = form.querySelector('select[name="alpha"]');
+      if (alpha) {
+        alpha.addEventListener('change', function () {
+          const params = new URLSearchParams(new FormData(form));
+          params.delete('g_paged'); // reset pagination
+          const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '') + '#results';
+          window.location.assign(newUrl);
+        });
       }
-      wp_reset_postdata();
 
-      // Chunk into rows of 3 (mirror Genes grid structure)
-      $rows = array_chunk($cards, 3);
-      $total_rows = count($rows);
-      ?>
-
-      <div class="dr-grid">
-        <?php foreach ($rows as $i => $items): ?>
-          <?php
-          $is_last = ($i === $total_rows - 1);
-          $count   = count($items);
-          ?>
-          <div class="dr-row<?php echo $is_last ? ' dr-row--last' : ''; ?>" <?php echo $is_last ? 'data-count="' . (int) $count . '"' : ''; ?>>
-            <?php echo implode('', $items); ?>
-          </div>
-        <?php endforeach; ?>
-      </div>
-
-      <?php
-      // Pagination (mirror Genes wrapper/classes; keep g_paged + filters + #results)
-      $total_pages = max(1, (int) $q->max_num_pages);
-      if ($total_pages > 1) {
-          $current = max(1, (int) $paged);
-
-          // Preserve qs/alpha; drop g_paged when building each link
-          $qs_params = [];
-          if ($qs !== '')    $qs_params['qs'] = $qs;
-          if ($alpha !== '') $qs_params['alpha'] = $alpha;
-
-          $page_url_fn = function (int $n) use ($page_base, $qs_params) {
-              $qs2 = $qs_params;
-              $qs2['g_paged'] = $n;
-              return esc_url(add_query_arg($qs2, $page_base) . '#results');
-          };
-
-          $items = [];
-          if ($current > 1) {
-              $items[] = '<li><a class="prev page-numbers" href="' . $page_url_fn($current - 1) . '">« Prev</a></li>';
-          } else {
-              $items[] = '<li><span class="prev page-numbers">« Prev</span></li>';
-          }
-
-          $end   = $total_pages;
-          $start = max(1, $current - 2);
-          $stop  = min($end, $current + 2);
-
-          if ($start > 1) {
-              $items[] = '<li><a class="page-numbers" href="' . $page_url_fn(1) . '">1</a></li>';
-              if ($start > 2) {
-                  $items[] = '<li><span class="page-numbers dots">…</span></li>';
-              }
-          }
-          for ($i = $start; $i <= $stop; $i++) {
-              if ($i === $current) {
-                  $items[] = '<li><span class="page-numbers current">' . $i . '</span></li>';
-              } else {
-                  $items[] = '<li><a class="page-numbers" href="' . $page_url_fn($i) . '">' . $i . '</a></li>';
-              }
-          }
-          if ($stop < $end) {
-              if ($stop < $end - 1) {
-                  $items[] = '<li><span class="page-numbers dots">…</span></li>';
-              }
-              $items[] = '<li><a class="page-numbers" href="' . $page_url_fn($end) . '">' . $end . '</a></li>';
-          }
-          if ($current < $total_pages) {
-              $items[] = '<li><a class="next page-numbers" href="' . $page_url_fn($current + 1) . '">Next »</a></li>';
-          } else {
-              $items[] = '<li><span class="next page-numbers">Next »</span></li>';
-          }
-
-          echo '<nav class="wp-block-query-pagination"><ul class="page-numbers">' . implode('', $items) . '</ul></nav>';
+      // CLEAR button — strip alpha & g_paged, jump to #results
+      const clearBtn = form.querySelector('.genes-sort__clear');
+      if (clearBtn) {
+        clearBtn.addEventListener('click', function (e) {
+          e.preventDefault();
+          const base = window.location.pathname + '#results';
+          window.location.assign(base);
+        });
       }
-      ?>
+    });
+    </script>
 
-    <?php else: ?>
-      <div id="genes-no-results" class="dr-row dr-row--empty"
-        style="margin:-100px auto 64px auto;display:flex;justify-content:center;align-items:flex-start;max-width:700px;width:100%;">
-        <p style="font-size:1.1rem;color:#333;text-align:left;">
-          No terms found.<br>Try adjusting your filters or letter range.
-        </p>
-      </div>
-    <?php endif; ?>
-
-  </div><!-- /#results.wp-block-query.dr-blog -->
-
-  <?php return ob_get_clean();
+    <?php return ob_get_clean();
 });

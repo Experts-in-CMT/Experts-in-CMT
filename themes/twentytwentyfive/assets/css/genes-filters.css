@@ -3,9 +3,18 @@
    Scope: .genesdb-filter-wrap only
    ========================================================= */
 
-.genesdb-filter-wrap { max-width: 980px; margin-inline: auto; padding-inline: 12px; }
-.genesdb-filter-wrap .genes-filter { margin: 0 0 28px; }
-.genesdb-filter-wrap .genes-filter__bar { max-width: 860px; margin-inline: auto; }
+.genesdb-filter-wrap {
+  max-width: 980px;
+  margin-inline: auto;
+  padding-inline: 12px;
+}
+.genesdb-filter-wrap .genes-filter {
+  margin: 0 0 28px;
+}
+.genesdb-filter-wrap .genes-filter__bar {
+  max-width: 860px;
+  margin-inline: auto;
+}
 
 /* Base grid: mobile stacks everything */
 .genesdb-filter-wrap .genes-filter__row {
@@ -16,19 +25,33 @@
 }
 .genesdb-filter-wrap .genes-filter__field,
 .genesdb-filter-wrap .genes-filter__field--search,
-.genesdb-filter-wrap .genes-filter__hr { grid-column: 1 / -1; }
+.genesdb-filter-wrap .genes-filter__hr {
+  grid-column: 1 / -1;
+}
 
 /* =========================================================
    Desktop layout: 2 × 2 for the selects, search full width under them
    ========================================================= */
 @media (min-width: 768px) {
-  .genesdb-filter-wrap .genes-filter__hr { display: none; }
+  .genesdb-filter-wrap .genes-filter__hr {
+    display: none;
+  }
 
-  .genesdb-filter-wrap .genes-filter__field:nth-of-type(1) { grid-column: 1 / span 6; }
-  .genesdb-filter-wrap .genes-filter__field:nth-of-type(2) { grid-column: 7 / span 6; }
-  .genesdb-filter-wrap .genes-filter__field:nth-of-type(3) { grid-column: 1 / span 6; }
-  .genesdb-filter-wrap .genes-filter__field:nth-of-type(4) { grid-column: 7 / span 6; }
-  .genesdb-filter-wrap .genes-filter__field--search { grid-column: 1 / -1; }
+  .genesdb-filter-wrap .genes-filter__field:nth-of-type(1) {
+    grid-column: 1 / span 6;
+  }
+  .genesdb-filter-wrap .genes-filter__field:nth-of-type(2) {
+    grid-column: 7 / span 6;
+  }
+  .genesdb-filter-wrap .genes-filter__field:nth-of-type(3) {
+    grid-column: 1 / span 6;
+  }
+  .genesdb-filter-wrap .genes-filter__field:nth-of-type(4) {
+    grid-column: 7 / span 6;
+  }
+  .genesdb-filter-wrap .genes-filter__field--search {
+    grid-column: 1 / -1;
+  }
 }
 
 /* Labels */
@@ -53,15 +76,16 @@
   font-size: 15px; /* reduced by 1px */
   line-height: 1.2;
   outline: none;
-  transition: box-shadow .12s ease, border-color .12s ease;
+  transition: box-shadow 0.12s ease, border-color 0.12s ease;
   appearance: none;
-  background-image:
-    url("data:image/svg+xml,%3Csvg width='12' height='8' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238E97A3' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238E97A3' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 12px center;
   background-size: 12px 8px;
 }
-.genesdb-filter-wrap .genes-filter input[type="search"] { background-image: none; }
+.genesdb-filter-wrap .genes-filter input[type="search"] {
+  background-image: none;
+}
 .genesdb-filter-wrap .genes-filter select:focus,
 .genesdb-filter-wrap .genes-filter input[type="search"]:focus {
   border-color: var(--primary);
@@ -95,7 +119,8 @@
   align-items: center;
   justify-content: center;
   min-height: 44px;
-  transition: background-color .15s ease, color .15s ease, border-color .15s ease, box-shadow .25s ease;
+  transition: background-color 0.15s ease, color 0.15s ease,
+    border-color 0.15s ease, box-shadow 0.25s ease;
 }
 .genesdb-filter-wrap .genes-filter__btn:hover,
 .genesdb-filter-wrap .genes-filter__btn:focus {
@@ -111,10 +136,10 @@
   justify-content: center;
   box-sizing: border-box;
 
-  padding: 0.75em 2.5em;      /* same as main.css buttons */
+  padding: 0.75em 2.5em; /* same as main.css buttons */
   line-height: 1.5;
-  min-block-size: 48px;       /* ensures identical height */
-  border-radius: 16px;        /* match global radius */
+  min-block-size: 48px; /* ensures identical height */
+  border-radius: 16px; /* match global radius */
 
   border: 1.5px solid #f1bbbb;
   background: #fff5f5;
@@ -125,7 +150,8 @@
   text-transform: uppercase;
   text-decoration: none;
   cursor: pointer;
-  transition: background-color .15s ease, color .15s ease, border-color .15s ease;
+  transition: background-color 0.15s ease, color 0.15s ease,
+    border-color 0.15s ease;
 }
 .genesdb-filter-wrap .genes-filter__link:hover,
 .genesdb-filter-wrap .genes-filter__link:focus {
@@ -134,7 +160,9 @@
 }
 
 /* Anchor offset */
-#genes-filter { scroll-margin-top: 90px; }
+#genes-filter {
+  scroll-margin-top: 90px;
+}
 
 /* =========================================================
    Genes DB — SORT UI (dropdown + clear)
@@ -143,11 +171,11 @@
    ========================================================= */
 
 .genesdb-filter-wrap .genes-sort {
-  grid-column: 1 / -1;                 /* own row in the grid */
+  grid-column: 1 / -1; /* own row in the grid */
   display: flex;
   align-items: center;
   gap: 10px;
-  justify-content: flex-end;            /* right align (like your Wix shot) */
+  justify-content: flex-end; /* right align (like your Wix shot) */
   margin-top: 2px;
 }
 
@@ -160,17 +188,16 @@
 
 .genesdb-filter-wrap .genes-sort__select {
   height: 44px;
-  padding: 10px 38px 10px 14px;         /* room for caret */
+  padding: 10px 38px 10px 14px; /* room for caret */
   border: 1px solid #d6d9de;
   border-radius: 12px;
   background: #fff;
   font-size: 15px;
   line-height: 1.2;
   outline: none;
-  transition: box-shadow .12s ease, border-color .12s ease;
+  transition: box-shadow 0.12s ease, border-color 0.12s ease;
   appearance: none;
-  background-image:
-    url("data:image/svg+xml,%3Csvg width='12' height='8' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238E97A3' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238E97A3' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 12px center;
   background-size: 12px 8px;
@@ -200,7 +227,8 @@
   text-transform: uppercase;
   text-decoration: none;
   cursor: pointer;
-  transition: background-color .15s ease, color .15s ease, border-color .15s ease;
+  transition: background-color 0.15s ease, color 0.15s ease,
+    border-color 0.15s ease;
 }
 .genesdb-filter-wrap .genes-sort__clear:hover,
 .genesdb-filter-wrap .genes-sort__clear:focus {
@@ -211,11 +239,18 @@
 /* Responsive tweaks */
 @media (max-width: 767.98px) {
   .genesdb-filter-wrap .genes-sort {
-    justify-content: center;            /* center on small screens */
+    justify-content: center; /* center on small screens */
     gap: 8px;
   }
-  .genesdb-filter-wrap .genes-sort__label { font-size: 0.85rem; }
-  .genesdb-filter-wrap .genes-sort__select { height: 42px; font-size: 14px; }
-  .genesdb-filter-wrap .genes-sort__clear { min-block-size: 36px; font-size: 13px; }
+  .genesdb-filter-wrap .genes-sort__label {
+    font-size: 0.85rem;
+  }
+  .genesdb-filter-wrap .genes-sort__select {
+    height: 42px;
+    font-size: 14px;
+  }
+  .genesdb-filter-wrap .genes-sort__clear {
+    min-block-size: 36px;
+    font-size: 13px;
+  }
 }
-s
