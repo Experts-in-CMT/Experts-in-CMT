@@ -121,10 +121,6 @@ add_shortcode("glossary_loop", function ($atts = []) {
         $remove_filters();
     }
 
-    if ($remove_filter) {
-        $remove_filter();
-    }
-
     // Pagination base that preserves filters
     $page_base = add_query_arg(
         array_filter([
