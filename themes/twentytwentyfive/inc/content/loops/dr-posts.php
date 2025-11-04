@@ -1,15 +1,11 @@
 <?php
 /**
- * Dorsal Root — Posts Loop (Shortcode)
- * Genes-parity layout & UX (no search)
- * - Sort via dr_sort: "", title_az, title_za, oldest, newest
- * - Pagination via dr_paged, anchors to #results
- * - Card/wrapper markup IDENTICAL to Genes loop
- *
+ * DR Posts Loop (Shortcode)
+ * Glossary-parity structure; DR-specific card layout.
+ * 
  * Shortcode: [dr_posts]
- * Optional attrs:
- *   per_page (int) default 12
- *   category_name (string) optional scope (e.g., "dorsal-root")
+ *
+ * @package ExpertsInCMT
  */
 
 if (!defined('ABSPATH')) {
@@ -17,27 +13,29 @@ if (!defined('ABSPATH')) {
 }
 
 add_shortcode('dr_posts', function ($atts = []) {
+    // ================================
+    // SHORTCODE PARAMS
+    // ================================
     $a = shortcode_atts([
         'per_page'      => 12,
         'category_name' => '',
     ], $atts, 'dr_posts');
 
-    /* --------------------------------------------------------
-       INPUTS (GET params)
-       -------------------------------------------------------- */
-    $paged = max(1, (int)($_GET['dr_paged'] ?? 1));
+    // ================================
+    // QUERY PARAMS (GET)
+    // ================================
+    $paged = isset($_GET['dr_paged']) ? max(1, (int) $_GET['dr_paged']) : 1;
     $sort  = isset($_GET['dr_sort']) ? sanitize_key($_GET['dr_sort']) : '';
 
-    /* --------------------------------------------------------
-       BASE QUERY ARGS (DR posts)
-       -------------------------------------------------------- */
+    // ================================
+    // BASE QUERY ARGS
+    // ================================
     $args = [
         'post_type'           => 'post',
         'post_status'         => 'publish',
-        'posts_per_page'      => max(1, (int)$a['per_page']),
+        'posts_per_page'      => max(1, (int) $a['per_page']),
         'paged'               => $paged,
         'ignore_sticky_posts' => true,
-        // default ordering (will be overridden if dr_sort present)
         'orderby'             => 'date',
         'order'               => 'DESC',
     ];
@@ -46,132 +44,114 @@ add_shortcode('dr_posts', function ($atts = []) {
         $args['category_name'] = sanitize_title($a['category_name']);
     }
 
-    /* --------------------------------------------------------
-       SORT: honor explicit dr_sort
-       -------------------------------------------------------- */
+    // ================================
+    // SORTING LOGIC
+    // ================================
     switch ($sort) {
         case 'title_az':
             $args['orderby'] = ['title' => 'ASC'];
-            $args['order']   = 'ASC';
             break;
-
         case 'title_za':
             $args['orderby'] = ['title' => 'DESC'];
-            $args['order']   = 'DESC';
             break;
-
         case 'oldest':
             $args['orderby'] = ['date' => 'ASC'];
-            $args['order']   = 'ASC';
             break;
-
         case 'newest':
             $args['orderby'] = ['date' => 'DESC'];
-            $args['order']   = 'DESC';
-            break;
-
-        default:
-            // keep defaults: date DESC
             break;
     }
 
-    /* --------------------------------------------------------
-       RUN QUERY
-       -------------------------------------------------------- */
     $q = new WP_Query($args);
 
-    /* ========================================================
-       ================= [ OUTPUT MARKUP ] =====================
-       ======================================================== */
-
-    ob_start();
-    ?>
-    <div id="results" class="wp-block-query dr-blog" style="scroll-margin-top:100px;">
-
-    <?php
-
-    /* ======================================================================
-       RESULTS-LEVEL SORT TOOLBAR (Genes parity; param names swapped)
-       ====================================================================== */
-    $anchor       = 'results';
-    $base         = strtok($_SERVER['REQUEST_URI'], '?'); // current path without query
-    $action_url   = esc_url($base . '#' . $anchor);
-    $current_sort = $sort;
-
-    // Keep current params; always reset pagination when sorting
+    // ================================
+    // TOOLBAR
+    // ================================
+    $anchor = 'results';
+    $base = strtok($_SERVER['REQUEST_URI'], '?');
+    $action_url = esc_url($base . '#' . $anchor);
     $keep = $_GET;
     unset($keep['dr_paged']);
-
-    // CLEAR = drop sort & pagination, keep other params
     $clear_params = $keep;
     unset($clear_params['dr_sort']);
     $sort_clear_url = esc_url($base . ($clear_params ? '?' . http_build_query($clear_params) : '')) . '#' . $anchor;
-    ?>
-    
-  
-    <div class="genes-sort genes-sort--results">
-      <form class="genes-sort__form" method="get" action="<?php echo $action_url; ?>">
-        <span class="genes-sort__label">Sort by</span>
-        <select id="dr_sort" name="dr_sort" class="genes-sort__select" onchange="this.form.submit()">
-          <option value=""           <?php selected($current_sort, ''); ?>>Default</option>
-          <option value="title_az"   <?php selected($current_sort, 'title_az'); ?>>Title A–Z</option>
-          <option value="title_za"   <?php selected($current_sort, 'title_za'); ?>>Title Z–A</option>
-          <option value="oldest"     <?php selected($current_sort, 'oldest'); ?>>Oldest to Newest</option>
-          <option value="newest"     <?php selected($current_sort, 'newest'); ?>>Newest to Oldest</option>
-        </select>
 
-        <a class="genes-sort__clear" href="<?php echo $sort_clear_url; ?>">CLEAR</a>
+    ob_start(); ?>
 
-        <?php // Preserve other GET params (filters, etc.), drop sort/paged
-        foreach ($keep as $k => $v) {
-            if (in_array($k, ['dr_sort', 'dr_paged'], true)) continue;
-            if (is_scalar($v)) {
-                printf('<input type="hidden" name="%s" value="%s">', esc_attr($k), esc_attr($v));
-            }
-        } ?>
-        <noscript><button type="submit" class="genes-sort__btn">Apply</button></noscript>
-      </form>
 
-      <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        const sortForm = document.querySelector('.genes-sort__form');
-        const clearBtn = document.querySelector('.genes-sort__clear');
-        if (!sortForm) return;
+        <div class="genes-sort genes-sort--results">
+            <form class="genes-sort__form" method="get" action="<?php echo $action_url; ?>">
+                <label class="genes-sort__label" for="dr_sort">Sort by</label>
+                <select id="dr_sort" name="dr_sort" class="genes-sort__select">
+                    <option value=""         <?php selected($sort, ''); ?>>Default</option>
+                    <option value="title_az" <?php selected($sort, 'title_az'); ?>>Title A–Z</option>
+                    <option value="title_za" <?php selected($sort, 'title_za'); ?>>Title Z–A</option>
+                    <option value="oldest"   <?php selected($sort, 'oldest'); ?>>Oldest to Newest</option>
+                    <option value="newest"   <?php selected($sort, 'newest'); ?>>Newest to Oldest</option>
+                </select>
 
-        // Reset pagination, keep others, jump to #results
-        sortForm.addEventListener('change', function(e) {
-          if (e.target.name !== 'dr_sort') return;
-          e.preventDefault();
-          const params = new URLSearchParams(window.location.search);
-          params.delete('dr_paged');
-          const val = e.target.value;
-          if (val) { params.set('dr_sort', val); } else { params.delete('dr_sort'); }
-          const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '') + '#results';
-          window.history.replaceState(null, '', newUrl);
-          window.location.reload();
-        });
+                <a class="genes-sort__clear" href="<?php echo $sort_clear_url; ?>">CLEAR</a>
 
-        if (clearBtn) {
-          clearBtn.addEventListener('click', function(e) {
+                <?php
+                foreach ($keep as $k => $v) {
+                    if (in_array($k, ['dr_sort', 'dr_paged'], true)) continue;
+                    if (is_scalar($v)) {
+                        printf('<input type="hidden" name="%s" value="%s">', esc_attr($k), esc_attr($v));
+                    }
+                }
+                ?>
+                <noscript><button type="submit" class="genes-sort__btn">Apply</button></noscript>
+            </form>
+        </div>
+   
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.querySelector('.genes-sort__form');
+        if (!form) return;
+
+        // Sort change → update URL, reload, scroll to results
+        form.addEventListener('change', function (e) {
+            if (e.target.name !== 'dr_sort') return;
             e.preventDefault();
             const params = new URLSearchParams(window.location.search);
-            params.delete('dr_sort');
             params.delete('dr_paged');
+            const val = e.target.value;
+            if (val) { params.set('dr_sort', val); } else { params.delete('dr_sort'); }
             const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '') + '#results';
             window.history.replaceState(null, '', newUrl);
             window.location.reload();
-          });
+        });
+
+        // CLEAR button → strip params, reload
+        const clearBtn = form.querySelector('.genes-sort__clear');
+        if (clearBtn) {
+            clearBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                const params = new URLSearchParams(window.location.search);
+                params.delete('dr_sort');
+                params.delete('dr_paged');
+                const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '') + '#results';
+                window.history.replaceState(null, '', newUrl);
+                window.location.reload();
+            });
         }
-      });
-      </script>
-    </div>
+    });
+    </script>
+
+    <!-- ===============================
+         RESULTS WRAPPER
+         =============================== -->
+    <div id="results" class="dr-blog" style="scroll-margin-top:100px;">
 
     <?php
-
-    // Build cards
+    // ================================
+    // DR-POSTS CARD RENDERING BLOCK
+    // ================================
+   
     $cards = [];
     if ($q->have_posts()) {
-        while ($q->have_posts()) { 
+        while ($q->have_posts()) {
             $q->the_post();
             ob_start(); ?>
             <article class="dr-card wp-block-post">
@@ -194,7 +174,7 @@ add_shortcode('dr_posts', function ($atts = []) {
                 <a class="wp-block-read-more" href="<?php the_permalink(); ?>">Read More</a>
             </article>
             <?php
-            $cards[] = ob_get_clean();
+            $cards[] = trim(ob_get_clean());
         }
         wp_reset_postdata();
     }
@@ -225,13 +205,13 @@ add_shortcode('dr_posts', function ($atts = []) {
     </div>
 
     <?php
-    /* ====================================================
-       =============== [ PAGINATION ] ======================
-       ==================================================== */
-    $total_pages = max(1, (int)$q->max_num_pages);
+    // ================================
+    // PAGINATION (Genes-style)
+    // ================================
+    $total_pages = max(1, (int) $q->max_num_pages);
     if ($total_pages > 1) {
-        $current   = max(1, (int)($_GET['dr_paged'] ?? 1));
-        $base_url  = get_permalink(get_queried_object_id()) ?: home_url('/dorsal-root/');
+        $current = $paged;
+        $base_url = get_permalink(get_queried_object_id()) ?: home_url('/dorsal-root/');
         $qs_params = $_GET;
         unset($qs_params['dr_paged']);
 
@@ -248,14 +228,14 @@ add_shortcode('dr_posts', function ($atts = []) {
             $items[] = '<li><span class="prev page-numbers">« Prev</span></li>';
         }
 
-        $end   = $total_pages;
         $start = max(1, $current - 2);
-        $stop  = min($end, $current + 2);
+        $stop  = min($total_pages, $current + 2);
 
         if ($start > 1) {
             $items[] = '<li><a class="page-numbers" href="'.$page_url(1).'">1</a></li>';
             if ($start > 2) $items[] = '<li><span class="page-numbers dots">…</span></li>';
         }
+
         for ($i = $start; $i <= $stop; $i++) {
             if ($i === $current) {
                 $items[] = '<li><span class="page-numbers current">'.$i.'</span></li>';
@@ -263,10 +243,12 @@ add_shortcode('dr_posts', function ($atts = []) {
                 $items[] = '<li><a class="page-numbers" href="'.$page_url($i).'">'.$i.'</a></li>';
             }
         }
-        if ($stop < $end) {
-            if ($stop < $end - 1) $items[] = '<li><span class="page-numbers dots">…</span></li>';
-            $items[] = '<li><a class="page-numbers" href="'.$page_url($end).'">'.$end.'</a></li>';
+
+        if ($stop < $total_pages) {
+            if ($stop < $total_pages - 1) $items[] = '<li><span class="page-numbers dots">…</span></li>';
+            $items[] = '<li><a class="page-numbers" href="'.$page_url($total_pages).'">'.$total_pages.'</a></li>';
         }
+
         if ($current < $total_pages) {
             $items[] = '<li><a class="next page-numbers" href="'.$page_url($current + 1).'">Next »</a></li>';
         } else {
@@ -276,6 +258,8 @@ add_shortcode('dr_posts', function ($atts = []) {
         echo '<nav class="wp-block-query-pagination"><ul class="page-numbers">'.implode('', $items).'</ul></nav>';
     }
     ?>
-    </div>
-    <?php return ob_get_clean();
+
+    </div><!-- /#results -->
+
+<?php return ob_get_clean();
 });
