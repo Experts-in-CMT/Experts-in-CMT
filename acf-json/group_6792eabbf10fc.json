@@ -111,9 +111,16 @@
         ],
         [
             {
-                "param": "post_type",
+                "param": "post_template",
                 "operator": "==",
-                "value": "glossary"
+                "value": "default"
+            }
+        ],
+        [
+            {
+                "param": "page_template",
+                "operator": "==",
+                "value": "default"
             }
         ]
     ],
@@ -127,5 +134,5 @@
     "description": "",
     "show_in_rest": 0,
     "display_title": "",
-    "modified": 1761937739
+    "modified": 1762313320
 }
