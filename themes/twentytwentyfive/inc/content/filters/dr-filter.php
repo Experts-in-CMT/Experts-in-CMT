@@ -1,127 +1,196 @@
 <?php
-/* ============================================================
-   DORSAL ROOT FILTER SHORTCODE ONLY
-   (with text search; no class/markup changes to existing bits)
-   ============================================================ */
-
 /**
- * [dr_filter] — shows the category dropdown (?dr_cat=slug)
- * plus a text search field (?dr_q=string)
+ * Dorsal Root — Filters (Shortcode)
+ * Shortcode: [dr_filter]
+ * Renders a category dropdown (taxonomy: dorsal-root) + search input.
+ * - Preserves other GET params
+ * - Resets pagination on submit/change
+ * - Anchors to #results
  */
-add_shortcode("dr_filter", function () {
-    $tax = "dorsal-root";
-    $terms = get_terms(["taxonomy" => $tax, "hide_empty" => true]);
-    if (is_wp_error($terms)) {
-        return "";
+
+if (!defined('ABSPATH')) {
+    exit;
+}
+
+add_shortcode('dr_filter', function ($atts = []) {
+    ob_start();
+
+    // ----------------------------
+    // Resolve GET params (UI only)
+    // ----------------------------
+    $search_text = isset($_GET['qs']) ? trim((string) wp_unslash($_GET['qs'])) : '';
+    $dr_cat      = isset($_GET['dr_cat']) ? (int) $_GET['dr_cat'] : 0;
+
+    // Current page URL (no query, no hash)
+    $action_url = esc_url( get_permalink() );
+
+    // RESET url (clear qs & dr_paged; keep others including dr_cat)
+    $params = $_GET;
+    unset($params['qs'], $params['dr_paged'], $params['dr_cat']);
+    $reset_url = esc_url( add_query_arg( $params, $action_url ) . '#results' );
+    ?>
+
+<div class="site-searchwrap">
+  <form class="site-search"
+      method="get"
+      action="<?php echo $action_url; ?>"
+      data-loop="dr"
+      data-action="dr_get_posts"
+      data-per-page="12"
+      data-anchor="#results"
+      data-paged-param="dr_paged"
+      data-sort-param="dr_sort"
+      data-search-param="qs"
+      data-category-param="dr_cat">
+
+    <div class="site-search__bar">
+      <div class="site-search__row">
+
+        <!-- CATEGORY -->
+        <label class="site-search__field site-search__field--select">
+          <span class="site-search__label">Category</span>
+          <select name="dr_cat" class="site-search__select" aria-label="Filter by category">
+            <option value="">All Categories</option>
+            <?php
+            $cats = get_terms([
+              'taxonomy'   => 'dorsal-root',
+              'hide_empty' => false,
+              'orderby'    => 'name',
+              'order'      => 'ASC',
+            ]);
+            if (!is_wp_error($cats)) {
+              foreach ($cats as $c) {
+                printf(
+                  '<option value="%1$d"%2$s>%3$s</option>',
+                  (int) $c->term_id,
+                  selected($dr_cat, (int) $c->term_id, false),
+                  esc_html($c->name)
+                );
+              }
+            }
+            ?>
+          </select>
+        </label>
+
+        <!-- SEARCH -->
+        <label class="site-search__field site-search__field--input">
+          <span class="site-search__label">Search The Dorsal Root</span>
+          <input
+            type="search"
+            name="qs"
+            value="<?php echo esc_attr($search_text); ?>"
+            placeholder="Begin by Typing..."
+            inputmode="search"
+            autocomplete="on"
+            autocapitalize="none"
+            spellcheck="false"
+            enterkeyhint="search"
+            aria-describedby="site-search-hint"
+          />
+        </label>
+
+        <!-- ACTIONS -->
+        <div class="site-search__actions" id="site-search-hint">
+          <button type="submit" class="site-search__btn">SEARCH</button>
+          <a class="site-search__reset" href="<?php echo $reset_url; ?>">RESET</a>
+        </div>
+
+        <?php
+        // Preserve other GET params (don’t duplicate qs or pagination/sort)
+        foreach ($_GET as $k => $v) {
+            if (in_array($k, ['qs','dr_paged','dr_sort'], true)) {
+                continue;
+            }
+            if (is_scalar($v)) {
+                printf(
+                    '<input type="hidden" name="%s" value="%s" />',
+                    esc_attr($k),
+                    esc_attr($v)
+                );
+            }
+        }
+        ?>
+
+        <noscript><button type="submit">Apply</button></noscript>
+      </div>
+    </div>
+  </form>
+
+ <script>
+  // Legacy: auto-submit on category change (disabled when AJAX is present)
+  document.addEventListener('DOMContentLoaded', function () {
+    const form = document.querySelector('form.site-search');
+    if (!form || window.DR_AJAX) return; // ← stop if dr-ajax.js is active
+
+    const cat = form.querySelector('select[name="dr_cat"]');
+    if (!cat) return;
+
+    const anchor = '#results';
+
+    cat.addEventListener('change', function () {
+      const params = new URLSearchParams(new FormData(form));
+      params.delete('dr_paged');
+      if (!cat.value) params.delete('dr_cat');
+      const qs  = params.toString();
+      const url = window.location.pathname + (qs ? '?' + qs : '') + anchor;
+
+      window.history.replaceState(null, '', url);
+      window.location.reload();
+    });
+  });
+</script>
+
+
+
+  <script>
+  // Legacy: submit/reset/search-clear (disabled when AJAX is present)
+  document.addEventListener('DOMContentLoaded', function () {
+    const form = document.querySelector('form.site-search');
+    if (!form || window.DR_AJAX) return; // ← stop if dr-ajax.js is active
+
+    const anchor = '#results';
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      const params = new URLSearchParams(new FormData(form));
+      params.delete('dr_paged');
+      const newUrl = window.location.pathname + '?' + params.toString() + anchor;
+      window.history.replaceState(null, '', newUrl);
+      window.location.reload();
+    });
+
+    const resetLink = form.querySelector('.site-search__reset');
+    if (resetLink) {
+      resetLink.addEventListener('click', function (e) {
+        e.preventDefault();
+        const params = new URLSearchParams(new FormData(form));
+        ['qs','dr_paged','dr_cat'].forEach(k => params.delete(k));
+        const qs = params.toString();
+        const newUrl = window.location.pathname + (qs ? '?' + qs : '') + anchor;
+        window.history.replaceState(null, '', newUrl);
+        window.location.reload();
+      });
     }
 
-    $current = isset($_GET["dr_cat"])
-        ? sanitize_text_field(wp_unslash($_GET["dr_cat"]))
-        : "";
-    $qvalue = isset($_GET["dr_q"])
-        ? sanitize_text_field(wp_unslash($_GET["dr_q"]))
-        : "";
-    $action = esc_url(remove_query_arg(array_keys($_GET))) . "#blog";
-
-    ob_start();
-    ?>
-    <form
-  class="dr-filter"
-  role="search"
-  aria-label="Filter Dorsal Root posts"
-  aria-controls="blog"
-  action="<?php echo $action; ?>"
-  method="get"
->
-  <!-- Add inline style here -->
-  <label for="dr-cat" style="display:block;margin-bottom:2px;">
-    Filter The Dorsal Root by Category
-  </label>
-
-  <select id="dr-cat" name="dr_cat" onchange="this.form.submit()">
-    <option value="">All</option>
-    <?php foreach ($terms as $t): ?>
-      <option value="<?php echo esc_attr($t->slug); ?>" <?php selected(
-    $current,
-    $t->slug
-); ?>>
-        <?php echo esc_html($t->name); ?>
-      </option>
-    <?php endforeach; ?>
-  </select>
-
-
-      <!-- Text search (title/content + taxonomy terms via loop-side logic) -->
-      <label class="screen-reader-text" for="dr-q">Search The Dorsal Root</label>
-      <input
-        id="dr-q"
-        type="search"
-        name="dr_q"
-        value="<?php echo esc_attr($qvalue); ?>"
-        placeholder="Search The Dorsal Root"
-        autocomplete="off"
-        aria-describedby="dr-filter-hint"
-      />
-
-      <!-- Execute search button -->
-      <div class="dr-filter-buttons" id="dr-filter-hint">
-        <button type="submit" class="wp-block-button__link">Search</button>
-        <button type="button" id="dr-reset" class="wp-block-button__link">Reset</button>
-      </div>
-
-      <?php // Preserve other query args
-      foreach ($_GET as $k => $v) {
-          if ($k === "dr_cat" || $k === "dr_q") {
-              continue;
-          }
-          if (is_scalar($v)) {
-              printf(
-                  '<input type="hidden" name="%s" value="%s">',
-                  esc_attr($k),
-                  esc_attr($v)
-              );
-          }
-      } ?>
-
-      <noscript><button type="submit">Apply</button></noscript>
-
-      <!-- Handles native search box '×' clear -->
-      <script>
-      document.addEventListener('DOMContentLoaded', function () {
-        const drInput = document.getElementById('dr-q');
-        if (!drInput) return;
-        drInput.addEventListener('search', function () {
-          if (drInput.value === '') {
-            window.location.href = '<?php
-            $dr_page = get_page_by_path("dorsal-root");
-            echo esc_url(
-                $dr_page
-                    ? get_permalink($dr_page->ID) . "#blog"
-                    : home_url("/#blog")
-            );
-            ?>';
-          }
-        });
-      });
-      </script>
-
-      <!-- Reset button mirrors native "x" behavior -->
-      <script>
-      document.addEventListener('click', function (e) {
-        if (e.target && e.target.id === 'dr-reset') {
-          var input = document.getElementById('dr-q');
-          if (input) input.value = '';
-          window.location.href = '<?php
-          $dr_page = get_page_by_path("dorsal-root");
-          echo esc_url(
-              $dr_page
-                  ? get_permalink($dr_page->ID) . "#blog"
-                  : home_url("/#blog")
-          );
-          ?>';
+    const searchInput = form.querySelector('input[name="qs"]');
+    const cat = form.querySelector('select[name="dr_cat"]');
+    if (searchInput) {
+      searchInput.addEventListener('search', function () {
+        if (searchInput.value === '') {
+          if (cat) cat.value = '';
+          const params = new URLSearchParams(new FormData(form));
+          ['qs','dr_paged','dr_cat'].forEach(k => params.delete(k));
+          const qs = params.toString();
+          const newUrl = window.location.pathname + (qs ? '?' + qs : '') + anchor;
+          window.history.replaceState(null, '', newUrl);
+          window.location.reload();
         }
       });
-      </script>
-    </form>
-    <?php return ob_get_clean();
+    }
+  });
+</script>
+</div>
+
+<?php
+    return ob_get_clean();
 });

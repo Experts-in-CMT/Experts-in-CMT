@@ -237,7 +237,7 @@ document.addEventListener('DOMContentLoaded', function () {
     </div>
 
     <!-- Results container (genes-style wrapper) -->
-    <div id="results" class="wp-block-query dr-blog" style="scroll-margin-top:100px;">
+   <div id="results" class="wp-block-query dr-blog dr--glossary" style="scroll-margin-top:100px;">
 
       <?php if ($q->have_posts()): ?>
 

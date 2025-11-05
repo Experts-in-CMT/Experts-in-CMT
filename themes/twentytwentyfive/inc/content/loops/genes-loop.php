@@ -320,47 +320,39 @@ add_shortcode("genes_loop", function ($atts = []) {
 	  </form>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-  const sortForm = document.querySelector('.genes-sort__form');
-  const clearBtn = document.querySelector('.genes-sort__clear');
-  if (!sortForm) return;
+  // Legacy: sort change / clear (disabled when AJAX is active)
+  document.addEventListener('DOMContentLoaded', function () {
+    const sortForm = document.querySelector('.genes-sort__form'); // or .dr-sort__form if that’s your markup
+    if (!sortForm || window.DR_AJAX) return;  // ← stop if AJAX loader is present
 
-  // Handle dropdown changes
-  sortForm.addEventListener('change', function(e) {
-    if (e.target.name === 'gd_sort') {
-      e.preventDefault();
+    const clearBtn = document.querySelector('.genes-sort__clear');
+    sortForm.addEventListener('change', function (e) {
+      if (e.target.name === 'dr_sort') { // adjust name if needed
+        e.preventDefault();
 
-      const params = new URLSearchParams(window.location.search);
-      params.delete('gd_paged'); // reset pagination
+        const params = new URLSearchParams(window.location.search);
+        params.delete('dr_paged');
+        const val = e.target.value;
+        if (val) params.set('dr_sort', val); else params.delete('dr_sort');
 
-      const val = e.target.value;
-      if (val) {
-        params.set('gd_sort', val);
-      } else {
-        params.delete('gd_sort');
+        const newUrl = window.location.pathname + '?' + params.toString() + '#results';
+        window.history.replaceState(null, '', newUrl);
+        window.location.reload();
       }
+    });
 
-      const newUrl = window.location.pathname + '?' + params.toString() + '#results';
-      window.history.replaceState(null, '', newUrl);
-      window.location.reload();
+    if (clearBtn) {
+      clearBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        const params = new URLSearchParams(window.location.search);
+        params.delete('dr_sort');
+        params.delete('dr_paged');
+        const newUrl = window.location.pathname + '?' + params.toString() + '#results';
+        window.history.replaceState(null, '', newUrl);
+        window.location.reload();
+      });
     }
   });
-
-  // Handle CLEAR button click
-  if (clearBtn) {
-    clearBtn.addEventListener('click', function(e) {
-      e.preventDefault();
-
-      const params = new URLSearchParams(window.location.search);
-      params.delete('gd_sort');
-      params.delete('gd_paged'); // reset pagination too
-
-      const newUrl = window.location.pathname + '?' + params.toString() + '#results';
-      window.history.replaceState(null, '', newUrl);
-      window.location.reload();
-    });
-  }
-});
 </script>
 
 	</div>

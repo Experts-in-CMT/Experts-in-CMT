@@ -20,6 +20,16 @@ add_shortcode('dr_posts', function ($atts = []) {
         'per_page'      => 12,
         'category_name' => '',
     ], $atts, 'dr_posts');
+    
+    // ----------------------------
+    // DR Search: read `qs` (search text)
+    // ----------------------------
+    $qs = isset($_GET['qs']) ? trim((string) wp_unslash($_GET['qs'])) : '';
+
+    // ----------------------------
+    // DR Filter: selected category
+    // ----------------------------
+    $dr_cat = isset($_GET['dr_cat']) ? (int) $_GET['dr_cat'] : 0;    
 
     // ================================
     // QUERY PARAMS (GET)
@@ -44,25 +54,129 @@ add_shortcode('dr_posts', function ($atts = []) {
         $args['category_name'] = sanitize_title($a['category_name']);
     }
 
-    // ================================
-    // SORTING LOGIC
-    // ================================
-    switch ($sort) {
-        case 'title_az':
-            $args['orderby'] = ['title' => 'ASC'];
-            break;
-        case 'title_za':
-            $args['orderby'] = ['title' => 'DESC'];
-            break;
-        case 'oldest':
-            $args['orderby'] = ['date' => 'ASC'];
-            break;
-        case 'newest':
-            $args['orderby'] = ['date' => 'DESC'];
-            break;
+   // ================================
+// SORTING LOGIC
+// ================================
+switch ($sort) {
+    case 'title_az':
+        $args['orderby'] = ['title' => 'ASC'];
+        break;
+    case 'title_za':
+        $args['orderby'] = ['title' => 'DESC'];
+        break;
+    case 'oldest':
+        $args['orderby'] = ['date' => 'ASC'];
+        break;
+    case 'newest':
+        $args['orderby'] = ['date' => 'DESC'];
+        break;
+}
+
+// ================================
+// DR Search + Category Filter (combo)
+//  - Category leads:
+//      • dr_cat only  → constrain to that category
+//      • qs only      → union(text OR taxonomy)
+//      • both         → intersection( category ∩ union )
+// ================================
+if ($qs !== '') {
+    // A) Text matches (title, excerpt, content via 's')
+    $text_ids = get_posts([
+        'post_type'      => 'post',
+        'post_status'    => 'publish',
+        's'              => $qs,
+        'fields'         => 'ids',
+        'posts_per_page' => -1,
+        'no_found_rows'  => true,
+    ]);
+
+    // B) Taxonomy matches (category + post_tag whose TERM NAMES contain $qs)
+    $cat_ids = get_terms([
+        'taxonomy'   => 'dorsal-root',
+        'search'     => $qs,
+        'fields'     => 'ids',
+        'hide_empty' => false,
+    ]);
+    $tag_ids = get_terms([
+        'taxonomy'   => 'post_tag',
+        'search'     => $qs,
+        'fields'     => 'ids',
+        'hide_empty' => false,
+    ]);
+
+    $tax_post_ids = [];
+    if (!is_wp_error($cat_ids) && !empty($cat_ids)) {
+        $tax_post_ids = array_merge($tax_post_ids, get_posts([
+            'post_type'      => 'post',
+            'post_status'    => 'publish',
+            'fields'         => 'ids',
+            'posts_per_page' => -1,
+            'no_found_rows'  => true,
+            'tax_query'      => [[
+                'taxonomy'         => 'dorsal-root',
+                'field'            => 'term_id',
+                'terms'            => $cat_ids,
+                'include_children' => true,
+                'operator'         => 'IN',
+            ]],
+        ]));
+    }
+    if (!is_wp_error($tag_ids) && !empty($tag_ids)) {
+        $tax_post_ids = array_merge($tax_post_ids, get_posts([
+            'post_type'      => 'post',
+            'post_status'    => 'publish',
+            'fields'         => 'ids',
+            'posts_per_page' => -1,
+            'no_found_rows'  => true,
+            'tax_query'      => [[
+                'taxonomy' => 'post_tag',
+                'field'    => 'term_id',
+                'terms'    => $tag_ids,
+                'operator' => 'IN',
+            ]],
+        ]));
     }
 
-    $q = new WP_Query($args);
+    // C) Union the sets (text ∪ taxonomy)
+    $union_ids = array_unique(array_merge($text_ids, $tax_post_ids));
+
+    if ($dr_cat > 0) {
+        // D) Category-led intersection: category ∩ union
+        $cat_only_ids = get_posts([
+            'post_type'      => 'post',
+            'post_status'    => 'publish',
+            'fields'         => 'ids',
+            'posts_per_page' => -1,
+            'no_found_rows'  => true,
+            'tax_query'      => [[
+                'taxonomy'         => 'dorsal-root',
+                'field'            => 'term_id',
+                'terms'            => [$dr_cat],
+                'include_children' => true,
+                'operator'         => 'IN',
+            ]],
+        ]);
+        $final_ids = array_values(array_intersect($union_ids, $cat_only_ids));
+        $args['post__in'] = !empty($final_ids) ? $final_ids : [0];
+    } else {
+        // E) Only qs: use union directly
+        $args['post__in'] = !empty($union_ids) ? $union_ids : [0];
+    }
+
+} elseif ($dr_cat > 0) {
+    // F) Only category selected — native category filter
+    $args['tax_query'][] = [
+        'taxonomy'         => 'dorsal-root',
+        'field'            => 'term_id',
+        'terms'            => [$dr_cat],
+        'include_children' => true,
+        'operator'         => 'IN',
+    ];
+}
+
+$q = new WP_Query($args);
+
+
 
     // ================================
     // TOOLBAR
@@ -138,6 +252,12 @@ add_shortcode('dr_posts', function ($atts = []) {
         }
     });
     </script>
+
+<!-- ===============================
+     AJAX WRAPPER (for future reloads)
+     =============================== -->
+<div id="dr-results-root" data-loop-root="dr" aria-live="polite">
+
 
     <!-- ===============================
          RESULTS WRAPPER
@@ -260,6 +380,8 @@ add_shortcode('dr_posts', function ($atts = []) {
     ?>
 
     </div><!-- /#results -->
+</div><!-- /#dr-results-root -->
+
 
 <?php return ob_get_clean();
 });
