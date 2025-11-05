@@ -12,23 +12,24 @@
  * @param array  $args     Optional get_terms() args to merge.
  * @return WP_Term[]|array
  */
-function eicmt_get_ordered_terms( $taxonomy, $args = [] ) {
+function eicmt_get_ordered_terms($taxonomy, $args = [])
+{
     $defaults = [
-        'taxonomy'   => $taxonomy,
-        'hide_empty' => false,
-        'meta_key'   => 'sort',
-        'orderby'    => 'meta_value_num',
-        'order'      => 'ASC',
+        "taxonomy" => $taxonomy,
+        "hide_empty" => false,
+        "meta_key" => "sort",
+        "orderby" => "meta_value_num",
+        "order" => "ASC",
     ];
 
-    $terms = get_terms( wp_parse_args( $args, $defaults ) );
+    $terms = get_terms(wp_parse_args($args, $defaults));
 
     // Graceful fallback if meta order isn't present yet
-    if ( is_wp_error( $terms ) || empty( $terms ) ) {
+    if (is_wp_error($terms) || empty($terms)) {
         $fallback = $defaults;
-        unset( $fallback['meta_key'], $fallback['orderby'] );
-        $fallback['orderby'] = 'name';
-        return get_terms( wp_parse_args( $args, $fallback ) );
+        unset($fallback["meta_key"], $fallback["orderby"]);
+        $fallback["orderby"] = "name";
+        return get_terms(wp_parse_args($args, $fallback));
     }
 
     return $terms;
@@ -42,23 +43,28 @@ function eicmt_get_ordered_terms( $taxonomy, $args = [] ) {
  * @param string       $placeholder Optional first option label (value="").
  * @return string HTML
  */
-function eicmt_terms_options_html( $taxonomy, $selected = '', $placeholder = '' ) {
-    $terms = eicmt_get_ordered_terms( $taxonomy );
-    $sel   = (array) $selected;
+function eicmt_terms_options_html($taxonomy, $selected = "", $placeholder = "")
+{
+    $terms = eicmt_get_ordered_terms($taxonomy);
+    $sel = (array) $selected;
 
-    $html = '';
-    if ( $placeholder !== '' ) {
-        $html .= '<option value="">' . esc_html( $placeholder ) . '</option>';
+    $html = "";
+    if ($placeholder !== "") {
+        $html .= '<option value="">' . esc_html($placeholder) . "</option>";
         // keep placeholder at top
     }
 
-    foreach ( $terms as $t ) {
-        $is_selected = in_array( (string) $t->term_id, array_map('strval', $sel), true );
+    foreach ($terms as $t) {
+        $is_selected = in_array(
+            (string) $t->term_id,
+            array_map("strval", $sel),
+            true
+        );
         $html .= sprintf(
             '<option value="%1$d"%2$s>%3$s</option>',
             (int) $t->term_id,
-            $is_selected ? ' selected' : '',
-            esc_html( $t->name )
+            $is_selected ? " selected" : "",
+            esc_html($t->name)
         );
     }
 

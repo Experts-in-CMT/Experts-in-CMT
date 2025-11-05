@@ -56,7 +56,8 @@ if (!shortcode_exists("search_filter")) {
             </div>
 
             <?php // Preserve other GET params (don’t duplicate qs or pagination/sort)
-            foreach ($_GET as $k => $v) {
+
+        foreach ($_GET as $k => $v) {
                 if (in_array($k, ["qs", "gd_paged", "gd_sort"], true)) {
                     continue;
                 }

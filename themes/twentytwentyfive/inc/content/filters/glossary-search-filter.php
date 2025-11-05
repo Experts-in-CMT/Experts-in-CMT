@@ -59,7 +59,8 @@ if (!shortcode_exists("glossary_search_filter")) {
             </div>
 
             <?php // Preserve other GET params (keep alpha; drop qs + pagination)
-            foreach ($_GET as $k => $v) {
+
+        foreach ($_GET as $k => $v) {
                 if (in_array($k, ["qs", "g_paged"], true)) {
                     continue;
                 } // glossary uses g_paged

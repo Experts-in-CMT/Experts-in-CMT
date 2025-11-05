@@ -7,26 +7,33 @@
  * @package ExpertsInCMT
  */
 
-if (!defined('ABSPATH')) exit;
+if (!defined("ABSPATH")) {
+    exit();
+}
 
-if (!shortcode_exists('search_filter')) {
-  add_shortcode('search_filter', function () {
-    // Current search text
-    $search_text = isset($_GET['qs']) ? sanitize_text_field((string) $_GET['qs']) : '';
+if (!shortcode_exists("search_filter")) {
+    add_shortcode("search_filter", function () {
+        // Current search text
+        $search_text = isset($_GET["qs"])
+            ? sanitize_text_field((string) $_GET["qs"])
+            : "";
 
-    // Anchor + base URL resolution (mirrors genes-filter.php)
-    $anchor = 'results';
+        // Anchor + base URL resolution (mirrors genes-filter.php)
+        $anchor = "results";
 
-    $base = get_permalink(get_queried_object_id());
-    if (!$base) {
-      $genes_page = get_page_by_path('genes');
-      $base = $genes_page ? get_permalink($genes_page->ID) : home_url('/genes/');
-    }
+        $base = get_permalink(get_queried_object_id());
+        if (!$base) {
+            $genes_page = get_page_by_path("genes");
+            $base = $genes_page
+                ? get_permalink($genes_page->ID)
+                : home_url("/genes/");
+        }
 
-    $action_url = esc_url($base . '#' . $anchor);
-    $reset_url  = esc_url($base . '#' . $anchor);
+        $action_url = esc_url($base . "#" . $anchor);
+        $reset_url = esc_url($base . "#" . $anchor);
 
-    ob_start(); ?>
+        ob_start();
+        ?>
     <div class="genesdb-filter-wrap">
       <form class="genes-filter" method="get" action="<?php echo $action_url; ?>">
         <div class="genes-filter__bar">
@@ -51,19 +58,19 @@ if (!shortcode_exists('search_filter')) {
               <a class="genes-filter__link" href="<?php echo $reset_url; ?>">RESET</a>
             </div>
 
-            <?php
-            // Preserve other GET params (don’t duplicate qs or pagination/sort)
+            <?php // Preserve other GET params (don’t duplicate qs or pagination/sort)
             foreach ($_GET as $k => $v) {
-              if (in_array($k, ['qs', 'gd_paged', 'gd_sort'], true)) continue;
-              if (is_scalar($v)) {
-                printf(
-                  '<input type="hidden" name="%s" value="%s" />',
-                  esc_attr($k),
-                  esc_attr($v)
-                );
-              }
-            }
-            ?>
+                if (in_array($k, ["qs", "gd_paged", "gd_sort"], true)) {
+                    continue;
+                }
+                if (is_scalar($v)) {
+                    printf(
+                        '<input type="hidden" name="%s" value="%s" />',
+                        esc_attr($k),
+                        esc_attr($v)
+                    );
+                }
+            } ?>
 
             <noscript><button type="submit">Apply</button></noscript>
           </div>
@@ -124,7 +131,6 @@ if (!shortcode_exists('search_filter')) {
       }
     });
     </script>
-    <?php
-    return ob_get_clean();
-  });
+    <?php return ob_get_clean();
+    });
 }

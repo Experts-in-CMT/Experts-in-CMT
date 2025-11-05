@@ -130,22 +130,21 @@ endif;
 // --------------------------------------------------
 // Dorsal Root – AJAX loader
 // --------------------------------------------------
-add_action('wp_enqueue_scripts', function () {
-  if (is_page('dorsal-root')) {
-    wp_enqueue_script(
-      'dr-ajax',
-      get_stylesheet_directory_uri() . '/assets/js/dr-ajax.js',
-      [],
-      '1.0',
-      true
-    );
-    wp_localize_script('dr-ajax', 'DR_AJAX', [
-      'url'   => admin_url('admin-ajax.php'),
-      'nonce' => wp_create_nonce('dr_ajax_nonce'),
-    ]);
-  }
+add_action("wp_enqueue_scripts", function () {
+    if (is_page("dorsal-root")) {
+        wp_enqueue_script(
+            "dr-ajax",
+            get_stylesheet_directory_uri() . "/assets/js/dr-ajax.js",
+            [],
+            "1.0",
+            true
+        );
+        wp_localize_script("dr-ajax", "DR_AJAX", [
+            "url" => admin_url("admin-ajax.php"),
+            "nonce" => wp_create_nonce("dr_ajax_nonce"),
+        ]);
+    }
 });
-
 
 /**
  * Genes DB — loop shortcode loader
@@ -452,13 +451,13 @@ wp_enqueue_script(
 // --------------------------------------------------
 // Modular includes: auto-load AJAX endpoints
 // --------------------------------------------------
-add_action('after_setup_theme', function () {
-  $dir = get_stylesheet_directory() . '/inc/ajax';
-  if (is_dir($dir)) {
-    foreach (glob($dir . '/*.php') as $file) {
-      require_once $file;
+add_action("after_setup_theme", function () {
+    $dir = get_stylesheet_directory() . "/inc/ajax";
+    if (is_dir($dir)) {
+        foreach (glob($dir . "/*.php") as $file) {
+            require_once $file;
+        }
     }
-  }
 });
 
 /**

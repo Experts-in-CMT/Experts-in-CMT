@@ -13,18 +13,19 @@ if (!defined("ABSPATH")) {
     exit();
 }
 
-add_shortcode('glossary_fields', function ($atts = []) {
-  ob_start();
+add_shortcode("glossary_fields", function ($atts = []) {
+    ob_start();
 
-  $template = get_stylesheet_directory() . '/templates/glossary-fields-template.php';
+    $template =
+        get_stylesheet_directory() . "/templates/glossary-fields-template.php";
 
-  if (file_exists($template)) {
-    include $template;
-  }
+    if (file_exists($template)) {
+        include $template;
+    }
 
-  // Clean rogue line breaks and extra spaces
-  $output = ob_get_clean();
-  $output = preg_replace('/^\s+|\s+$/u', '', $output);
+    // Clean rogue line breaks and extra spaces
+    $output = ob_get_clean();
+    $output = preg_replace('/^\s+|\s+$/u', "", $output);
 
-  return trim($output);
+    return trim($output);
 });

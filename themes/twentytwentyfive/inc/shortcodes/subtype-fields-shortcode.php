@@ -10,25 +10,25 @@
  */
 
 // Prevent direct access
-defined( 'ABSPATH' ) || exit;
+defined("ABSPATH") || exit();
 
-function eic_subtype_fields_shortcode() {
+function eic_subtype_fields_shortcode()
+{
+    // Only render on single Subtype posts
+    if (!is_singular("subtype")) {
+        return "";
+    }
 
-	// Only render on single Subtype posts
-	if ( ! is_singular( 'subtype' ) ) {
-		return '';
-	}
+    // Locate the display template
+    $template = get_theme_file_path("/templates/subtype-fields-template.php");
 
-	// Locate the display template
-	$template = get_theme_file_path( '/templates/subtype-fields-template.php' );
+    if (!file_exists($template)) {
+        return "<!-- subtype-fields-template.php not found -->";
+    }
 
-	if ( ! file_exists( $template ) ) {
-		return '<!-- subtype-fields-template.php not found -->';
-	}
-
-	// Capture template output
-	ob_start();
-	include $template;
-	return ob_get_clean();
+    // Capture template output
+    ob_start();
+    include $template;
+    return ob_get_clean();
 }
-add_shortcode( 'subtype_fields', 'eic_subtype_fields_shortcode' );
+add_shortcode("subtype_fields", "eic_subtype_fields_shortcode");

@@ -8,26 +8,28 @@
  * - Anchors to #results
  */
 
-if (!defined('ABSPATH')) {
-    exit;
+if (!defined("ABSPATH")) {
+    exit();
 }
 
-add_shortcode('dr_filter', function ($atts = []) {
+add_shortcode("dr_filter", function ($atts = []) {
     ob_start();
 
     // ----------------------------
     // Resolve GET params (UI only)
     // ----------------------------
-    $search_text = isset($_GET['qs']) ? trim((string) wp_unslash($_GET['qs'])) : '';
-    $dr_cat      = isset($_GET['dr_cat']) ? (int) $_GET['dr_cat'] : 0;
+    $search_text = isset($_GET["qs"])
+        ? trim((string) wp_unslash($_GET["qs"]))
+        : "";
+    $dr_cat = isset($_GET["dr_cat"]) ? (int) $_GET["dr_cat"] : 0;
 
     // Current page URL (no query, no hash)
-    $action_url = esc_url( get_permalink() );
+    $action_url = esc_url(get_permalink());
 
     // RESET url (clear qs & dr_paged; keep others including dr_cat)
     $params = $_GET;
-    unset($params['qs'], $params['dr_paged'], $params['dr_cat']);
-    $reset_url = esc_url( add_query_arg( $params, $action_url ) . '#results' );
+    unset($params["qs"], $params["dr_paged"], $params["dr_cat"]);
+    $reset_url = esc_url(add_query_arg($params, $action_url) . "#results");
     ?>
 
 <div class="site-searchwrap">
@@ -48,25 +50,25 @@ add_shortcode('dr_filter', function ($atts = []) {
 
         <!-- CATEGORY -->
         <label class="site-search__field site-search__field--select">
-          <span class="site-search__label">Category</span>
+          <span class="site-search__label">Filter by Category</span>
           <select name="dr_cat" class="site-search__select" aria-label="Filter by category">
             <option value="">All Categories</option>
             <?php
             $cats = get_terms([
-              'taxonomy'   => 'dorsal-root',
-              'hide_empty' => false,
-              'orderby'    => 'name',
-              'order'      => 'ASC',
+                "taxonomy" => "dorsal-root",
+                "hide_empty" => false,
+                "orderby" => "name",
+                "order" => "ASC",
             ]);
             if (!is_wp_error($cats)) {
-              foreach ($cats as $c) {
-                printf(
-                  '<option value="%1$d"%2$s>%3$s</option>',
-                  (int) $c->term_id,
-                  selected($dr_cat, (int) $c->term_id, false),
-                  esc_html($c->name)
-                );
-              }
+                foreach ($cats as $c) {
+                    printf(
+                        '<option value="%1$d"%2$s>%3$s</option>',
+                        (int) $c->term_id,
+                        selected($dr_cat, (int) $c->term_id, false),
+                        esc_html($c->name)
+                    );
+                }
             }
             ?>
           </select>
@@ -95,10 +97,9 @@ add_shortcode('dr_filter', function ($atts = []) {
           <a class="site-search__reset" href="<?php echo $reset_url; ?>">RESET</a>
         </div>
 
-        <?php
-        // Preserve other GET params (don’t duplicate qs or pagination/sort)
+        <?php // Preserve other GET params (don’t duplicate qs or pagination/sort)
         foreach ($_GET as $k => $v) {
-            if (in_array($k, ['qs','dr_paged','dr_sort'], true)) {
+            if (in_array($k, ["qs", "dr_paged", "dr_sort"], true)) {
                 continue;
             }
             if (is_scalar($v)) {
@@ -108,8 +109,7 @@ add_shortcode('dr_filter', function ($atts = []) {
                     esc_attr($v)
                 );
             }
-        }
-        ?>
+        } ?>
 
         <noscript><button type="submit">Apply</button></noscript>
       </div>
@@ -191,6 +191,5 @@ add_shortcode('dr_filter', function ($atts = []) {
 </script>
 </div>
 
-<?php
-    return ob_get_clean();
+<?php return ob_get_clean();
 });

@@ -12,7 +12,7 @@
  */
 
 // Exit if accessed directly
-defined( 'ABSPATH' ) || exit;
+defined("ABSPATH") || exit();
 
 /* ============================================================
    # SUBTYPE FIELDS TEMPLATE
@@ -22,4 +22,4 @@ defined( 'ABSPATH' ) || exit;
      2. Clinical & Genetic Context
      3. Key Publication
    ============================================================ */
-get_template_part( 'templates/subtype-fields-template' );
+get_template_part("templates/subtype-fields-template");

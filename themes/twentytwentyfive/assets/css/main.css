@@ -1371,7 +1371,7 @@ h2.wp-block-heading {
 /* FINAL lock — center Read More in Dorsal Root cards */
 .dr-blog .wp-block-post .wp-block-read-more {
   margin-top: 25px !important;
-     margin-bottom: 50px !important; /* was 1.25rem */
+  margin-bottom: 50px !important; /* was 1.25rem */
   margin-left: auto !important;
   margin-right: auto !important;
   align-self: center !important;
@@ -1382,16 +1382,15 @@ h2.wp-block-heading {
 }
 
 /* Glossary: re-pin Read More to the card floor */
-.dr--glossary .wp-block-post-excerpt { 
-  display: flex; 
-  flex-direction: column; 
-  flex-grow: 1; 
+.dr--glossary .wp-block-post-excerpt {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
 }
-.dr--glossary .wp-block-post .wp-block-read-more { 
-  margin-top: auto !important; 
+.dr--glossary .wp-block-post .wp-block-read-more {
+  margin-top: auto !important;
   /* keep whatever bottom margin you want here; 20–25px works well */
 }
-
 
 /* Dorsal Root: move extra space below excerpt (button stays bottom-aligned) */
 .dr-blog .wp-block-post-excerpt {
@@ -2611,6 +2610,3 @@ h2.wp-block-heading {
 .wp-block-shortcode .site-searchwrap {
   margin-top: 8px; /* tighten extra space added by block */
 }
-
-
-
