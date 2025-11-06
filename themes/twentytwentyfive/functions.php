@@ -128,21 +128,23 @@ if (!function_exists("twentytwentyfive_format_binding")):
 endif;
 
 // --------------------------------------------------
-// Dorsal Root – AJAX loader
+// Modular AJAX loaders
 // --------------------------------------------------
-add_action("wp_enqueue_scripts", function () {
-    if (is_page("dorsal-root")) {
-        wp_enqueue_script(
-            "dr-ajax",
-            get_stylesheet_directory_uri() . "/assets/js/dr-ajax.js",
-            [],
-            "1.0",
-            true
-        );
-        wp_localize_script("dr-ajax", "DR_AJAX", [
-            "url" => admin_url("admin-ajax.php"),
-            "nonce" => wp_create_nonce("dr_ajax_nonce"),
-        ]);
+add_action('wp_enqueue_scripts', function () {
+    $map = [
+        'dorsal-root'  => ['handle' => 'dr-ajax',        'file' => '/assets/js/dr-ajax.js',        'var' => 'DR_AJAX', 'nonce' => 'dr_ajax_nonce'],
+       // 'cmt-words' => ['handle' => 'glossary-ajax',  'file' => '/assets/js/glossary-ajax.js',  'var' => 'GL_AJAX', 'nonce' => 'glossary_ajax_nonce'],
+        // 'genes' => ['handle' => 'genes-ajax', 'file' => '/assets/js/genes-ajax.js', 'var' => 'GENES_AJAX', 'nonce' => 'genes_ajax_nonce'],
+    ];
+
+    foreach ($map as $slug => $c) {
+        if (is_page($slug)) {
+            wp_enqueue_script($c['handle'], get_stylesheet_directory_uri() . $c['file'], [], '1.0', true);
+            wp_localize_script($c['handle'], $c['var'], [
+                'url'   => admin_url('admin-ajax.php'),
+                'nonce' => wp_create_nonce($c['nonce']),
+            ]);
+        }
     }
 });
 

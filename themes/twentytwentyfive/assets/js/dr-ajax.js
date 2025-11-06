@@ -14,9 +14,11 @@ document.addEventListener('DOMContentLoaded', function() {
 		return new URLSearchParams(new FormData(form));
 	}
 
-	function updateUrl(params) {
+	// Updated: allow optional { includeAnchor: true/false }
+	function updateUrl(params, opts = {}) {
 		const qs = params.toString();
-		const url = window.location.pathname + (qs ? '?' + qs : '') + anchor;
+		let url = window.location.pathname + (qs ? '?' + qs : '');
+		if (opts.includeAnchor !== false) url += anchor;
 		window.history.replaceState(null, '', url);
 	}
 
@@ -24,20 +26,19 @@ document.addEventListener('DOMContentLoaded', function() {
 		root.classList.toggle('is-loading', !!on);
 	}
 
-	function focusResults() {
+	// Updated: allow optional { scroll: true/false }
+	function focusResults(opts = {}) {
+		const { scroll = true } = opts;
 		const t = root.querySelector(anchor);
 		if (!t) return;
 		t.setAttribute('tabindex', '-1');
-		t.focus({
-			preventScroll: true
-		});
-		t.scrollIntoView({
-			behavior: 'smooth',
-			block: 'start'
-		});
+		t.focus({ preventScroll: true });
+		if (scroll) {
+			t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+		}
 	}
 
-	async function fetchResults(params) {
+	async function fetchResults(params, opts = {}) {
 		setLoading(true);
 		try {
 			const body = new URLSearchParams();
@@ -58,9 +59,9 @@ document.addEventListener('DOMContentLoaded', function() {
 			});
 			const json = await res.json();
 			if (!json.success) throw new Error('AJAX error');
-			root.innerHTML = json.data.html; // swap
+			root.innerHTML = json.data.html;
 			setLoading(false);
-			focusResults();
+			focusResults(opts);
 			bindPagination();
 		} catch (e) {
 			setLoading(false);
@@ -91,8 +92,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	// Sort change → fetch new results (dropdown lives in dr-posts.php)
 	const sortSel = document.querySelector(`[name="${sortKey}"]`);
+	let suppressSortChange = false; // prevent double fetch on clear
 	if (sortSel) {
 		sortSel.addEventListener('change', function() {
+			if (suppressSortChange) {
+				suppressSortChange = false;
+				return;
+			}
 			const p = new URLSearchParams(new FormData(form));
 			p.delete(pagedKey); // reset pagination
 			if (!sortSel.value) p.delete(sortKey);
@@ -102,6 +108,29 @@ document.addEventListener('DOMContentLoaded', function() {
 		});
 	}
 
+	// 🔥 Sort CLEAR → reset dropdown to Default, no jump scroll
+	const clearBtn = document.querySelector('.genes-sort__clear');
+	if (clearBtn) {
+		clearBtn.addEventListener('click', function(e) {
+			e.preventDefault();
+
+			// Reset the dropdown back to Default (empty value)
+			if (sortSel) {
+				suppressSortChange = true;
+				sortSel.value = ''; // or sortSel.selectedIndex = 0;
+			}
+
+			const p = paramsFromForm();
+			p.delete(sortKey);
+			p.delete(pagedKey);
+
+			// Skip adding #results to avoid jump
+			updateUrl(p, { includeAnchor: false });
+
+			// Reload quietly (no scroll animation)
+			fetchResults(p, { scroll: false });
+		});
+	}
 
 	// Built-in clear on <input type="search">
 	const searchInput = form.querySelector(`input[name="${searchKey}"]`);
@@ -116,17 +145,28 @@ document.addEventListener('DOMContentLoaded', function() {
 		});
 	}
 
-	// RESET link
-	const resetLink = form.querySelector('.site-search__reset');
-	if (resetLink) {
-		resetLink.addEventListener('click', function(e) {
-			e.preventDefault();
-			const p = paramsFromForm();
-			[searchKey, pagedKey, catKey].forEach(k => k && p.delete(k));
-			updateUrl(p);
-			fetchResults(p);
-		});
-	}
+// RESET link → clear filters, focus back on category selector
+const resetLink = form.querySelector('.site-search__reset');
+if (resetLink) {
+  resetLink.addEventListener('click', function(e) {
+    e.preventDefault();
+    const p = paramsFromForm();
+    [searchKey, pagedKey, catKey].forEach(k => k && p.delete(k));
+    updateUrl(p);
+
+    // Fetch results quietly (no scroll)
+    fetchResults(p, { scroll: false });
+
+    // After reload, restore focus to category selector
+    const cat = form.querySelector(`[name="${catKey}"]`);
+    if (cat) {
+      setTimeout(() => {
+        cat.focus({ preventScroll: true });
+      }, 400); // small delay so DOM updates first
+    }
+  });
+}
+
 
 	// Pagination delegation (rebind after swap)
 	function bindPagination() {
@@ -140,9 +180,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			const p = new URLSearchParams(u.search);
 			updateUrl(p);
 			fetchResults(p);
-		}, {
-			once: true
-		});
+		}, { once: true });
 	}
 	bindPagination();
 });

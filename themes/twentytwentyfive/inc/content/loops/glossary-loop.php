@@ -193,6 +193,8 @@ add_shortcode("glossary_loop", function ($atts = []) {
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+
+if (window.GL_AJAX) return;
   const form = document.querySelector('.genes-sort__form');
   if (!form) return;
 
@@ -237,6 +239,7 @@ document.addEventListener('DOMContentLoaded', function () {
     </div>
 
     <!-- Results container (genes-style wrapper) -->
+<div id="gl-results-root" aria-live="polite">
    <div id="results" class="wp-block-query dr-blog dr--glossary" style="scroll-margin-top:100px;">
 
       <?php if ($q->have_posts()): ?>
@@ -420,6 +423,7 @@ document.addEventListener('DOMContentLoaded', function () {
       <?php endif; ?>
 
     </div><!-- /#results -->
+</div>
 
     <script>
     // Genes-style behavior: auto-submit on alpha change and keep #results

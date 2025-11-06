@@ -260,38 +260,51 @@ add_shortcode("dr_posts", function ($atts = []) {
    
 
     <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const form = document.querySelector('.genes-sort__form');
-        if (!form) return;
+document.addEventListener('DOMContentLoaded', function () {
+    // --- DR AJAX safeguard: prevent double handling if dr-ajax.js is active
+    if (window.DR_AJAX) return;
 
-        // Sort change → update URL, reload, scroll to results
-        form.addEventListener('change', function (e) {
-            if (e.target.name !== 'dr_sort') return;
+    const form = document.querySelector('.genes-sort__form');
+    if (!form) return;
+
+    // Sort change → update URL, reload, scroll to results
+    form.addEventListener('change', function (e) {
+        if (e.target.name !== 'dr_sort') return;
+        e.preventDefault();
+        const params = new URLSearchParams(window.location.search);
+        params.delete('dr_paged');
+        const val = e.target.value;
+        if (val) {
+            params.set('dr_sort', val);
+        } else {
+            params.delete('dr_sort');
+        }
+        const newUrl =
+            window.location.pathname +
+            (params.toString() ? '?' + params.toString() : '') +
+            '#results';
+        window.history.replaceState(null, '', newUrl);
+        window.location.reload();
+    });
+
+    // CLEAR button → strip params, reload
+    const clearBtn = form.querySelector('.genes-sort__clear');
+    if (clearBtn) {
+        clearBtn.addEventListener('click', function (e) {
             e.preventDefault();
             const params = new URLSearchParams(window.location.search);
+            params.delete('dr_sort');
             params.delete('dr_paged');
-            const val = e.target.value;
-            if (val) { params.set('dr_sort', val); } else { params.delete('dr_sort'); }
-            const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '') + '#results';
+            const newUrl =
+                window.location.pathname +
+                (params.toString() ? '?' + params.toString() : '') +
+                '#results';
             window.history.replaceState(null, '', newUrl);
             window.location.reload();
         });
-
-        // CLEAR button → strip params, reload
-        const clearBtn = form.querySelector('.genes-sort__clear');
-        if (clearBtn) {
-            clearBtn.addEventListener('click', function (e) {
-                e.preventDefault();
-                const params = new URLSearchParams(window.location.search);
-                params.delete('dr_sort');
-                params.delete('dr_paged');
-                const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '') + '#results';
-                window.history.replaceState(null, '', newUrl);
-                window.location.reload();
-            });
-        }
-    });
-    </script>
+    }
+});
+</script>
 
 <!-- ===============================
      AJAX WRAPPER (for future reloads)
