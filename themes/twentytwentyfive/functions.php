@@ -132,14 +132,46 @@ endif;
 // --------------------------------------------------
 add_action('wp_enqueue_scripts', function () {
     $map = [
-        'dorsal-root'  => ['handle' => 'dr-ajax',        'file' => '/assets/js/dr-ajax.js',        'var' => 'DR_AJAX', 'nonce' => 'dr_ajax_nonce'],
-       // 'cmt-words' => ['handle' => 'glossary-ajax',  'file' => '/assets/js/glossary-ajax.js',  'var' => 'GL_AJAX', 'nonce' => 'glossary_ajax_nonce'],
-        // 'genes' => ['handle' => 'genes-ajax', 'file' => '/assets/js/genes-ajax.js', 'var' => 'GENES_AJAX', 'nonce' => 'genes_ajax_nonce'],
+        'dorsal-root' => [
+            'handle' => 'dr-ajax',
+            'file'   => '/assets/js/dr-ajax.js',
+            'var'    => 'DR_AJAX',
+            'nonce'  => 'dr_ajax_nonce',
+        ],
+        'cmt-words' => [
+            'handle' => 'glossary-ajax',
+            'file'   => '/assets/js/glossary-ajax.js',
+            'var'    => 'GL_AJAX',
+            'nonce'  => 'glossary_ajax_nonce',
+        ],
+        // 'genes' => [
+        //     'handle' => 'genes-ajax',
+        //     'file'   => '/assets/js/genes-ajax.js',
+        //     'var'    => 'GENES_AJAX',
+        //     'nonce'  => 'genes_ajax_nonce',
+        // ],
     ];
 
     foreach ($map as $slug => $c) {
         if (is_page($slug)) {
-            wp_enqueue_script($c['handle'], get_stylesheet_directory_uri() . $c['file'], [], '1.0', true);
+            // JS
+            wp_enqueue_script(
+                $c['handle'],
+                get_stylesheet_directory_uri() . $c['file'],
+                [],
+                '1.0',
+                true
+            );
+
+            // CSS (shared AJAX state + layout fixes)
+            wp_enqueue_style(
+                'loop-ajax',
+                get_stylesheet_directory_uri() . '/assets/css/loop-ajax.css',
+                [],
+                '1.0'
+            );
+
+            // Localized vars
             wp_localize_script($c['handle'], $c['var'], [
                 'url'   => admin_url('admin-ajax.php'),
                 'nonce' => wp_create_nonce($c['nonce']),
@@ -147,6 +179,7 @@ add_action('wp_enqueue_scripts', function () {
         }
     }
 });
+
 
 /**
  * Genes DB — loop shortcode loader

@@ -29,8 +29,9 @@ if (!shortcode_exists("glossary_search_filter")) {
                 : home_url("/cmt-words/");
         }
 
-        $action_url = esc_url($base . "#" . $anchor);
-        $reset_url = esc_url($base . "#" . $anchor);
+     $action_url = esc_url($base . '#results');
+$reset_url  = esc_url($base . '#results');
+
 
         ob_start();
         ?>
@@ -85,53 +86,68 @@ if (!shortcode_exists("glossary_search_filter")) {
     </div>
 
     <script>
-    // Glossary search behavior (no jump; preserve alpha; reset g_paged)
-    document.addEventListener('DOMContentLoaded', function () {
-if (window.GL_AJAX) return;
-      const form = document.querySelector('form.site-search');
-      if (!form) return;
-      const anchor = '#results';
+/**
+ * Glossary search fallback (non-AJAX only)
+ * Safe to keep embedded — it will never run when GL_AJAX is present.
+ */
+document.addEventListener('DOMContentLoaded', function () {
+  // If AJAX system is active, bail immediately
+  if (window.GL_AJAX) return;
 
-      // Submit: set qs, drop g_paged, reload anchored
-      form.addEventListener('submit', function (e) {
-        e.preventDefault();
+  const form = document.querySelector('form.site-search');
+  if (!form) return;
+  const anchor = '#results';
+
+  // Submit: set qs, drop g_paged, reload anchored
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    const params = new URLSearchParams(window.location.search);
+    const val = (form.querySelector('input[name="qs"]')?.value || '').trim();
+    if (val) params.set('qs', val);
+    else params.delete('qs');
+    params.delete('g_paged'); // glossary pagination key
+    const newUrl =
+      window.location.pathname +
+      (params.toString() ? '?' + params.toString() : '') +
+      anchor;
+    window.history.replaceState(null, '', newUrl);
+    window.location.assign(newUrl); // fallback reload (non-AJAX)
+  });
+
+  // Reset: clear qs & g_paged, keep alpha if present
+  const resetLink = form.querySelector('.site-search__reset');
+  if (resetLink) {
+    resetLink.addEventListener('click', function (e) {
+      e.preventDefault();
+      const params = new URLSearchParams(window.location.search);
+      ['qs', 'g_paged'].forEach((k) => params.delete(k));
+      const newUrl =
+        window.location.pathname +
+        (params.toString() ? '?' + params.toString() : '') +
+        anchor;
+      window.history.replaceState(null, '', newUrl);
+      window.location.assign(newUrl);
+    });
+  }
+
+  // Built-in clear (search input ×)
+  const searchInput = form.querySelector('input[name="qs"]');
+  if (searchInput) {
+    searchInput.addEventListener('search', function () {
+      if (searchInput.value === '') {
         const params = new URLSearchParams(window.location.search);
-        const val = (form.querySelector('input[name="qs"]')?.value || '').trim();
-        if (val) params.set('qs', val); else params.delete('qs');
-        params.delete('g_paged'); // glossary pagination key
-        const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '') + anchor;
+        ['qs', 'g_paged'].forEach((k) => params.delete(k));
+        const newUrl =
+          window.location.pathname +
+          (params.toString() ? '?' + params.toString() : '') +
+          anchor;
         window.history.replaceState(null, '', newUrl);
-        window.location.reload();
-      });
-
-      // Reset: clear qs & g_paged, keep alpha if present
-      const resetLink = form.querySelector('.site-search__reset');
-      if (resetLink) {
-        resetLink.addEventListener('click', function (e) {
-          e.preventDefault();
-          const params = new URLSearchParams(window.location.search);
-          ['qs','g_paged'].forEach(k => params.delete(k));
-          const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '') + anchor;
-          window.history.replaceState(null, '', newUrl);
-          window.location.reload();
-        });
-      }
-
-      // Built-in clear (search input ×)
-      const searchInput = form.querySelector('input[name="qs"]');
-      if (searchInput) {
-        searchInput.addEventListener('search', function () {
-          if (searchInput.value === '') {
-            const params = new URLSearchParams(window.location.search);
-            ['qs','g_paged'].forEach(k => params.delete(k));
-            const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '') + anchor;
-            window.history.replaceState(null, '', newUrl);
-            window.location.reload();
-          }
-        });
+        window.location.assign(newUrl);
       }
     });
-    </script>
+  }
+});
+</script>
     <?php return ob_get_clean();
     });
 }

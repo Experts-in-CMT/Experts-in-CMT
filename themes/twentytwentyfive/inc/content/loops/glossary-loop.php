@@ -193,44 +193,51 @@ add_shortcode("glossary_loop", function ($atts = []) {
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+  // If AJAX is active, bail out so this native handler never runs
+  if (window.GL_AJAX) return;
 
-if (window.GL_AJAX) return;
   const form = document.querySelector('.genes-sort__form');
   if (!form) return;
 
-  // Submit → reset pagination, push #results, then reload (genes pattern)
+  // Native submit → stays as fallback
   form.addEventListener('submit', function (e) {
     e.preventDefault();
     const params = new URLSearchParams(new FormData(form));
-    params.delete('g_paged'); // reset pagination
-
-    const newUrl = window.location.pathname + '?' + params.toString() + '#results';
-    window.history.replaceState(null, '', newUrl);
-    window.location.reload();
+    params.delete('g_paged');
+    const qs = params.toString();
+    const newUrl = window.location.pathname + (qs ? '?' + qs : '') + '#results';
+    window.location.assign(newUrl);
   });
 
-  // Auto-submit on alpha change
-  const alpha = form.querySelector('select[name="alpha"]');
-  if (alpha) {
-    alpha.addEventListener('change', function () {
-      form.requestSubmit ? form.requestSubmit() : form.submit();
+  /* keep these commented — AJAX owns them now
+  // Auto-submit on SORT change
+  const sortSelect = form.querySelector('select[name="g_sort"]');
+  if (sortSelect) {
+    sortSelect.addEventListener('change', function () {
+      ...
     });
   }
 
-  // Reset (no jump): clear qs/alpha/g_paged, then #results + reload
-  const clearBtn = document.querySelector('.genes-sort__clear');
+  // Auto-submit on ALPHA change
+  const alphaSelect = form.querySelector('select[name="alpha"]');
+  if (alphaSelect) {
+    alphaSelect.addEventListener('change', function () {
+      ...
+    });
+  }
+  */
+
+  // CLEAR button — stays as fallback
+  const clearBtn = form.querySelector('.genes-sort__clear');
   if (clearBtn) {
     clearBtn.addEventListener('click', function (e) {
       e.preventDefault();
       const params = new URLSearchParams(new FormData(form));
-      params.delete('qs');
       params.delete('alpha');
       params.delete('g_paged');
-
-      const query = params.toString();
-      const newUrl = window.location.pathname + (query ? '?' + query : '') + '#results';
-      window.history.replaceState(null, '', newUrl);
-      window.location.reload();
+      const qs = params.toString();
+      const newUrl = window.location.pathname + (qs ? '?' + qs : '') + '#results';
+      window.location.assign(newUrl);
     });
   }
 });
@@ -425,34 +432,7 @@ if (window.GL_AJAX) return;
     </div><!-- /#results -->
 </div>
 
-    <script>
-    // Genes-style behavior: auto-submit on alpha change and keep #results
-    document.addEventListener('DOMContentLoaded', function () {
-      const form = document.querySelector('.genes-sort__form');
-      if (!form) return;
-
-      // Auto-submit when alpha changes
-      const alpha = form.querySelector('select[name="alpha"]');
-      if (alpha) {
-        alpha.addEventListener('change', function () {
-          const params = new URLSearchParams(new FormData(form));
-          params.delete('g_paged'); // reset pagination
-          const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '') + '#results';
-          window.location.assign(newUrl);
-        });
-      }
-
-      // CLEAR button — strip alpha & g_paged, jump to #results
-      const clearBtn = form.querySelector('.genes-sort__clear');
-      if (clearBtn) {
-        clearBtn.addEventListener('click', function (e) {
-          e.preventDefault();
-          const base = window.location.pathname + '#results';
-          window.location.assign(base);
-        });
-      }
-    });
-    </script>
+    
 
     <?php return ob_get_clean();
 });
