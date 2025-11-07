@@ -18,6 +18,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.7.7] - 2025-11-07
+### Added
+- **Dorsal Root Filters UI:** Introduced the `[dr_filter]` shortcode with category dropdown (taxonomy: `dorsal-root`) and search input styled via the global `.site-search__row`. The dropdown auto-submits, resets pagination, and anchors to `#results`.
+- **Glossary (CMT Words) AJAX pipeline:** Implemented a modular AJAX loader with the `glossary_get_loop` endpoint returning identical inner `#results` markup for parity with the non-AJAX shortcode render.
+- **AJAX guards:** Unified `DR_AJAX` and `GL_AJAX` safeguards across both stacks to prevent double-handling, jitter, and redundant reloads. Added `stopImmediatePropagation()` to ensure single-path events.
+- **Search UX polish:** Improved accessibility and mobile typing with `inputmode="search"`, `autocomplete="on"`, `autocapitalize="none"`, `spellcheck="false"`, and `enterkeyhint="search"`.
+- **Dorsal Root filter styling:** Added a page-specific CSS rule to match the category `<select>` height (46 px) to the search input for consistent visual rhythm.
+
+### Changed
+- **DR loop query logic:** Search now performs a union across post title, excerpt, and content plus tag names and `dorsal-root` terms. When a category is selected, results are the intersection (Category ∩ Union). “Only category” path uses a single `tax_query` with `include_children`.
+- **Taxonomy scope:** Replaced core `category` references with the custom `dorsal-root` taxonomy.
+- **Parameter handling:** Unified GET handling for DR (`qs`, `dr_paged`, `dr_sort`, `dr_cat`) with hidden inputs preserving all other parameters. Reset clears `qs`, `dr_paged`, and `dr_cat`.
+- **Form behavior standardization:** Overrode native WP form bubbling to deliver consistent submit, reset, and pagination actions across DR, Glossary, and Genes.
+- **CSS structure:** Added a dedicated `/* DORSAL ROOT FILTERS */` section at the end of `main.css` for scoped styling, maintaining modular cascade order.
+
+### Fixed
+- **Duplicate sort switch** removed; ensured a single `new WP_Query($args)` call.
+- **`tax_query` shape** corrected for “only category” case.
+- **Anchor jump trimming:** Pagination and submit flows now preserve `#results` and scroll position.
+- **Glossary jitter:** Eliminated through AJAX guards and single-path event handling.
+- **Minor CSS/JS hygiene:** Normalized margins, corrected invalid values, and cleaned inline script placement.
+- **Visual offset:** Fixed mismatch between DR category selector and search input height; full pixel-perfect parity achieved.
+
+### Known Issues / Next
+- **RESET jump edge case:** A native anchor jump may still occur on DR reset; planned refinement via `history.replaceState` + programmatic reload.
+- **Glossary render-offset investigation:** Occasional overlap behind hero/search wrapper remains under review (layout flow / z-index vs space reservation).
+- **Genes AJAX stack:** Next milestone will port this validated DR/Glossary architecture to the Genes Database loop.
+
+
 ## [0.7.6] - 2025-11-05
 
 ### Added
