@@ -108,7 +108,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		});
 	}
 
-	// Sort CLEAR → reset dropdown to Default, no jump scroll
+	// 🔥 Sort CLEAR → reset dropdown to Default, no jump scroll
 	const clearBtn = document.querySelector('.genes-sort__clear');
 	if (clearBtn) {
 		clearBtn.addEventListener('click', function(e) {
@@ -132,92 +132,40 @@ document.addEventListener('DOMContentLoaded', function() {
 		});
 	}
 
-	// Built-in clear on <input type="search"> [Glossary parity]
-const searchInput = form.querySelector(`input[name="${searchKey}"]`);
-if (searchInput) {
-	searchInput.addEventListener('search', async function () {
-		// Only act when the native "×" clear empties the field
-		if (searchInput.value !== '') return;
+	// Built-in clear on <input type="search">
+	const searchInput = form.querySelector(`input[name="${searchKey}"]`);
+	if (searchInput) {
+		searchInput.addEventListener('search', function() {
+			if (searchInput.value === '') {
+				const p = paramsFromForm();
+				[searchKey, pagedKey, catKey].forEach(k => k && p.delete(k));
+				updateUrl(p);
+				fetchResults(p);
+			}
+		});
+	}
 
-		const p = paramsFromForm();
-		[searchKey, pagedKey, catKey].forEach(k => k && p.delete(k));
-
-		updateUrl(p, { includeAnchor: false });
-
-		setLoading(true);
-		try {
-			await fetchResults(p, { scroll: false });
-			// Re-focus the cleared input after results refresh
-			const newInput = form.querySelector(`input[name="${searchKey}"]`);
-			if (newInput) newInput.focus({ preventScroll: true });
-		} finally {
-			setLoading(false);
-		}
-	});
-}
-
-
-// --- Live Input Search (Debounced) [Glossary parity] ---
-function debounce(fn, wait) {
-	let t;
-	return function (...args) {
-		clearTimeout(t);
-		t = setTimeout(() => fn.apply(this, args), wait);
-	};
-}
-
-document.addEventListener(
-  'input',
-  debounce(function (e) {
-    const input = e.target.closest(`input[name="${searchKey}"]`);
-    if (!input || !form.contains(input)) return;
-
-    const p = paramsFromForm();
-    p.delete(pagedKey);
-
-    updateUrl(p); // Keep anchor
-    fetchResults(p, { scroll: false }).then(() => {
-      const newInput = form.querySelector(`input[name="${searchKey}"]`);
-      if (newInput) newInput.focus({ preventScroll: true });
-    });
-  }, 350),
-  false
-);
-
-
-
-
-// RESET link → clear qs, reset category, focus back on category selector
+// RESET link → clear filters, focus back on category selector
 const resetLink = form.querySelector('.site-search__reset');
 if (resetLink) {
-  resetLink.addEventListener('click', async function(e) {
+  resetLink.addEventListener('click', function(e) {
     e.preventDefault();
-
-    // Clear search input if present
-    const searchInput = form.querySelector(`input[name="${searchKey}"]`);
-    if (searchInput) searchInput.value = '';
-
-    // Reset category to default (empty string)
-    const cat = form.querySelector(`[name="${catKey}"]`);
-    if (cat) cat.value = '';
-
     const p = paramsFromForm();
     [searchKey, pagedKey, catKey].forEach(k => k && p.delete(k));
+    updateUrl(p);
 
-    updateUrl(p, { includeAnchor: false });
+    // Fetch results quietly (no scroll)
+    fetchResults(p, { scroll: false });
 
-    setLoading(true);
-    try {
-      await fetchResults(p, { scroll: false });
-
-      // Focus on category selector after refresh
-      if (cat) cat.focus({ preventScroll: true });
-    } finally {
-      setLoading(false);
+    // After reload, restore focus to category selector
+    const cat = form.querySelector(`[name="${catKey}"]`);
+    if (cat) {
+      setTimeout(() => {
+        cat.focus({ preventScroll: true });
+      }, 400); // small delay so DOM updates first
     }
   });
 }
-
 
 
 	// Pagination delegation (rebind after swap)
