@@ -2610,3 +2610,24 @@ h2.wp-block-heading {
 .wp-block-shortcode .site-searchwrap {
   margin-top: 8px; /* tighten extra space added by block */
 }
+
+/* ------------------------------------------------------------------
+   DORSAL ROOT FILTERS — page-specific overrides
+   ------------------------------------------------------------------ */
+/* DR filter: make category <select> match the search input height */
+.site-searchwrap form.site-search[data-loop="dr"] .site-search__select {
+  height: 46px;                 /* match the search input */
+  padding: 10px 14px;           /* same internal padding */
+  border: 1.5px solid #d6d9de;  /* same border weight/color */
+  border-radius: 14px;          /* same rounding */
+  background: #fff;
+  font-size: 15px;
+  line-height: 1.2;
+  appearance: none;             /* keep custom arrow clean */
+  background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238E97A3' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 12px 8px;
+  box-sizing: border-box;
+}
+
