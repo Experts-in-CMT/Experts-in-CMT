@@ -159,9 +159,19 @@ add_shortcode("genes_filter", function () {
     ob_start();
     ?>
 
- <a id="genes-filter"></a>
+<a id="genes-filter"></a>
 <div class="genesdb-filter-wrap">
-  <form class="genes-filter" method="get" action="<?php echo $action_url; ?>">
+  <form class="site-search genes-filter"
+      method="get"
+      action="<?php echo $action_url; ?>"
+      data-loop="genes"
+      data-search-param="qs"
+      data-paged-param="gd_paged"
+      data-sort-param="gd_sort"
+      data-anchor="#results"
+      data-per-page="12"
+      role="search">
+
     <div class="genes-filter__bar">
       <div class="genes-filter__row">
 
@@ -175,52 +185,35 @@ add_shortcode("genes_filter", function () {
   <select name="cmt_type" id="gf-type" class="genes-filter__select">
     <option value="0"<?php selected($type_curr, 0); ?>>Browse All</option>
     <?php foreach ($type_terms as $term):
-
-        $tid = is_object($term)
-            ? (int) $term->term_id
-            : (int) ($term["term_id"] ?? 0);
-        $tobj = $tid ? get_term($tid, "cmt_type") : null;
-        $tname = $tobj && !is_wp_error($tobj) ? (string) $tobj->name : "";
-        ?>
+      $tid = is_object($term) ? (int) $term->term_id : (int) ($term["term_id"] ?? 0);
+      $tobj = $tid ? get_term($tid, "cmt_type") : null;
+      $tname = $tobj && !is_wp_error($tobj) ? (string) $tobj->name : "";
+    ?>
       <option value="<?php echo $tid; ?>" <?php selected($type_curr, $tid); ?>>
         <?php echo esc_html($tname); ?>
       </option>
-    <?php
-    endforeach; ?>
+    <?php endforeach; ?>
   </select>
 </label>
-
 
 <!-- INHERITANCE -->
 <label class="genes-filter__field">
   <span class="genes-filter__label">Select Inheritance</span>
   <?php
   $inheritance_terms = _eicmt_gf_get_terms_ordered("inheritance");
-  $inheritance_curr = isset($_GET["inheritance"])
-      ? (int) $_GET["inheritance"]
-      : 0;
+  $inheritance_curr = isset($_GET["inheritance"]) ? (int) $_GET["inheritance"] : 0;
   ?>
   <select name="inheritance" id="gf-inheritance" class="genes-filter__select">
-    <option value="0"<?php selected(
-        $inheritance_curr,
-        0
-    ); ?>>All Inheritance</option>
+    <option value="0"<?php selected($inheritance_curr, 0); ?>>All Inheritance</option>
     <?php foreach ($inheritance_terms as $term):
-
-        $tid = is_object($term)
-            ? (int) $term->term_id
-            : (int) ($term["term_id"] ?? 0);
-        $tobj = $tid ? get_term($tid, "inheritance") : null;
-        $tname = $tobj && !is_wp_error($tobj) ? (string) $tobj->name : "";
-        ?>
-      <option value="<?php echo $tid; ?>" <?php selected(
-    $inheritance_curr,
-    $tid
-); ?>>
+      $tid = is_object($term) ? (int) $term->term_id : (int) ($term["term_id"] ?? 0);
+      $tobj = $tid ? get_term($tid, "inheritance") : null;
+      $tname = $tobj && !is_wp_error($tobj) ? (string) $tobj->name : "";
+    ?>
+      <option value="<?php echo $tid; ?>" <?php selected($inheritance_curr, $tid); ?>>
         <?php echo esc_html($tname); ?>
       </option>
-    <?php
-    endforeach; ?>
+    <?php endforeach; ?>
   </select>
 </label>
 
@@ -232,26 +225,16 @@ add_shortcode("genes_filter", function () {
   $neuropathy_curr = isset($_GET["neuropathy"]) ? (int) $_GET["neuropathy"] : 0;
   ?>
   <select name="neuropathy" id="gf-neuropathy" class="genes-filter__select">
-    <option value="0"<?php selected(
-        $neuropathy_curr,
-        0
-    ); ?>>All Neuropathy</option>
+    <option value="0"<?php selected($neuropathy_curr, 0); ?>>All Neuropathy</option>
     <?php foreach ($neuropathy_terms as $term):
-
-        $tid = is_object($term)
-            ? (int) $term->term_id
-            : (int) ($term["term_id"] ?? 0);
-        $tobj = $tid ? get_term($tid, "neuropathy") : null;
-        $tname = $tobj && !is_wp_error($tobj) ? (string) $tobj->name : "";
-        ?>
-      <option value="<?php echo $tid; ?>" <?php selected(
-    $neuropathy_curr,
-    $tid
-); ?>>
+      $tid = is_object($term) ? (int) $term->term_id : (int) ($term["term_id"] ?? 0);
+      $tobj = $tid ? get_term($tid, "neuropathy") : null;
+      $tname = $tobj && !is_wp_error($tobj) ? (string) $tobj->name : "";
+    ?>
+      <option value="<?php echo $tid; ?>" <?php selected($neuropathy_curr, $tid); ?>>
         <?php echo esc_html($tname); ?>
       </option>
-    <?php
-    endforeach; ?>
+    <?php endforeach; ?>
   </select>
 </label>
 
@@ -263,30 +246,20 @@ add_shortcode("genes_filter", function () {
   $chromosome_curr = isset($_GET["chromosome"]) ? (int) $_GET["chromosome"] : 0;
   ?>
   <select name="chromosome" id="gf-chromosome" class="genes-filter__select">
-    <option value="0"<?php selected(
-        $chromosome_curr,
-        0
-    ); ?>>All Chromosomes</option>
+    <option value="0"<?php selected($chromosome_curr, 0); ?>>All Chromosomes</option>
     <?php foreach ($chromosome_terms as $term):
-
-        $tid = is_object($term)
-            ? (int) $term->term_id
-            : (int) ($term["term_id"] ?? 0);
-        $tobj = $tid ? get_term($tid, "chromosome") : null;
-        $tname = $tobj && !is_wp_error($tobj) ? (string) $tobj->name : "";
-        ?>
-      <option value="<?php echo $tid; ?>" <?php selected(
-    $chromosome_curr,
-    $tid
-); ?>>
+      $tid = is_object($term) ? (int) $term->term_id : (int) ($term["term_id"] ?? 0);
+      $tobj = $tid ? get_term($tid, "chromosome") : null;
+      $tname = $tobj && !is_wp_error($tobj) ? (string) $tobj->name : "";
+    ?>
+      <option value="<?php echo $tid; ?>" <?php selected($chromosome_curr, $tid); ?>>
         <?php echo esc_html($tname); ?>
       </option>
-    <?php
-    endforeach; ?>
+    <?php endforeach; ?>
   </select>
 </label>
 
-
+<!-- SEARCH -->
 <label class="genes-filter__field genes-filter__field--search">
   <span class="genes-filter__label">Search by Gene, by Subtype, or by Year of Discovery</span>
   <input
@@ -294,7 +267,11 @@ add_shortcode("genes_filter", function () {
     name="qs"
     value="<?php echo esc_attr($search_text); ?>"
     placeholder='ex: PMP22, SORD, CMTDIG, dHMN-2C, 1999 (type "All" to show everything)'
-    autocomplete="off"
+    autocomplete="on"
+    autocapitalize="none"
+    spellcheck="false"
+    inputmode="search"
+    enterkeyhint="search"
     aria-describedby="genes-filter-hint"
   />
 </label>
@@ -302,124 +279,46 @@ add_shortcode("genes_filter", function () {
 <!-- ACTIONS -->
 <div class="genes-filter__actions" id="genes-filter-hint">
   <button type="submit" class="genes-filter__btn">APPLY FILTERS</button>
-  <a class="genes-filter__link" href="<?php echo $reset_url; ?>">RESET</a>
+  <a class="genes-filter__link"
+     href="<?php echo esc_url( $reset_url ); ?>#results"
+     data-role="genes-reset">RESET</a>
 </div>
 
-
-<?php // Preserve other GET params (skip visible controls and gd_sort)
-
-    foreach ($_GET as $k => $v) {
-    if (
-        in_array(
-            $k,
-            [
-                "cmt_type",
-                "inheritance",
-                "neuropathy",
-                "chromosome",
-                "qs",
-                "gd_sort",
-            ],
-            true
-        )
-    ) {
-        continue;
-    }
-    if (is_scalar($v)) {
-        printf(
-            '<input type="hidden" name="%s" value="%s">',
-            esc_attr($k),
-            esc_attr($v)
-        );
-    }
-} ?>
+<?php
+// Preserve other GET params (skip visible controls and gd_* we manage)
+foreach ($_GET as $k => $v) {
+  if (in_array($k, [
+    'cmt_type',
+    'inheritance',
+    'neuropathy',
+    'chromosome',
+    'qs',
+    'gd_sort',
+    'gd_paged', // skip to prevent duplicate
+  ], true)) {
+    continue;
+  }
+  if (is_scalar($v)) {
+    printf('<input type="hidden" name="%s" value="%s">', esc_attr($k), esc_attr($v));
+  }
+}
+?>
 
 <noscript><button type="submit">Apply</button></noscript>
 
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-  var input = document.querySelector('form.genes-filter input[name="qs"]');
-  if (!input) return;
-  input.addEventListener('search', function () {
-    if (input.value === '') window.location.href = <?php echo json_encode(
-        $reset_url
-    ); ?>;
-  });
-});
-</script>
+<input type="hidden" name="gd_paged" value="<?php echo isset($_GET['gd_paged']) ? esc_attr(wp_unslash($_GET['gd_paged'])) : '1'; ?>">
+
+
 
 </div>
 </div>
+
 </form>
 
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-  const form = document.querySelector('form.genes-filter');
-  if (!form) return;
 
-  const anchor = '#results';
 
-  // Submit: apply filters without jumping
-  form.addEventListener('submit', function (e) {
-    e.preventDefault();
 
-    const params = new URLSearchParams(window.location.search);
 
-    // Collect values from form controls
-    const fields = ['cmt_type','inheritance','neuropathy','chromosome','qs'];
-    fields.forEach((name) => {
-      const el = form.querySelector(`[name="${name}"]`);
-      if (!el) return;
-      const val = (el.tagName === 'SELECT' || el.type === 'search') ? el.value.trim() : el.value.trim();
-
-      // For selects, treat "0" as unset
-      if (el.tagName === 'SELECT') {
-        if (val && val !== '0') params.set(name, val);
-        else params.delete(name);
-      } else {
-        if (val) params.set(name, val);
-        else params.delete(name);
-      }
-    });
-
-    // Reset pagination; keep gd_sort if present
-    params.delete('gd_paged');
-
-    const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '') + anchor;
-    window.history.replaceState(null, '', newUrl);
-    window.location.reload();
-  });
-
-  // RESET: clear all filters (and sort), no jump
-  const resetLink = form.querySelector('.genes-filter__link');
-  if (resetLink) {
-    resetLink.addEventListener('click', function (e) {
-      e.preventDefault();
-
-      const params = new URLSearchParams(window.location.search);
-      ['cmt_type','inheritance','neuropathy','chromosome','qs','gd_paged','gd_sort'].forEach(k => params.delete(k));
-
-      const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '') + anchor;
-      window.history.replaceState(null, '', newUrl);
-      window.location.reload();
-    });
-  }
-
-  // Optional: if user clicks the built-in clear on the search input, clear and reload without jump
-  const searchInput = form.querySelector('input[name="qs"]');
-  if (searchInput) {
-    searchInput.addEventListener('search', function () {
-      if (searchInput.value === '') {
-        const params = new URLSearchParams(window.location.search);
-        ['qs','gd_paged'].forEach(k => params.delete(k));
-        const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '') + anchor;
-        window.history.replaceState(null, '', newUrl);
-        window.location.reload();
-      }
-    });
-  }
-});
-</script>
 
 </div>
 
