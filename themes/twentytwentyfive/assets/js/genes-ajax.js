@@ -1,235 +1,192 @@
 /**
  * ============================================================
- *  genes-ajax.js
+ *  GENES AJAX STACK (namespaced for genes-filter only)
  *  ------------------------------------------------------------
- *  Genes Database AJAX Stack (DR parity)
- *  Handles filter, search, sort, and pagination actions.
- *  Replaces inner #genes-results-root content with fresh results.
+ *  Scope:
+ *    - Handles AJAX reloading of results (#genes-results-root)
+ *    - Listens to form submissions, dropdown changes, pagination
+ *    - Uses ONLY .genes-filter__* classes
+ *    - Keeps scroll position smooth, no anchor jumps
  * ============================================================
  */
 
 document.addEventListener('DOMContentLoaded', function () {
-  const form = document.querySelector('form.site-search.genes-filter[data-loop="genes"]');
+  const form = document.querySelector('form.genes-filter[data-loop="genes"]');
   const root = document.querySelector('#genes-results-root');
   if (!form || !root || !window.GENES_AJAX) return;
 
-  /* ============================================================
-     ===================== [ SECTION: CONFIG ] ===================
-     ============================================================ */
-  const cfg       = window.GENES_AJAX || {};
-  const ACTION    = cfg.action || 'genes_get_loop';
-  const AJAX_URL  = cfg.url || (window.ajaxurl || '/wp-admin/admin-ajax.php');
-  const NONCE     = cfg.nonce || '';
+  const endpoint = GENES_AJAX.url;
+  const nonce = GENES_AJAX.nonce;
 
-  const searchKey = form.dataset.searchParam || 'qs';
-  const pagedKey  = form.dataset.pagedParam  || 'gd_paged';
-  const sortKey   = form.dataset.sortParam   || 'gd_sort';
-  const anchorSel = form.dataset.anchor      || '#results';
-  const perPage   = form.dataset.perPage     || '12';
+  // ------------------------------------------------------------
+  // Helper: Serialize form to FormData
+  // ------------------------------------------------------------
+  function getFormData() {
+    const data = new FormData(form);
+    data.append('action', 'genes_get_loop');
+    data.append('nonce', nonce);
+    return data;
+  }
 
-  const facetKeys = ['cmt_type', 'inheritance', 'neuropathy', 'chromosome'];
-
-  /* ============================================================
-     ===================== [ SECTION: HELPERS ] =================
-     ============================================================ */
-
-  function paramsFromForm() {
-    const fd = new FormData(form);
-    const p = new URLSearchParams();
-    fd.forEach((val, key) => {
-      if (typeof val === 'string' && val.trim() !== '') {
-        p.set(key, val.trim());
+  // ------------------------------------------------------------
+  // Helper: Smoothly replace results (optional scroll)
+  // ------------------------------------------------------------
+  function updateResults(html, doScroll = false) {
+    root.style.opacity = '0.3';
+    setTimeout(() => {
+      root.innerHTML = html;
+      root.style.opacity = '1';
+      if (doScroll) {
+        const resultsEl = document.querySelector('#results');
+        if (resultsEl) {
+          window.scrollTo({
+            top: resultsEl.offsetTop - 120,
+            behavior: 'smooth'
+          });
+        }
       }
-    });
-    facetKeys.forEach((key) => {
-      const v = p.get(key);
-      if (v === '0' || v === '' || v == null) p.delete(key);
-    });
-    return p;
+    }, 150);
   }
 
-  function updateUrl(params, opts = {}) {
-    const { scroll = false } = opts;
-    const url = new URL(window.location.href);
-    url.search = params.toString();
-    window.history.replaceState(null, '', url.toString());
-    if (scroll) focusResults();
-  }
 
-  function setLoading(isLoading) {
-    const el = root.querySelector('.genes-totals');
-    if (!el) return;
-    el.setAttribute('aria-busy', isLoading ? 'true' : 'false');
-  }
-
-  function focusResults() {
-    const target = document.querySelector(anchorSel) || root;
-    if (!target) return;
-    target.setAttribute('tabindex', '-1');
-    target.focus({ preventScroll: true });
-  }
-
-  /* ============================================================
-     ===================== [ SECTION: FETCH ] ===================
-     ============================================================ */
-
-  async function fetchResults(params, opts = {}) {
-    const { scroll = true } = opts;
-    setLoading(true);
+  // ------------------------------------------------------------
+  // AJAX Fetch
+  // ------------------------------------------------------------
+    async function fetchResults(formData, doScroll = false) {
 
     try {
-      const body = new URLSearchParams();
-      body.set('action', ACTION);
-      if (NONCE) body.set('nonce', NONCE);
-
-      body.set(pagedKey, params.get(pagedKey) || '1');
-      if (searchKey) body.set(searchKey, params.get(searchKey) || '');
-      if (sortKey) body.set(sortKey, params.get(sortKey) || '');
-      if (perPage) body.set('per_page', perPage);
-
-      facetKeys.forEach((key) => {
-        const v = params.get(key);
-        if (v != null) body.set(key, v);
-      });
-
-      const res = await fetch(AJAX_URL, {
+      const response = await fetch(endpoint, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
-        credentials: 'same-origin',
-        body: body.toString(),
+        body: formData,
       });
+      const json = await response.json();
+      if (json.success && json.data && json.data.html) {
+       updateResults(json.data.html, doScroll);
 
-      const json = await res.json();
-      if (!json || json.success !== true) throw new Error('AJAX error');
-
-      root.innerHTML = json.data.html || '';
-      setLoading(false);
-      if (scroll) focusResults();
-
+      } else {
+        console.error('Genes AJAX → Invalid response:', json);
+      }
     } catch (err) {
-      console.error('[Genes AJAX]', err);
-      setLoading(false);
+      console.error('Genes AJAX → Fetch error:', err);
     }
   }
 
-  /* ============================================================
-     ===================== [ SECTION: FORM HOOKS ] ===============
-     ============================================================ */
-
-  // Submit button → full form reload
+  // ------------------------------------------------------------
+  // Event: Submit form manually (Enter key or Apply button)
+  // ------------------------------------------------------------
   form.addEventListener('submit', function (e) {
     e.preventDefault();
-    const params = paramsFromForm();
-    params.delete(pagedKey);
-    updateUrl(params);
-    fetchResults(params);
+    const fd = getFormData();
+    fetchResults(fd);
   });
 
-  // Facet dropdowns (auto-submit)
-  const facetSelects = form.querySelectorAll('.genes-filter__select');
-  facetSelects.forEach((el) => {
-    el.addEventListener('change', function () {
-      const params = paramsFromForm();
-      params.delete(pagedKey);
-      updateUrl(params);
-      fetchResults(params);
-    });
-  });
+  // ------------------------------------------------------------
+  // Event: Change any dropdown (.genes-filter__select)
+  // ------------------------------------------------------------
+form.querySelectorAll('.genes-filter__select').forEach(select => {
+  select.addEventListener('change', function () {
+    // Reset pagination on filter change
+    if (form.querySelector('[name="gd_paged"]')) {
+      form.querySelector('[name="gd_paged"]').value = 1;
+    }
+    const fd = getFormData();
 
-  // Search input (debounced)
-  const searchInput = form.querySelector(`input[name="${searchKey}"]`);
+    // ✅ Debug snapshot
+    console.log('FormData snapshot:', Array.from(fd.entries()));
+
+    fetchResults(fd);
+  });
+});
+
+
+  // ------------------------------------------------------------
+  // Event: Typing in search input (.genes-filter__input)
+  // ------------------------------------------------------------
+  const searchInput = form.querySelector('.genes-filter__input');
   if (searchInput) {
-    let timer = null;
+    let debounceTimer;
     searchInput.addEventListener('input', function () {
-      const params = paramsFromForm();
-      params.delete(pagedKey);
-      updateUrl(params, { scroll: false });
-      clearTimeout(timer);
-      timer = setTimeout(() => fetchResults(params), 350);
-    });
-
-    // Built-in “x” clear behavior
-    searchInput.addEventListener('search', function () {
-      if (searchInput.value === '') {
-        const params = paramsFromForm();
-        params.delete(searchKey);
-        params.delete(pagedKey);
-        updateUrl(params, { scroll: false });
-        fetchResults(params);
-      }
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        if (form.querySelector('[name="gd_paged"]')) {
+          form.querySelector('[name="gd_paged"]').value = 1;
+        }
+        const fd = getFormData();
+        fetchResults(fd);
+      }, 400);
     });
   }
 
-  // RESET link (clear all filters)
-  const resetLink = form.querySelector('[data-role="genes-reset"], .genes-filter__link');
-  if (resetLink) {
-    resetLink.addEventListener('click', function (e) {
-      e.preventDefault();
-      const params = new URLSearchParams();
-      updateUrl(params);
-      fetchResults(params);
-    });
-  }
-
-  /* ============================================================
-     ===================== [ SECTION: SORT TOOLBAR ] =============
-     ============================================================ */
-
-  const sortSel = document.querySelector(`[name="${sortKey}"]`);
-  let suppressSortChange = false;
-
-  // Sort dropdown change
-  if (sortSel) {
-    sortSel.addEventListener('change', function () {
-      if (suppressSortChange) {
-        suppressSortChange = false;
-        return;
-      }
-      const p = paramsFromForm();
-      p.delete(pagedKey);
-      if (!sortSel.value) p.delete(sortKey);
-      else p.set(sortKey, sortSel.value);
-      updateUrl(p);
-      fetchResults(p, { scroll: false });
-    });
-  }
-
-  // Sort clear button
-  const clearBtn = document.querySelector('.genes-sort__clear');
-  if (clearBtn) {
-    clearBtn.addEventListener('click', function (e) {
-      e.preventDefault();
-      if (sortSel) {
-        suppressSortChange = true;
-        sortSel.value = '';
-      }
-      const p = paramsFromForm();
-      p.delete(sortKey);
-      p.delete(pagedKey);
-      updateUrl(p, { includeAnchor: false });
-      fetchResults(p, { scroll: false });
-    });
-  }
-
-  /* ============================================================
-     ===================== [ SECTION: PAGINATION ] ===============
-     ============================================================ */
-
+  // ------------------------------------------------------------
+  // Event: Pagination links inside results
+  // ------------------------------------------------------------
   root.addEventListener('click', function (e) {
-    const a = e.target.closest('a.page-numbers, a.prev, a.next');
-    if (!a) return;
+    const link = e.target.closest('.page-numbers');
+    if (!link || !link.href) return;
+
     e.preventDefault();
-    e.stopImmediatePropagation();
+    const url = new URL(link.href);
+    const params = new URLSearchParams(url.search);
+    const paged = params.get('gd_paged') || 1;
 
-    const link = new URL(a.href, window.location.origin);
-    const linkParams = new URLSearchParams(link.search);
-    const nextPage = linkParams.get(pagedKey) || '1';
+    if (form.querySelector('[name="gd_paged"]')) {
+      form.querySelector('[name="gd_paged"]').value = paged;
+    } else {
+      const hidden = document.createElement('input');
+      hidden.type = 'hidden';
+      hidden.name = 'gd_paged';
+      hidden.value = paged;
+      form.appendChild(hidden);
+    }
 
-    const current = paramsFromForm();
-    current.delete(pagedKey);
-    current.set(pagedKey, nextPage);
+    const fd = getFormData();
+    fetchResults(fd);
+  });
 
-    updateUrl(current);
-    fetchResults(current);
-  }, true);
+// ------------------------------------------------------------
+// Event: Reset button (.genes-filter__link)
+// ------------------------------------------------------------
+
+const resetLink = form.querySelector('.genes-filter__link');
+if (resetLink) {
+  resetLink.addEventListener('click', function (e) {
+    e.preventDefault();
+
+    // Keep current sort value (if not default)
+    const sortValue = form.querySelector('[name="gd_sort"]')?.value || '';
+
+    // Clear selects and search inputs
+    form.querySelectorAll('.genes-filter__select, .genes-filter__input').forEach(el => {
+      if (el.tagName === 'SELECT') el.selectedIndex = 0;
+      else el.value = '';
+    });
+
+    // Restore the sort value in form (for non-default sorts only)
+    if (form.querySelector('[name="gd_sort"]')) {
+      form.querySelector('[name="gd_sort"]').value = sortValue;
+    }
+
+    // Rebuild the URL — clear all filters and pagination
+    const url = new URL(window.location);
+    ['gd_paged', 'qs', 'cmt_type', 'inheritance', 'neuropathy', 'chromosome'].forEach(param => {
+      url.searchParams.delete(param);
+    });
+
+    // Keep sort only if it’s a real alternate sort
+    if (sortValue && sortValue !== 'default') {
+      url.searchParams.set('gd_sort', sortValue);
+    } else {
+      url.searchParams.delete('gd_sort');
+    }
+
+    // Push clean state to browser
+    window.history.replaceState({}, '', url.pathname + (url.search || ''));
+
+    // Fetch canonical results if gd_sort absent
+    const fd = getFormData();
+    fetchResults(fd);
+  });
+}
+
+  console.info('Genes AJAX stack initialized (genes-filter only)');
 });

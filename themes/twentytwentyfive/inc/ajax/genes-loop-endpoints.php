@@ -24,51 +24,83 @@ add_action('wp_ajax_nopriv_genes_get_loop', 'eic_genes_loop_endpoint');
    ============================================================ */
 
 function eic_genes_loop_endpoint() {
+    if (isset($_POST['nonce']) && !wp_verify_nonce($_POST['nonce'], 'genes_ajax_nonce')) {
+        wp_send_json_error('nonce_fail', 403);
+    }
 
-    // Start output buffering
-    ob_start();
+    // ============================================================
+    // Build Query Args (mirrors Genes MVP logic)
+    // ============================================================
+    $paged    = isset($_POST['gd_paged']) ? intval($_POST['gd_paged']) : 1;
+    $per_page = isset($_POST['per_page']) ? intval($_POST['per_page']) : 12;
+    $search   = sanitize_text_field($_POST['qs'] ?? '');
+    $sort     = isset($_POST['gd_sort']) ? sanitize_key($_POST['gd_sort']) : '';
 
-    /* --------------------------------------------------------
-       Sanitize and prepare incoming POST vars
-       -------------------------------------------------------- */
-    $qs_raw = isset($_POST['qs']) ? sanitize_text_field($_POST['qs']) : '';
-    $qs_all = strtolower(trim($qs_raw)) === 'all';
-    $per_page = isset($_POST['per_page']) ? (int) $_POST['per_page'] : 12;
+    $args = [
+        'post_type'      => 'subtype',
+        'post_status'    => 'publish',
+        'posts_per_page' => $per_page,
+        'paged'          => $paged,
+        'orderby'        => 'title',
+        'order'          => 'ASC',
+        's'              => $search,
+    ];
 
-    // Build taxonomy query from POSTed term IDs
+    /* ------------------------------------------------------------
+       Taxonomy filters
+       ------------------------------------------------------------ */
     $tax_query = ['relation' => 'AND'];
-    foreach (['cmt_type', 'inheritance', 'neuropathy', 'chromosome'] as $tax) {
-        if (!empty($_POST[$tax])) {
+    $tax_keys  = ['cmt_type', 'inheritance', 'neuropathy', 'chromosome'];
+
+    foreach ($tax_keys as $tax) {
+        if (!empty($_POST[$tax]) && $_POST[$tax] !== '0') {
             $tax_query[] = [
                 'taxonomy' => $tax,
                 'field'    => 'term_id',
-                'terms'    => [intval($_POST[$tax])],
+                'terms'    => (int) $_POST[$tax],
             ];
         }
     }
-    if (count($tax_query) === 1) {
-        $tax_query = [];
+
+    if (count($tax_query) > 1) {
+        $args['tax_query'] = $tax_query;
     }
 
-    /* --------------------------------------------------------
-       Push sanitized vars into query context for fragment
-       -------------------------------------------------------- */
-    $a = ['per_page' => $per_page];
-    set_query_var('a', $a);
-    set_query_var('tax_query', $tax_query);
-    set_query_var('qs', $qs_raw);
-    set_query_var('qs_all', $qs_all);
+    /* ------------------------------------------------------------
+       Canonical sort logic
+       ------------------------------------------------------------ */
+    $use_canonical_sort = !isset($_POST['gd_sort']) || $sort === '' || $sort === 'default';
 
-    /* --------------------------------------------------------
-       Load Genes Loop fragment (query + markup)
-       -------------------------------------------------------- */
+    if ($use_canonical_sort) {
+        $args['eic_genes_custom_sort'] = true;
+        add_filter('posts_clauses', 'eic_genes_custom_sort_clauses', 10, 2);
+    }
+
+    /* ------------------------------------------------------------
+       Execute query
+       ------------------------------------------------------------ */
+    error_log('GENES AJAX DEBUG PAYLOAD: ' . print_r($_POST, true));
+    error_log('GENES AJAX FINAL ARGS: ' . print_r($args, true));
+
+    $q = new WP_Query($args);
+
+    /* ------------------------------------------------------------
+       Cleanup filter (avoid leaking to other queries)
+       ------------------------------------------------------------ */
+    if ($use_canonical_sort) {
+        remove_filter('posts_clauses', 'eic_genes_custom_sort_clauses', 10);
+    }
+
+    /* ------------------------------------------------------------
+       Pass to fragment and output JSON
+       ------------------------------------------------------------ */
+    set_query_var('genes_args', $args);
+
+    ob_start();
     get_template_part('inc/content/loops/partials/fragment-loop-genes-loop');
+    $html = ob_get_clean();
 
-    /* --------------------------------------------------------
-       Capture + return clean JSON
-       -------------------------------------------------------- */
-    $html = trim(ob_get_clean());
+    wp_reset_postdata();
 
     wp_send_json_success(['html' => $html]);
-    wp_die();
 }

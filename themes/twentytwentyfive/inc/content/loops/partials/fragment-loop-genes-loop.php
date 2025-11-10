@@ -2,58 +2,58 @@
 /**
  * ============================================================
  *  FRAGMENT: GENES LOOP
- *  ------------------------------------------------------------
- *  Purpose:
- *    Query + Markup renderer for the Genes & Subtypes Database.
- *    Called by both [genes_loop] shortcode and AJAX endpoint.
  * ============================================================
  */
-
 if (!defined('ABSPATH')) exit;
 
-/* ============================================================
-   ============================================================
-   ===================== [ SECTION: VARIABLE IMPORTS ] =========
-   ============================================================
-   ============================================================ */
+/**
+ * Get the query args from endpoint (AJAX)
+ * or build defaults if not set.
+ */
+$args = get_query_var('genes_args');
 
-$a         = get_query_var('a');
-$tax_query = get_query_var('tax_query');
-$qs        = get_query_var('qs');
-$qs_all    = get_query_var('qs_all');
+if (empty($args)) {
+    $a         = get_query_var('a');
+    $tax_query = get_query_var('tax_query');
+    $qs        = get_query_var('qs');
+    $qs_all    = get_query_var('qs_all');
 
-/* ============================================================
-   ============================================================
-   ===================== [ SECTION: MAIN QUERY ] ===============
-   ============================================================
-   ============================================================ */
+    if (!is_array($a)) {
+        $a = [];
+    }
 
-$args = [
-    'post_type'      => 'subtype',
-    'post_status'    => 'publish',
-    'posts_per_page' => max(1, (int) $a['per_page']),
-    'paged'          => max(1, (int) ($_GET['gd_paged'] ?? 1)),
-    'orderby'        => 'title',
-    'order'          => 'ASC',
-    'eic_genes_custom_sort' => 1,
-];
-
-if (!empty($tax_query)) {
-    $args['tax_query'] = $tax_query;
-}
-
-if (!$qs_all && $qs !== '') {
-    $args['meta_query'] = [
-        'relation' => 'OR',
-        ['key' => 'gene', 'value' => $qs, 'compare' => 'LIKE'],
-        ['key' => 'gene_symbol', 'value' => $qs, 'compare' => 'LIKE'],
-        ['key' => 'subtype', 'value' => $qs, 'compare' => 'LIKE'],
-        ['key' => 'year_of_discovery', 'value' => $qs, 'compare' => 'LIKE'],
-        ['key' => 'alternate_gene_1', 'value' => $qs, 'compare' => 'LIKE'],
-        ['key' => 'alternate_gene_2', 'value' => $qs, 'compare' => 'LIKE'],
-        ['key' => 'alternate_gene_3', 'value' => $qs, 'compare' => 'LIKE'],
+    $args = [
+        'post_type'      => 'subtype',
+        'post_status'    => 'publish',
+        'posts_per_page' => max(1, (int) ($a['per_page'] ?? 12)),
+        'paged'          => max(1, (int) ($_GET['gd_paged'] ?? 1)),
+        'orderby'        => 'title',
+        'order'          => 'ASC',
+        'eic_genes_custom_sort' => 1,
     ];
+
+    if (!empty($tax_query)) {
+        $args['tax_query'] = $tax_query;
+    }
+
+    if (!$qs_all && $qs !== '') {
+        $args['meta_query'] = [
+            'relation' => 'OR',
+            ['key' => 'gene', 'value' => $qs, 'compare' => 'LIKE'],
+            ['key' => 'gene_symbol', 'value' => $qs, 'compare' => 'LIKE'],
+            ['key' => 'subtype', 'value' => $qs, 'compare' => 'LIKE'],
+            ['key' => 'year_of_discovery', 'value' => $qs, 'compare' => 'LIKE'],
+            ['key' => 'alternate_gene_1', 'value' => $qs, 'compare' => 'LIKE'],
+            ['key' => 'alternate_gene_2', 'value' => $qs, 'compare' => 'LIKE'],
+            ['key' => 'alternate_gene_3', 'value' => $qs, 'compare' => 'LIKE'],
+        ];
+    }
 }
+
+// Build the query
+$q = new WP_Query($args);
+
+
 
 /* ============================================================
    ============================================================
@@ -61,48 +61,63 @@ if (!$qs_all && $qs !== '') {
    ============================================================
    ============================================================ */
 
-$sort = isset($_GET['gd_sort']) ? sanitize_key($_GET['gd_sort']) : '';
-$gene_meta_key     = 'gene_symbol';
-$subtype_meta_key  = 'subtype';
-$year_meta_key     = 'year_of_discovery';
-$use_canonical_sort = empty($sort);
+/**
+ * Canonical rule:
+ * - Always respect the fixed FIELD() order (empties first)
+ * - Only bypass when user selects an explicit alternate sort
+ */
 
+$sort = isset($_GET['gd_sort']) ? sanitize_key($_GET['gd_sort']) : '';
+$gene_meta_key    = 'gene_symbol';
+$subtype_meta_key = 'subtype';
+$year_meta_key    = 'year_of_discovery';
+
+/**
+ * Treat page load, reset, and "default" as canonical.
+ * Any other explicit sort overrides it.
+ */
+$use_canonical_sort = !isset($_GET['gd_sort']) || $sort === '' || $sort === 'default';
+
+/* ------------------------------------------------------------
+   Apply sort behavior
+   ------------------------------------------------------------ */
 switch ($sort) {
     case 'subtype_az':
-        $args['meta_key'] = $subtype_meta_key;
+        $args['meta_key']  = $subtype_meta_key;
         $args['meta_type'] = 'CHAR';
-        $args['orderby'] = ['meta_value' => 'ASC', 'title' => 'ASC'];
-        $args['order'] = 'ASC';
+        $args['orderby']   = ['meta_value' => 'ASC', 'title' => 'ASC'];
+        $args['order']     = 'ASC';
         break;
 
     case 'gene_az':
-        $args['meta_key'] = $gene_meta_key;
+        $args['meta_key']  = $gene_meta_key;
         $args['meta_type'] = 'CHAR';
-        $args['orderby'] = ['meta_value' => 'ASC', 'title' => 'ASC'];
-        $args['order'] = 'ASC';
+        $args['orderby']   = ['meta_value' => 'ASC', 'title' => 'ASC'];
+        $args['order']     = 'ASC';
         break;
 
     case 'oldest':
-        $args['meta_key'] = $year_meta_key;
-        $args['orderby']  = ['meta_value_num' => 'ASC', 'date' => 'ASC'];
-        $args['order']    = 'ASC';
+        $args['meta_key']  = $year_meta_key;
+        $args['orderby']   = ['meta_value_num' => 'ASC', 'date' => 'ASC'];
+        $args['order']     = 'ASC';
         break;
 
     case 'newest':
-        $args['meta_key'] = $year_meta_key;
-        $args['orderby']  = ['meta_value_num' => 'DESC', 'date' => 'DESC'];
-        $args['order']    = 'DESC';
+        $args['meta_key']  = $year_meta_key;
+        $args['orderby']   = ['meta_value_num' => 'DESC', 'date' => 'DESC'];
+        $args['order']     = 'DESC';
         break;
 
     default:
-        // Keep canonical classification ordering
+        // Default display order (canonical FIELD() hierarchy)
         break;
 }
 
 /* ------------------------------------------------------------
-   EXECUTE QUERY (attach canonical sorter when needed)
+   Execute query (canonical sorter when needed)
    ------------------------------------------------------------ */
 if ($use_canonical_sort) {
+    $args['eic_genes_custom_sort'] = true;
     add_filter('posts_clauses', 'eic_genes_custom_sort_clauses', 10, 2);
 }
 
@@ -119,6 +134,7 @@ if ($use_canonical_sort) {
    ============================================================ */
 ?>
 
+<div id="genes-results-root">
 <div id="results" class="wp-block-query dr-blog" style="scroll-margin-top:100px;">
 
 	<?php
@@ -182,9 +198,9 @@ if ($use_canonical_sort) {
 	// [ SECTION: LOOP CARDS ]
 	// ============================================================
 	$cards = [];
-	if ($q->have_posts()) {
-		while ($q->have_posts()) {
-			$q->the_post();
+	if ( $q && $q->have_posts() ) {
+	while ( $q->have_posts() ) {
+		$q->the_post();
 
 			$gene_symbol    = get_field('gene') ?: get_post_meta(get_the_ID(), 'gene_symbol', true);
 			$display_gene   = $gene_symbol ?: get_the_title();
@@ -224,7 +240,9 @@ if ($use_canonical_sort) {
 			<?php $cards[] = ob_get_clean();
 		}
 		wp_reset_postdata();
-	}
+	}else {
+	echo '<p class="no-results">No results found.</p>';
+}
 
 	$rows = array_chunk($cards, 3);
 	$total_rows = count($rows);
@@ -297,6 +315,6 @@ if ($use_canonical_sort) {
 		echo '<nav class="wp-block-query-pagination"><ul class="page-numbers">' . implode('', $items) . '</ul></nav>';
 	}
 	?>
-
+</div>
 </div>
 
