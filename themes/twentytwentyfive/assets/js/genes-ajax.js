@@ -49,36 +49,60 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
 
-  // ------------------------------------------------------------
-  // AJAX Fetch
-  // ------------------------------------------------------------
-    async function fetchResults(formData, doScroll = false) {
+// ------------------------------------------------------------
+// AJAX Fetch
+// ------------------------------------------------------------
+async function fetchResults(formData, doScroll = false) {
+  try {
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      body: formData,
+    });
+    const json = await response.json();
 
-    try {
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        body: formData,
-      });
-      const json = await response.json();
-      if (json.success && json.data && json.data.html) {
-       updateResults(json.data.html, doScroll);
+    if (json.success && json.data && json.data.html) {
+      updateResults(json.data.html, doScroll);
 
-      } else {
-        console.error('Genes AJAX → Invalid response:', json);
+      // Smooth-scroll to #results ONLY after Apply click
+      if (window.lastApplyClick) {
+        const resultsEl = document.querySelector('#results');
+        if (resultsEl) {
+          resultsEl.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start',
+          });
+          resultsEl.focus({ preventScroll: true });
+        }
+        window.lastApplyClick = false; // reset flag
       }
-    } catch (err) {
-      console.error('Genes AJAX → Fetch error:', err);
+    } else {
+      console.error('Genes AJAX → Invalid response:', json);
     }
+  } catch (err) {
+    console.error('Genes AJAX → Fetch error:', err);
   }
+}
 
-  // ------------------------------------------------------------
-  // Event: Submit form manually (Enter key or Apply button)
-  // ------------------------------------------------------------
-  form.addEventListener('submit', function (e) {
-    e.preventDefault();
-    const fd = getFormData();
-    fetchResults(fd);
+
+// ------------------------------------------------------------
+// Track Apply button clicks
+// ------------------------------------------------------------
+const applyBtn = form.querySelector('.genes-filter__btn');
+if (applyBtn) {
+  applyBtn.addEventListener('click', () => {
+    window.lastApplyClick = true;
   });
+}
+
+// ------------------------------------------------------------
+// Event: Submit form manually (Enter key or Apply button)
+// ------------------------------------------------------------
+form.addEventListener('submit', function (e) {
+  e.preventDefault();
+  const fd = getFormData();
+  fetchResults(fd);
+});
+
 
   // ------------------------------------------------------------
   // Event: Change any dropdown (.genes-filter__select)

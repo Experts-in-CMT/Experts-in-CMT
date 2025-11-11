@@ -501,7 +501,7 @@ add_shortcode("context_nav", function () {
     if ($post_type === "post") {
         $back_url = home_url("/dorsal-root/#blog");
     } elseif ($post_type === "subtype") {
-        $back_url = home_url("/cmt-genetics-database/#results");
+        $back_url = home_url("/cmt-genetics-database/#ui");
     } elseif ($post_type === "glossary") {
         // Match subtype behavior: go to the glossary PAGE, not the CPT archive, and use #results
         $back_url = home_url("/cmt-words/#results");

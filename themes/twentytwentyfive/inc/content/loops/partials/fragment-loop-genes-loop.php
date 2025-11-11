@@ -12,6 +12,11 @@ if (!defined('ABSPATH')) exit;
  */
 $args = get_query_var('genes_args');
 
+// Respect per_page from shortcode or fallback to defaults
+$shortcode_atts = get_query_var('genes_shortcode_atts', []);
+$per_page = isset($shortcode_atts['per_page']) ? (int)$shortcode_atts['per_page'] : 12;
+
+
 if (empty($args)) {
     $a         = get_query_var('a');
     $tax_query = get_query_var('tax_query');
@@ -25,7 +30,7 @@ if (empty($args)) {
     $args = [
         'post_type'      => 'subtype',
         'post_status'    => 'publish',
-        'posts_per_page' => max(1, (int) ($a['per_page'] ?? 12)),
+       'posts_per_page' => $per_page,
         'paged'          => max(1, (int) ($_GET['gd_paged'] ?? 1)),
         'orderby'        => 'title',
         'order'          => 'ASC',
@@ -137,24 +142,66 @@ if ($use_canonical_sort) {
 <div id="genes-results-root">
 <div id="results" class="wp-block-query dr-blog" style="scroll-margin-top:100px;">
 
-	<?php
-	// ============================================================
-	// [ SECTION: TOTALS ]
-	// ============================================================
-	$__eic_ids   = eic_gl_current_post_ids();
-	$__total     = count($__eic_ids);
-	$__uniq      = eic_gl_count_unique_genes($__eic_ids);
-	$__unknown   = eic_gl_count_unknown_genes($__eic_ids);
-	?>
-	<div class="genes-totals" aria-live="polite">
-		<?php
-		echo esc_html(eic_gl_plural($__total, 'Subtype')) . ' • ';
-		echo esc_html(eic_gl_plural($__uniq, 'Gene'));
-		if ($__unknown > 0) {
-			echo ' • ' . esc_html(eic_gl_plural($__unknown, 'Subtype with an Unknown Gene', 'Subtypes with Unknown Genes'));
-		}
-		?>
-	</div>
+
+
+<?php
+// ============================================================
+// [ SECTION: TOTALS ]
+// ============================================================
+
+// Use current query object directly
+$__total = (int) $q->found_posts;
+$__post_ids = wp_list_pluck($q->posts, 'ID');
+
+$__gene_symbols = [];
+$__unknown = 0;
+
+foreach ($__post_ids as $__id) {
+    $symbol = get_field('gene_symbol', $__id);
+    $is_unknown = (bool) get_field('unknown_gene', $__id);
+
+    if ($is_unknown) {
+        $__unknown++;
+    }
+
+    if (!empty($symbol)) {
+        $__gene_symbols[strtoupper(trim($symbol))] = true;
+    }
+}
+
+$__uniq = count($__gene_symbols);
+
+// Detect whether filters are active (supports GET or POST during AJAX)
+$filters_active = false;
+$request = !empty($_GET) ? $_GET : $_POST;
+
+$filter_keys = ['qs', 'cmt_type', 'inheritance', 'neuropathy', 'chromosome'];
+foreach ($filter_keys as $key) {
+    if (!empty($request[$key]) && $request[$key] !== '0') {
+        $filters_active = true;
+        break;
+    }
+}
+?>
+
+<div class="genes-totals" aria-live="polite">
+    <?php
+    echo esc_html(eic_gl_plural($__total, 'Subtype')) . ' • ';
+    echo esc_html(eic_gl_plural($__uniq, 'Gene'));
+
+    // Only show unknown count if it exists OR if no filters are active
+    if ($__unknown > 0 || !$filters_active) {
+        echo ' • ' . esc_html(
+            eic_gl_plural(
+                $__unknown,
+                'Subtype with Unknown Gene',
+                'Subtypes with Unknown Genes'
+            )
+        );
+    }
+    ?>
+</div>
+
 
 	<?php
 	/* ============================================================

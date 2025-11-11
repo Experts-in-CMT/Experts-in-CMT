@@ -112,14 +112,12 @@ add_shortcode("genes_loop", function ($atts = []) {
     set_query_var('tax_query', $tax_query);
     set_query_var('qs', $qs);
     set_query_var('qs_all', $qs_all);
+    set_query_var('genes_shortcode_atts', $a); // <— ADD THIS LINE
 
     /* --------------------------------------------------------
        INNER LOOP (fragment include)
        -------------------------------------------------------- */
     ob_start();
-
-    // Load the main Genes loop fragment (query + markup)
     get_template_part('inc/content/loops/partials/fragment-loop-genes-loop');
-
     return ob_get_clean();
 });

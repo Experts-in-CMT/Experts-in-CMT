@@ -96,6 +96,10 @@ function eic_genes_loop_endpoint() {
        ------------------------------------------------------------ */
     set_query_var('genes_args', $args);
 
+// Make the AJAX query global so count helpers read the correct loop
+$GLOBALS['wp_query'] = $q;
+
+
     ob_start();
     get_template_part('inc/content/loops/partials/fragment-loop-genes-loop');
     $html = ob_get_clean();
