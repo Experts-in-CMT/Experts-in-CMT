@@ -29,11 +29,11 @@ function eic_genes_loop_endpoint() {
     }
 
     // ============================================================
-    // Build Query Args (mirrors Genes MVP logic)
+    // Build Query Args (mirrors Genes non-AJAX logic)
     // ============================================================
-    $paged    = isset($_POST['gd_paged']) ? intval($_POST['gd_paged']) : 1;
-    $per_page = isset($_POST['per_page']) ? intval($_POST['per_page']) : 12;
-    $search   = sanitize_text_field($_POST['qs'] ?? '');
+    $paged    = isset($_POST['gd_paged']) ? max(1, (int) $_POST['gd_paged']) : 1;
+    $per_page = isset($_POST['per_page']) ? max(1, (int) $_POST['per_page']) : 12;
+    $search   = isset($_POST['qs']) ? sanitize_text_field($_POST['qs']) : '';
     $sort     = isset($_POST['gd_sort']) ? sanitize_key($_POST['gd_sort']) : '';
 
     $args = [
@@ -43,8 +43,22 @@ function eic_genes_loop_endpoint() {
         'paged'          => $paged,
         'orderby'        => 'title',
         'order'          => 'ASC',
-        's'              => $search,
     ];
+
+    // 🔑 IMPORTANT: NO $args['s'] HERE.
+    // We rely ONLY on meta_query so searches like "PMP22" / "1993" hit ACF/meta fields.
+    if ($search !== '') {
+        $args['meta_query'] = [
+            'relation' => 'OR',
+            ['key' => 'gene',              'value' => $search, 'compare' => 'LIKE'],
+            ['key' => 'gene_symbol',       'value' => $search, 'compare' => 'LIKE'],
+            ['key' => 'subtype',           'value' => $search, 'compare' => 'LIKE'],
+            ['key' => 'year_of_discovery', 'value' => $search, 'compare' => 'LIKE'],
+            ['key' => 'alternate_gene_1',  'value' => $search, 'compare' => 'LIKE'],
+            ['key' => 'alternate_gene_2',  'value' => $search, 'compare' => 'LIKE'],
+            ['key' => 'alternate_gene_3',  'value' => $search, 'compare' => 'LIKE'],
+        ];
+    }
 
     /* ------------------------------------------------------------
        Taxonomy filters
@@ -79,14 +93,8 @@ function eic_genes_loop_endpoint() {
     /* ------------------------------------------------------------
        Execute query
        ------------------------------------------------------------ */
-    error_log('GENES AJAX DEBUG PAYLOAD: ' . print_r($_POST, true));
-    error_log('GENES AJAX FINAL ARGS: ' . print_r($args, true));
-
     $q = new WP_Query($args);
 
-    /* ------------------------------------------------------------
-       Cleanup filter (avoid leaking to other queries)
-       ------------------------------------------------------------ */
     if ($use_canonical_sort) {
         remove_filter('posts_clauses', 'eic_genes_custom_sort_clauses', 10);
     }
@@ -94,11 +102,11 @@ function eic_genes_loop_endpoint() {
     /* ------------------------------------------------------------
        Pass to fragment and output JSON
        ------------------------------------------------------------ */
+    // If any helper still looks at $wp_query, keep this:
+    $GLOBALS['wp_query'] = $q;
+
     set_query_var('genes_args', $args);
-
-// Make the AJAX query global so count helpers read the correct loop
-$GLOBALS['wp_query'] = $q;
-
+    set_query_var('qs', $search);
 
     ob_start();
     get_template_part('inc/content/loops/partials/fragment-loop-genes-loop');

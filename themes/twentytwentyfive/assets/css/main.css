@@ -2631,3 +2631,7 @@ h2.wp-block-heading {
   box-sizing: border-box;
 }
 
+.wp-block-query-no-results {
+  display: none !important;
+}
+

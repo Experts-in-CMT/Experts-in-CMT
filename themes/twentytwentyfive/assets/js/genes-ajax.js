@@ -115,7 +115,7 @@ form.querySelectorAll('.genes-filter__select').forEach(select => {
     }
     const fd = getFormData();
 
-    // ✅ Debug snapshot
+    // Debug snapshot
     console.log('FormData snapshot:', Array.from(fd.entries()));
 
     fetchResults(fd);
@@ -123,23 +123,45 @@ form.querySelectorAll('.genes-filter__select').forEach(select => {
 });
 
 
-  // ------------------------------------------------------------
-  // Event: Typing in search input (.genes-filter__input)
-  // ------------------------------------------------------------
-  const searchInput = form.querySelector('.genes-filter__input');
-  if (searchInput) {
-    let debounceTimer;
-    searchInput.addEventListener('input', function () {
-      clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(() => {
-        if (form.querySelector('[name="gd_paged"]')) {
-          form.querySelector('[name="gd_paged"]').value = 1;
-        }
-        const fd = getFormData();
-        fetchResults(fd);
-      }, 400);
-    });
-  }
+// ------------------------------------------------------------
+// Live Input Search (Debounced) [DR/Glossary parity]
+// ------------------------------------------------------------
+function debounce(fn, wait) {
+  let t;
+  return function (...args) {
+    clearTimeout(t);
+    t = setTimeout(() => fn.apply(this, args), wait);
+  };
+}
+
+document.addEventListener(
+  'input',
+  debounce(function (e) {
+    const input = e.target.closest('input[name="qs"]'); // genes search field
+    if (!input) return;
+
+    // Scope: find the closest genes-filter form dynamically
+    const activeForm = input.closest('form.genes-filter[data-loop="genes"]');
+    if (!activeForm) return;
+
+    // Reset pagination
+    const pagedField = activeForm.querySelector('[name="gd_paged"]');
+    if (pagedField) pagedField.value = 1;
+
+    // Build FormData for this specific form
+    const fd = new FormData(activeForm);
+    fd.append('action', 'genes_get_loop');
+    fd.append('nonce', window.GENES_AJAX?.nonce || '');
+
+    console.log('Live search input detected:', input.value);
+    console.log('FormData snapshot:', Array.from(fd.entries()));
+
+    fetchResults(fd);
+  }, 400),
+  false
+);
+
+
 
   // ------------------------------------------------------------
   // Event: Pagination links inside results
@@ -184,6 +206,10 @@ if (resetLink) {
       if (el.tagName === 'SELECT') el.selectedIndex = 0;
       else el.value = '';
     });
+
+    // Explicitly clear the search box (if not already cleared above)
+    const searchField = form.querySelector('input[name="qs"]');
+    if (searchField) searchField.value = '';
 
     // Restore the sort value in form (for non-default sorts only)
     if (form.querySelector('[name="gd_sort"]')) {

@@ -278,7 +278,7 @@ add_shortcode("genes_filter", function () {
 
 <!-- ACTIONS -->
 <div class="genes-filter__actions" id="genes-filter-hint">
-  <button type="submit" class="genes-filter__btn">APPLY FILTERS</button>
+  <button type="submit" class="genes-filter__btn">BROWSE</button>
   <a class="genes-filter__link"
      href="<?php echo esc_url( $reset_url ); ?>#results"
      data-role="genes-reset">RESET</a>

@@ -10,18 +10,22 @@ if (!defined('ABSPATH')) exit;
  * Get the query args from endpoint (AJAX)
  * or build defaults if not set.
  */
-$args = get_query_var('genes_args');
+$args   = get_query_var('genes_args', []);
+$qs     = get_query_var('qs', '');
+$qs_all = get_query_var('qs_all', false);
 
 // Respect per_page from shortcode or fallback to defaults
 $shortcode_atts = get_query_var('genes_shortcode_atts', []);
-$per_page = isset($shortcode_atts['per_page']) ? (int)$shortcode_atts['per_page'] : 12;
+$per_page       = isset($shortcode_atts['per_page']) ? (int) $shortcode_atts['per_page'] : 12;
 
-
+/**
+ * ============================================================
+ *  [SECTION: BUILD ARGS IF NOT PROVIDED BY ENDPOINT]
+ * ============================================================
+ */
 if (empty($args)) {
-    $a         = get_query_var('a');
-    $tax_query = get_query_var('tax_query');
-    $qs        = get_query_var('qs');
-    $qs_all    = get_query_var('qs_all');
+    $a         = get_query_var('a', []);
+    $tax_query = get_query_var('tax_query', []);
 
     if (!is_array($a)) {
         $a = [];
@@ -30,40 +34,122 @@ if (empty($args)) {
     $args = [
         'post_type'      => 'subtype',
         'post_status'    => 'publish',
-       'posts_per_page' => $per_page,
+        'posts_per_page' => $per_page,
         'paged'          => max(1, (int) ($_GET['gd_paged'] ?? 1)),
         'orderby'        => 'title',
         'order'          => 'ASC',
-        'eic_genes_custom_sort' => 1,
     ];
 
     if (!empty($tax_query)) {
         $args['tax_query'] = $tax_query;
     }
-
-    if (!$qs_all && $qs !== '') {
-        $args['meta_query'] = [
-            'relation' => 'OR',
-            ['key' => 'gene', 'value' => $qs, 'compare' => 'LIKE'],
-            ['key' => 'gene_symbol', 'value' => $qs, 'compare' => 'LIKE'],
-            ['key' => 'subtype', 'value' => $qs, 'compare' => 'LIKE'],
-            ['key' => 'year_of_discovery', 'value' => $qs, 'compare' => 'LIKE'],
-            ['key' => 'alternate_gene_1', 'value' => $qs, 'compare' => 'LIKE'],
-            ['key' => 'alternate_gene_2', 'value' => $qs, 'compare' => 'LIKE'],
-            ['key' => 'alternate_gene_3', 'value' => $qs, 'compare' => 'LIKE'],
-        ];
-    }
 }
 
-// Build the query
-$q = new WP_Query($args);
 
+/**
+ * ============================================================
+ *  [SECTION: SEARCH LOGIC]
+ *  v0.8.x — Finalized exact/fuzzy hybrid search for Genes DB
+ *  Applies meta_query whenever a search term ($qs) is present.
+ *  Runs for BOTH page-load and AJAX (qs comes from query vars).
+ * ============================================================
+ */
+if (!empty($qs)) {
+    $qs = trim($qs);
+
+    /**
+     * ------------------------------------------------------------
+     *  EXACT MATCH FIELDS
+     *  These are single-value identifiers that must match precisely.
+     *  Use '=' to prevent substring collisions (e.g., PMP2 ≠ PMP22).
+     * ------------------------------------------------------------
+     */
+    $exact_fields = [
+        'subtype',           // Subtype name (e.g., CMT1A)
+        'gene_symbol',       // HGNC-approved gene symbol
+        'full_gene_name',    // Full HGNC-approved name
+    ];
+
+    /**
+     * ------------------------------------------------------------
+     *  FUZZY MATCH FIELDS
+     *  These are descriptive, multi-value, or text-rich fields
+     *  where partial matches improve usability.
+     * ------------------------------------------------------------
+     */
+    $fuzzy_fields = [
+        'acronym',           // "CMT" → matches CMT1, CMT2, etc.
+        'gene_alias',        // Comma-separated aliases
+        'year_of_discovery',
+        'chromosome',
+        'inheritance',
+        'neuropathy',
+        'research_team',
+        'publication',
+        'authors',           // Main authors (WYSIWYG)
+        'alt_authors',       // Alternate authors (WYSIWYG)
+        'notes',             // Optional: general notes
+        'alt_publication',   // Optional: secondary publication info
+    ];
+
+    /**
+     * ------------------------------------------------------------
+     *  BUILD META QUERY
+     *  Combine exact and fuzzy sets into one OR relation.
+     * ------------------------------------------------------------
+     */
+    $meta_query = ['relation' => 'OR'];
+
+    foreach ($exact_fields as $field) {
+        $meta_query[] = [
+            'key'     => $field,
+            'value'   => $qs,
+            'compare' => '=',
+        ];
+    }
+
+    foreach ($fuzzy_fields as $field) {
+        $meta_query[] = [
+            'key'     => $field,
+            'value'   => $qs,
+            'compare' => 'LIKE',
+        ];
+    }
+
+    $args['meta_query'] = $meta_query;
+
+    /**
+     * ------------------------------------------------------------
+     *  TAXONOMY TERM NAME MATCHING
+     *  Still fuzzy — allows searching by taxonomy label.
+     * ------------------------------------------------------------
+     */
+    $args['tax_query'] = [
+        'relation' => 'OR',
+        [
+            'taxonomy' => 'cmt_type',
+            'field'    => 'name',
+            'terms'    => $qs,
+            'operator' => 'LIKE',
+        ],
+        [
+            'taxonomy' => 'inheritance',
+            'field'    => 'name',
+            'terms'    => $qs,
+            'operator' => 'LIKE',
+        ],
+        [
+            'taxonomy' => 'neuropathy',
+            'field'    => 'name',
+            'terms'    => $qs,
+            'operator' => 'LIKE',
+        ],
+    ];
+}
 
 
 /* ============================================================
-   ============================================================
    ===================== [ SECTION: SORT LOGIC ] ===============
-   ============================================================
    ============================================================ */
 
 /**
@@ -72,7 +158,7 @@ $q = new WP_Query($args);
  * - Only bypass when user selects an explicit alternate sort
  */
 
-$sort = isset($_GET['gd_sort']) ? sanitize_key($_GET['gd_sort']) : '';
+$sort             = isset($_GET['gd_sort']) ? sanitize_key($_GET['gd_sort']) : '';
 $gene_meta_key    = 'gene_symbol';
 $subtype_meta_key = 'subtype';
 $year_meta_key    = 'year_of_discovery';
@@ -133,16 +219,12 @@ if ($use_canonical_sort) {
 }
 
 /* ============================================================
-   ============================================================
    ===================== [ SECTION: MARKUP OUTPUT ] ============
-   ============================================================
    ============================================================ */
 ?>
 
 <div id="genes-results-root">
 <div id="results" class="wp-block-query dr-blog" style="scroll-margin-top:100px;">
-
-
 
 <?php
 // ============================================================
@@ -150,14 +232,14 @@ if ($use_canonical_sort) {
 // ============================================================
 
 // Use current query object directly
-$__total = (int) $q->found_posts;
+$__total    = (int) $q->found_posts;
 $__post_ids = wp_list_pluck($q->posts, 'ID');
 
 $__gene_symbols = [];
-$__unknown = 0;
+$__unknown      = 0;
 
 foreach ($__post_ids as $__id) {
-    $symbol = get_field('gene_symbol', $__id);
+    $symbol     = get_field('gene_symbol', $__id);
     $is_unknown = (bool) get_field('unknown_gene', $__id);
 
     if ($is_unknown) {
@@ -173,7 +255,7 @@ $__uniq = count($__gene_symbols);
 
 // Detect whether filters are active (supports GET or POST during AJAX)
 $filters_active = false;
-$request = !empty($_GET) ? $_GET : $_POST;
+$request        = !empty($_GET) ? $_GET : $_POST;
 
 $filter_keys = ['qs', 'cmt_type', 'inheritance', 'neuropathy', 'chromosome'];
 foreach ($filter_keys as $key) {
@@ -202,166 +284,168 @@ foreach ($filter_keys as $key) {
     ?>
 </div>
 
+<?php
+/* ============================================================
+   ===================== [ SECTION: SORT TOOLBAR ] =============
+   ============================================================ */
+$anchor       = 'results';
+$base         = strtok($_SERVER['REQUEST_URI'], '?');
+$action_url   = esc_url($base . '#' . $anchor);
+$current_sort = isset($_GET['gd_sort']) ? sanitize_key($_GET['gd_sort']) : '';
+$keep         = $_GET;
+unset($keep['gd_paged']);
+$clear_params = $keep;
+unset($clear_params['gd_sort']);
+$sort_clear_url = esc_url($base . ($clear_params ? '?' . http_build_query($clear_params) : '')) . '#' . $anchor;
+?>
+<div class="genes-sort genes-sort--results">
+    <form class="genes-sort__form" method="get" action="<?php echo $action_url; ?>">
+        <label class="genes-sort__label" for="gd_sort">Sort by</label>
+        <select id="gd_sort" name="gd_sort" class="genes-sort__select">
+            <option value=""       <?php selected($current_sort, ''); ?>>Default</option>
+            <option value="gene_az"    <?php selected($current_sort, 'gene_az'); ?>>Gene A to Z</option>
+            <option value="subtype_az" <?php selected($current_sort, 'subtype_az'); ?>>Subtype A to Z</option>
+            <option value="oldest"     <?php selected($current_sort, 'oldest'); ?>>Oldest to Newest</option>
+            <option value="newest"     <?php selected($current_sort, 'newest'); ?>>Newest to Oldest</option>
+        </select>
+        <a href="#" class="genes-sort__clear" role="button">CLEAR</a>
+        <?php
+        foreach ($keep as $k => $v) {
+            if (in_array($k, ['gd_sort', 'gd_paged'], true)) continue;
+            if (is_scalar($v)) {
+                printf('<input type="hidden" name="%s" value="%s">', esc_attr($k), esc_attr($v));
+            }
+        }
+        ?>
+        <noscript><button type="submit" class="genes-sort__btn">Apply</button></noscript>
+    </form>
+</div>
 
-	<?php
-	/* ============================================================
-	   ===================== [ SECTION: SORT TOOLBAR ] =============
-	   ============================================================ */
-	$anchor = 'results';
-	$base = strtok($_SERVER['REQUEST_URI'], '?');
-	$action_url = esc_url($base . '#' . $anchor);
-	$current_sort = isset($_GET['gd_sort']) ? sanitize_key($_GET['gd_sort']) : '';
-	$keep = $_GET;
-	unset($keep['gd_paged']);
-	$clear_params = $keep;
-	unset($clear_params['gd_sort']);
-	$sort_clear_url = esc_url($base . ($clear_params ? '?' . http_build_query($clear_params) : '')) . '#' . $anchor;
-	?>
-	<div class="genes-sort genes-sort--results">
-		<form class="genes-sort__form" method="get" action="<?php echo $action_url; ?>">
-			<label class="genes-sort__label" for="gd_sort">Sort by</label>
-			<select id="gd_sort" name="gd_sort" class="genes-sort__select">
-				<option value="" <?php selected($current_sort, ''); ?>>Default</option>
-				<option value="gene_az" <?php selected($current_sort, 'gene_az'); ?>>Gene A to Z</option>
-				<option value="subtype_az" <?php selected($current_sort, 'subtype_az'); ?>>Subtype A to Z</option>
-				<option value="oldest" <?php selected($current_sort, 'oldest'); ?>>Oldest to Newest</option>
-				<option value="newest" <?php selected($current_sort, 'newest'); ?>>Newest to Oldest</option>
-			</select>
-			<a href="#" class="genes-sort__clear" role="button">CLEAR</a>
-			<?php
-			foreach ($keep as $k => $v) {
-				if (in_array($k, ['gd_sort', 'gd_paged'], true)) continue;
-				if (is_scalar($v)) {
-					printf('<input type="hidden" name="%s" value="%s">', esc_attr($k), esc_attr($v));
-				}
-			}
-			?>
-			<noscript><button type="submit" class="genes-sort__btn">Apply</button></noscript>
-		</form>
-	</div>
+<?php
+// ============================================================
+// [ SECTION: LOOP CARDS ]
+// ============================================================
+$cards = [];
+if ($q && $q->have_posts()) {
+    while ($q->have_posts()) {
+        $q->the_post();
 
-	<?php
-	// ============================================================
-	// [ SECTION: LOOP CARDS ]
-	// ============================================================
-	$cards = [];
-	if ( $q && $q->have_posts() ) {
-	while ( $q->have_posts() ) {
-		$q->the_post();
+        $gene_symbol    = get_field('gene') ?: get_post_meta(get_the_ID(), 'gene_symbol', true);
+        $display_gene   = $gene_symbol ?: get_the_title();
+        $year_discovery = get_field('year_of_discovery') ?: '';
+        $inherit_label  = get_field('inheritance_pattern') ?: implode(', ', wp_get_post_terms(get_the_ID(), 'inheritance', ['fields' => 'names']));
 
-			$gene_symbol    = get_field('gene') ?: get_post_meta(get_the_ID(), 'gene_symbol', true);
-			$display_gene   = $gene_symbol ?: get_the_title();
-			$year_discovery = get_field('year_of_discovery') ?: '';
-			$inherit_label  = get_field('inheritance_pattern') ?: implode(', ', wp_get_post_terms(get_the_ID(), 'inheritance', ['fields' => 'names']));
+        ob_start(); ?>
+        <article class="dr-card wp-block-post">
+            <?php if (has_post_thumbnail()): ?>
+                <a class="wp-block-post-featured-image" href="<?php the_permalink(); ?>">
+                    <?php the_post_thumbnail('large', ['loading' => 'lazy', 'decoding' => 'async']); ?>
+                </a>
+            <?php endif; ?>
 
-			ob_start(); ?>
-			<article class="dr-card wp-block-post">
-				<?php if (has_post_thumbnail()): ?>
-					<a class="wp-block-post-featured-image" href="<?php the_permalink(); ?>">
-						<?php the_post_thumbnail('large', ['loading' => 'lazy', 'decoding' => 'async']); ?>
-					</a>
-				<?php endif; ?>
+            <h2 class="wp-block-post-title">
+                <a href="<?php the_permalink(); ?>"><?php the_title(); ?></a>
+            </h2>
 
-				<h2 class="wp-block-post-title">
-					<a href="<?php the_permalink(); ?>"><?php the_title(); ?></a>
-				</h2>
+            <div class="wp-block-post-excerpt">
+                <p><strong>Gene:</strong> <?php echo esc_html($display_gene); ?></p>
+                <?php if ($year_discovery): ?>
+                    <p><strong>Discovered:</strong> <?php echo esc_html($year_discovery); ?></p>
+                <?php endif; ?>
+                <?php if ($inherit_label): ?>
+                    <p><strong>Inheritance:</strong> <?php echo esc_html($inherit_label); ?></p>
+                <?php endif; ?>
 
-				<div class="wp-block-post-excerpt">
-					<p><strong>Gene:</strong> <?php echo esc_html($display_gene); ?></p>
-					<?php if ($year_discovery): ?>
-						<p><strong>Discovered:</strong> <?php echo esc_html($year_discovery); ?></p>
-					<?php endif; ?>
-					<?php if ($inherit_label): ?>
-						<p><strong>Inheritance:</strong> <?php echo esc_html($inherit_label); ?></p>
-					<?php endif; ?>
+                <a class="wp-block-read-more" href="<?php the_permalink(); ?>">Learn More</a>
 
-					<a class="wp-block-read-more" href="<?php the_permalink(); ?>">Learn More</a>
+                <div class="wp-block-post-date" style="text-align:center; margin-top:12px;">
+                    <small>Updated: <?php echo esc_html(get_the_modified_date(get_option('date_format'))); ?></small>
+                </div>
 
-					<div class="wp-block-post-date" style="text-align:center; margin-top:12px;">
-						<small>Updated: <?php echo esc_html(get_the_modified_date(get_option('date_format'))); ?></small>
-					</div>
-
-					<div style="height:20px;" aria-hidden="true" class="wp-block-spacer"></div>
-				</div>
-			</article>
-			<?php $cards[] = ob_get_clean();
-		}
-		wp_reset_postdata();
-	}else {
-	echo '<p class="no-results">No results found.</p>';
+                <div style="height:20px;" aria-hidden="true" class="wp-block-spacer"></div>
+            </div>
+        </article>
+        <?php
+        $cards[] = ob_get_clean();
+    }
+    wp_reset_postdata();
+} else {
+    
 }
 
-	$rows = array_chunk($cards, 3);
-	$total_rows = count($rows);
-	?>
+$rows       = array_chunk($cards, 3);
+$total_rows = count($rows);
+?>
 
-	<?php if (empty($rows)): ?>
-		<div id="genes-no-results" class="dr-row dr-row--empty" style="margin:0 auto 64px; display:flex; justify-content:center; align-items:flex-start; max-width:700px; width:100%;">
-			<p style="font-size:1.1rem; color:#333; text-align:left;">No results found.<br>Try adjusting your filters or search term.</p>
-		</div>
-	<?php endif; ?>
+<?php if (empty($rows)): ?>
+    <div id="genes-no-results" class="dr-row dr-row--empty" style="margin:0 auto 64px; display:flex; justify-content:center; align-items:flex-start; max-width:700px; width:100%;">
+        <p style="font-size:1.1rem; color:#333; text-align:left;">No results found.<br>Try adjusting your filters or search term.</p>
+    </div>
+<?php endif; ?>
 
-	<div class="dr-grid">
-		<?php if (!empty($rows)): ?>
-			<?php foreach ($rows as $i => $row_items):
-				$is_last = $i === $total_rows - 1;
-				$count = count($row_items); ?>
-				<div class="dr-row<?php echo $is_last ? ' dr-row--last' : ''; ?>" <?php echo $is_last ? 'data-count="' . (int) $count . '"' : ''; ?>>
-					<?php echo implode('', $row_items); ?>
-				</div>
-			<?php endforeach; ?>
-		<?php endif; ?>
-	</div>
-
-	<?php
-	// ============================================================
-	// [ SECTION: PAGINATION ]
-	// ============================================================
-	$total_pages = max(1, (int) $q->max_num_pages);
-	if ($total_pages > 1) {
-		$current = max(1, (int) ($_GET['gd_paged'] ?? 1));
-		$base_url = get_permalink(get_queried_object_id()) ?: home_url('/cmt-genetics-database/');
-		$qs_params = $_GET;
-		unset($qs_params['gd_paged']);
-
-		$page_url = function (int $n) use ($base_url, $qs_params) {
-			$qs2 = $qs_params;
-			$qs2['gd_paged'] = $n;
-			return esc_url(add_query_arg($qs2, $base_url) . '#results');
-		};
-
-		$items = [];
-		if ($current > 1) {
-			$items[] = '<li><a class="prev page-numbers" href="' . $page_url($current - 1) . '">« Prev</a></li>';
-		} else {
-			$items[] = '<li><span class="prev page-numbers">« Prev</span></li>';
-		}
-
-		$end = $total_pages;
-		$start = max(1, $current - 2);
-		$stop = min($end, $current + 2);
-
-		if ($start > 1) {
-			$items[] = '<li><a class="page-numbers" href="' . $page_url(1) . '">1</a></li>';
-			if ($start > 2) $items[] = '<li><span class="page-numbers dots">…</span></li>';
-		}
-		for ($i = $start; $i <= $stop; $i++) {
-			if ($i === $current) $items[] = '<li><span class="page-numbers current">' . $i . '</span></li>';
-			else $items[] = '<li><a class="page-numbers" href="' . $page_url($i) . '">' . $i . '</a></li>';
-		}
-		if ($stop < $end) {
-			if ($stop < $end - 1) $items[] = '<li><span class="page-numbers dots">…</span></li>';
-			$items[] = '<li><a class="page-numbers" href="' . $page_url($end) . '">' . $end . '</a></li>';
-		}
-		if ($current < $total_pages) {
-			$items[] = '<li><a class="next page-numbers" href="' . $page_url($current + 1) . '">Next »</a></li>';
-		} else {
-			$items[] = '<li><span class="next page-numbers">Next »</span></li>';
-		}
-
-		echo '<nav class="wp-block-query-pagination"><ul class="page-numbers">' . implode('', $items) . '</ul></nav>';
-	}
-	?>
-</div>
+<div class="dr-grid">
+    <?php if (!empty($rows)): ?>
+        <?php foreach ($rows as $i => $row_items):
+            $is_last = $i === $total_rows - 1;
+            $count   = count($row_items); ?>
+            <div class="dr-row<?php echo $is_last ? ' dr-row--last' : ''; ?>" <?php echo $is_last ? 'data-count="' . (int) $count . '"' : ''; ?>>
+                <?php echo implode('', $row_items); ?>
+            </div>
+        <?php endforeach; ?>
+    <?php endif; ?>
 </div>
 
+<?php
+// ============================================================
+// [ SECTION: PAGINATION ]
+// ============================================================
+$total_pages = max(1, (int) $q->max_num_pages);
+if ($total_pages > 1) {
+    $current   = max(1, (int) ($_GET['gd_paged'] ?? 1));
+    $base_url  = get_permalink(get_queried_object_id()) ?: home_url('/cmt-genetics-database/');
+    $qs_params = $_GET;
+    unset($qs_params['gd_paged']);
+
+    $page_url = function (int $n) use ($base_url, $qs_params) {
+        $qs2             = $qs_params;
+        $qs2['gd_paged'] = $n;
+        return esc_url(add_query_arg($qs2, $base_url) . '#results');
+    };
+
+    $items = [];
+    if ($current > 1) {
+        $items[] = '<li><a class="prev page-numbers" href="' . $page_url($current - 1) . '">« Prev</a></li>';
+    } else {
+        $items[] = '<li><span class="prev page-numbers">« Prev</span></li>';
+    }
+
+    $end   = $total_pages;
+    $start = max(1, $current - 2);
+    $stop  = min($end, $current + 2);
+
+    if ($start > 1) {
+        $items[] = '<li><a class="page-numbers" href="' . $page_url(1) . '">1</a></li>';
+        if ($start > 2) $items[] = '<li><span class="page-numbers dots">…</span></li>';
+    }
+    for ($i = $start; $i <= $stop; $i++) {
+        if ($i === $current) {
+            $items[] = '<li><span class="page-numbers current">' . $i . '</span></li>';
+        } else {
+            $items[] = '<li><a class="page-numbers" href="' . $page_url($i) . '">' . $i . '</a></li>';
+        }
+    }
+    if ($stop < $end) {
+        if ($stop < $end - 1) $items[] = '<li><span class="page-numbers dots">…</span></li>';
+        $items[] = '<li><a class="page-numbers" href="' . $page_url($end) . '">' . $end . '</a></li>';
+    }
+    if ($current < $total_pages) {
+        $items[] = '<li><a class="next page-numbers" href="' . $page_url($current + 1) . '">Next »</a></li>';
+    } else {
+        $items[] = '<li><span class="next page-numbers">Next »</span></li>';
+    }
+
+    echo '<nav class="wp-block-query-pagination"><ul class="page-numbers">' . implode('', $items) . '</ul></nav>';
+}
+?>
+</div>
+</div>

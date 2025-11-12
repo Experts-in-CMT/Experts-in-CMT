@@ -180,6 +180,24 @@ add_action('wp_enqueue_scripts', function () {
     }
 });
 
+// ============================================================
+// Disable TT25 default "No results found" block for custom loops
+// ============================================================
+add_action('loop_no_results', function() {
+    remove_action('loop_no_results', 'twentytwentyfive_no_results');
+}, 1);
+
+/**
+ * Genes DB — loop shortcode loader
+ */
+add_action(
+    "after_setup_theme",
+    function () {
+        $rel = "/inc/content/loops/genes-loop.php";
+        require_once get_template_directory() . $rel;
+    }
+);
+
 
 /**
  * Genes DB — loop shortcode loader
