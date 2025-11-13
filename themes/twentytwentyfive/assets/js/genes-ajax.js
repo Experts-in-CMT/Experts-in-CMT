@@ -63,6 +63,8 @@ async function fetchResults(formData, doScroll = false) {
     if (json.success && json.data && json.data.html) {
       updateResults(json.data.html, doScroll);
 
+
+
       // Smooth-scroll to #results ONLY after Apply click
       if (window.lastApplyClick) {
         const resultsEl = document.querySelector('#results');
@@ -188,6 +190,95 @@ document.addEventListener(
     const fd = getFormData();
     fetchResults(fd);
   });
+
+
+// ------------------------------------------------------------
+// SORT FOCUS REULTS HELPER
+// ------------------------------------------------------------
+
+function focusResults() {
+  const t = document.querySelector('#results');
+  if (!t) return;
+  t.setAttribute('tabindex', '-1');
+  t.focus({ preventScroll: true });
+  t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+
+// ------------------------------------------------------------
+// SORT HANDLING (DR / Glossary parity)
+// ------------------------------------------------------------
+
+// Sort dropdown (outside fragment)
+const sortSel = document.querySelector('.genes-sort__select');
+let suppressSortChange = false;
+
+if (sortSel) {
+  sortSel.addEventListener('change', function () {
+    if (suppressSortChange) {
+      suppressSortChange = false;
+      return;
+    }
+
+    const params = new URLSearchParams(window.location.search);
+
+    // Reset pagination
+    params.delete('gd_paged');
+
+    // Update or clear sort param
+    if (!sortSel.value) params.delete('gd_sort');
+    else params.set('gd_sort', sortSel.value);
+
+    // Rewrite URL
+    const newUrl = `${window.location.pathname}?${params.toString()}#results`;
+    window.history.replaceState({}, '', newUrl);
+
+    // Build FormData
+    const fd = new FormData();
+    fd.append('action', 'genes_get_loop');
+    fd.append('nonce', GENES_AJAX.nonce);
+
+    // Add URL params to FormData
+    params.forEach((v, k) => fd.append(k, v));
+
+    fetchResults(fd).then(() => {
+  focusResults();
+});
+
+  });
+}
+
+// Sort CLEAR button
+const sortClearBtn = document.querySelector('.genes-sort__clear');
+if (sortClearBtn) {
+  sortClearBtn.addEventListener('click', function (e) {
+    e.preventDefault();
+
+    if (sortSel) {
+      suppressSortChange = true;
+      sortSel.value = '';
+    }
+
+    const params = new URLSearchParams(window.location.search);
+
+    // Remove sort + pagination
+    params.delete('gd_sort');
+    params.delete('gd_paged');
+
+    const newUrl = `${window.location.pathname}?${params.toString()}#results`;
+    window.history.replaceState({}, '', newUrl);
+
+    // Build FormData
+    const fd = new FormData();
+    fd.append('action', 'genes_get_loop');
+    fd.append('nonce', GENES_AJAX.nonce);
+
+    params.forEach((v, k) => fd.append(k, v));
+
+    fetchResults(fd);
+  });
+}
+
 
 // ------------------------------------------------------------
 // Event: Reset button (.genes-filter__link)

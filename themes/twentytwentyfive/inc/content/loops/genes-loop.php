@@ -115,9 +115,53 @@ add_shortcode("genes_loop", function ($atts = []) {
     set_query_var('genes_shortcode_atts', $a); // <— ADD THIS LINE
 
     /* --------------------------------------------------------
-       INNER LOOP (fragment include)
-       -------------------------------------------------------- */
-    ob_start();
-    get_template_part('inc/content/loops/partials/fragment-loop-genes-loop');
-    return ob_get_clean();
+   INNER LOOP (fragment include)
+   -------------------------------------------------------- */
+ob_start();
+?>
+
+<?php
+/* ============================================================
+   ===================== [ SECTION: SORT TOOLBAR ] =============
+   ============================================================ */
+$anchor       = 'results';
+$base         = strtok($_SERVER['REQUEST_URI'], '?');
+$action_url   = esc_url($base . '#' . $anchor);
+$current_sort = isset($_GET['gd_sort']) ? sanitize_key($_GET['gd_sort']) : '';
+$keep         = $_GET;
+unset($keep['gd_paged']);
+$clear_params = $keep;
+unset($clear_params['gd_sort']);
+$sort_clear_url = esc_url($base . ($clear_params ? '?' . http_build_query($clear_params) : '')) . '#' . $anchor;
+?>
+
+
+<div class="genes-sort genes-sort--results">
+    <form class="genes-sort__form" method="get" action="<?php echo $action_url; ?>">
+        <label class="genes-sort__label" for="gd_sort">Sort by</label>
+        <select id="gd_sort" name="gd_sort" class="genes-sort__select">
+            <option value=""       <?php selected($current_sort, ''); ?>>Default</option>
+            <option value="gene_az"    <?php selected($current_sort, 'gene_az'); ?>>Gene A to Z</option>
+            <option value="subtype_az" <?php selected($current_sort, 'subtype_az'); ?>>Subtype A to Z</option>
+            <option value="oldest"     <?php selected($current_sort, 'oldest'); ?>>Oldest to Newest</option>
+            <option value="newest"     <?php selected($current_sort, 'newest'); ?>>Newest to Oldest</option>
+        </select>
+        <a href="#" class="genes-sort__clear" role="button">CLEAR</a>
+        <?php
+        foreach ($keep as $k => $v) {
+            if (in_array($k, ['gd_sort', 'gd_paged'], true)) continue;
+            if (is_scalar($v)) {
+                printf('<input type="hidden" name="%s" value="%s">', esc_attr($k), esc_attr($v));
+            }
+        }
+        ?>
+        <noscript><button type="submit" class="genes-sort__btn">Apply</button></noscript>
+    </form>
+</div>
+
+
+<?php
+get_template_part('inc/content/loops/partials/fragment-loop-genes-loop');
+return ob_get_clean();
 });
+

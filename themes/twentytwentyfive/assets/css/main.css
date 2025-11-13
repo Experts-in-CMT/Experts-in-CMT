@@ -2278,7 +2278,7 @@ h2.wp-block-heading {
 .genes-sort--results {
   display: block; /* allow centering */
   max-width: var(--eic-card-w); /* no wider than one card */
-  margin: 36px auto 28px auto; /* breathing room + centered */
+  margin: 36px auto 0px auto; /* breathing room + centered */
   padding: 0 4px;
 }
 
@@ -2381,7 +2381,8 @@ h2.wp-block-heading {
     min-block-size: 38px;
     padding: 0.5em 1.1em;
   }
-}
+
+
 
 /* === Publications: force "Note:" inline === */
 .eic-fact.eic-fact--inline-note {

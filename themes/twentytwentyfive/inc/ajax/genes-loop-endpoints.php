@@ -99,18 +99,20 @@ function eic_genes_loop_endpoint() {
         remove_filter('posts_clauses', 'eic_genes_custom_sort_clauses', 10);
     }
 
-    /* ------------------------------------------------------------
-       Pass to fragment and output JSON
-       ------------------------------------------------------------ */
-    // If any helper still looks at $wp_query, keep this:
-    $GLOBALS['wp_query'] = $q;
+ /* ------------------------------------------------------------
+   Pass to fragment and output JSON
+   ------------------------------------------------------------ */
+// If any helper still looks at $wp_query, keep this:
+$GLOBALS['wp_query'] = $q;
 
-    set_query_var('genes_args', $args);
-    set_query_var('qs', $search);
+set_query_var('genes_args', $args);
+set_query_var('qs', $search);
+set_query_var('gd_sort', $sort);   // ← INSERT THIS LINE
 
-    ob_start();
-    get_template_part('inc/content/loops/partials/fragment-loop-genes-loop');
-    $html = ob_get_clean();
+ob_start();
+get_template_part('inc/content/loops/partials/fragment-loop-genes-loop');
+$html = ob_get_clean();
+
 
     wp_reset_postdata();
 
