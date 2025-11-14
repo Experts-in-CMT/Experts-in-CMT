@@ -25,6 +25,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const data = new FormData(form);
     data.append('action', 'genes_get_loop');
     data.append('nonce', nonce);
+    data.append('per_page', form.dataset.perPage || '');
     return data;
   }
 
@@ -165,35 +166,46 @@ document.addEventListener(
 
 
 
-  // ------------------------------------------------------------
-  // Event: Pagination links inside results
-  // ------------------------------------------------------------
-  root.addEventListener('click', function (e) {
-    const link = e.target.closest('.page-numbers');
-    if (!link || !link.href) return;
+// ------------------------------------------------------------
+// Event: Pagination links inside results
+// ------------------------------------------------------------
 
-    e.preventDefault();
-    const url = new URL(link.href);
-    const params = new URLSearchParams(url.search);
-    const paged = params.get('gd_paged') || 1;
+root.addEventListener('click', function (e) {
+  const link = e.target.closest('.page-numbers');
+  if (!link || !link.href) return;
 
-    if (form.querySelector('[name="gd_paged"]')) {
-      form.querySelector('[name="gd_paged"]').value = paged;
-    } else {
-      const hidden = document.createElement('input');
-      hidden.type = 'hidden';
-      hidden.name = 'gd_paged';
-      hidden.value = paged;
-      form.appendChild(hidden);
-    }
+  e.preventDefault();
 
-    const fd = getFormData();
-    fetchResults(fd);
-  });
+  // Extract new page number
+  const url = new URL(link.href);
+  const newPage = url.searchParams.get('gd_paged') || '1';
+
+  // Build params from CURRENT URL (NOT the form!)
+  const params = new URLSearchParams(window.location.search);
+
+  // Update/replace page number
+  if (newPage === '1') params.delete('gd_paged');
+  else params.set('gd_paged', newPage);
+
+  // Build FormData using FULL param list
+  const fd = new FormData();
+  fd.append('action', 'genes_get_loop');
+  fd.append('nonce', GENES_AJAX.nonce);
+
+  params.forEach((v, k) => fd.append(k, v));
+
+  // Update the browser URL
+  const newUrl = `${window.location.pathname}?${params.toString()}#results`;
+  window.history.replaceState({}, '', newUrl);
+
+  // Fire AJAX
+  fetchResults(fd);
+});
+
 
 
 // ------------------------------------------------------------
-// SORT FOCUS REULTS HELPER
+// SORT FOCUS RESULTS HELPER
 // ------------------------------------------------------------
 
 function focusResults() {
