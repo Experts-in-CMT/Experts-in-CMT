@@ -1,8 +1,27 @@
 <?php
-/**
- * Plugin Name: Glossary Uniqueness (MU)
- * Description: Enforce unique Glossary terms using canonical_term (fallback to Title). Case-insensitive with normalization. Auto-fills canonical_term from Title if empty. Bumps glossary version on CRUD. Ignores auto-drafts.
- * Author: EIC
+
+/*
+ * Copyright (c) 2025 Kenneth Raymond
+ * All rights reserved.
+ *
+ * Part of the Experts in CMT WordPress theme.
+ * Do not copy, modify, or redistribute without permission.
+ *
+ * ------------------------------------------------------------
+ * Glossary — MU Plugin: Canonical Uniqueness Guard
+ * ------------------------------------------------------------
+ * Enforces case-insensitive, normalized uniqueness of Glossary
+ * terms using `canonical_term` (fallback to Title).
+ *
+ * Key behaviors:
+ * • Prevents duplicates on save (admin hard block)
+ * • ACF inline validation (form-level surfacing)
+ * • Auto-fills canonical_term from Title when empty
+ * • Ignores auto-drafts, autosaves, and revisions
+ * • Bumps glossary version on CRUD for future caches
+ *
+ * This file must remain in /mu-plugins/ and must load first.
+ * No output, BOMs, or whitespace before the opening tag.
  */
 
 if (!defined("ABSPATH")) {

@@ -12,11 +12,19 @@
  * in the footer. Safe to keep active across all environments.
  */
 
-add_action('wp_footer', function () {
-    $start = 2020; // adjust if needed
-    $year  = (int) current_time('Y');
-    $name  = get_bloginfo('name');
-    $years = ($year <= $start) ? $start : ($start . '–' . $year);
+add_action(
+    "wp_footer",
+    function () {
+        $start = 2020; // adjust if needed
+        $year = (int) current_time("Y");
+        $name = get_bloginfo("name");
+        $years = $year <= $start ? $start : $start . "–" . $year;
 
-    echo '<div class="site-copyright">&copy; ' . esc_html($years) . ' ' . esc_html($name) . '</div>';
-}, 99);
+        echo '<div class="site-copyright">&copy; ' .
+            esc_html($years) .
+            " " .
+            esc_html($name) .
+            "</div>";
+    },
+    99
+);

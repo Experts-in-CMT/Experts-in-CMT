@@ -1,7 +1,24 @@
 <?php
-/**
- * ACF Admin Stability — ensures ACF meta boxes render in Gutenberg
- * and that field groups appear for pages and CPTs.
+
+/*
+ * Copyright (c) 2025 Kenneth Raymond
+ * All rights reserved.
+ *
+ * Part of the Experts in CMT WordPress theme.
+ * Do not copy, modify, or redistribute without permission.
+ *
+ * ------------------------------------------------------------
+ * MU Plugin: ACF Admin Stability
+ * ------------------------------------------------------------
+ * Purpose:
+ * • Ensures ACF meta boxes appear consistently in Gutenberg
+ * • Restores classic meta box containers for key post types
+ * • Forces ACF scripts to enqueue when Gutenberg interrupts load order
+ *
+ * Notes:
+ * • Always exposes the ACF admin screen
+ * • Adds theme-based ACF JSON load path
+ * • Stability guard runs early in admin_head for reliability
  */
 
 if (!defined("ABSPATH")) {
