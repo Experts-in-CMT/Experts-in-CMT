@@ -1,6 +1,34 @@
 <?php
-// wp-content/themes/twentytwentyfive/inc/acf/subtype-fields.php
-// Subtype — Core & Discovery (ACF Local PHP)
+
+/**
+ * Copyright (c) 2025 Kenneth Raymond
+ * All rights reserved.
+ *
+ * Part of the Experts in CMT WordPress theme.
+ * Do not copy, modify, or redistribute without permission.
+ *
+ * ------------------------------------------------------------
+ * Subtype — Field Group (ACF PHP Registration)
+ * ------------------------------------------------------------
+ * Defines the complete ACF PHP field group used for Subtypes,
+ * including:
+ *   - Core fields (gene, subtype, acronym, unknown-gene flag)
+ *   - Clinical & Genetic Context
+ *   - CTA section (dynamic More Info buttons)
+ *   - Discovery tab (year, discoverer, original paper)
+ *   - Alt Publication block
+ *   - Advanced / Debug fields (e.g., EIC Test Ping)
+ *
+ * Implementation notes:
+ *   - Registered via acf/include_field_groups
+ *   - JSON sync disabled intentionally for stability
+ *   - Field map matches the Subtype ACF Group Builder thread
+ *   - Used by the “Single Item: Subtype” TT25 custom template
+ *
+ * Location:
+ *   /inc/acf/subtype-fields.php
+ */
+
 
 add_action("acf/init", function () {
     if (!function_exists("acf_add_local_field_group")) {

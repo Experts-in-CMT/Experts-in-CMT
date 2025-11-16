@@ -1,3 +1,25 @@
+/*!
+ * Copyright (c) 2025 Kenneth Raymond
+ * All rights reserved.
+ *
+ * Part of the Experts in CMT WordPress theme.
+ * Do not copy, modify, or redistribute without permission.
+ *
+ * ------------------------------------------------------------
+ * NAVIGATION — PARENT LINK LOGIC
+ * ------------------------------------------------------------
+ * Purpose:
+ *   - Ensures parent menu items behave as real links
+ *   - Prevents WP/Gutenberg from forcing button behavior
+ *   - Unifies hover, focus, and open-state handling across
+ *     desktop and mobile
+ *
+ * Critical:
+ *   This file protects the entire menu interaction pattern
+ *   and prevents WP from overriding parent link behavior.
+ */
+
+
 /* Hide submenus by default */
 .wp-block-navigation .has-child > .wp-block-navigation__submenu-container {
   display: none;

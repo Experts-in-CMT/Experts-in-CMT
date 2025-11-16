@@ -1,12 +1,38 @@
 <?php
+
 /**
- * Glossary Loop (Shortcode)
- * Genes-loop parity: sort-only toolbar, no search, genes-style DOM/classes.
+ * Copyright (c) 2025 Kenneth Raymond
+ * All rights reserved.
  *
- * Shortcode: [glossary_loop]
- *
- * @package ExpertsInCMT
+ * Part of the Experts in CMT WordPress theme.
+ * Do not copy, modify, or redistribute without permission.
  */
+
+/**
+ * ============================================================
+ *  GLOSSARY LOOP (Shortcode)
+ *  ------------------------------------------------------------
+ *  Shortcode: [glossary_loop]
+ *
+ *  Purpose:
+ *    - Renders the full CMT Glossary grid with alpha filters,
+ *      sort dropdown, title-only search, and pagination
+ *    - Outputs the EXACT #results wrapper consumed by:
+ *          • glossary-ajax.js
+ *          • glossary-loop-endpoints.php
+ *    - Provides DR-parity structure (card grid, row logic,
+ *      pagination markup, totals block, and URL-state rules)
+ *
+ *  Notes:
+ *    - Glossary DOES NOT use a standalone fragment file
+ *      (markup is rendered 100% inside this file)
+ *    - AJAX endpoint captures the full #results wrapper from
+ *      this shortcode output for swap-in behavior
+ *    - Alpha ranges, sort values, and pagination all feed into
+ *      unified GET-state logic for live updates and new-tab load
+ * ============================================================
+ */
+
 
 if (!defined("ABSPATH")) {
     exit();

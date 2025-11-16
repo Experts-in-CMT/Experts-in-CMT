@@ -1,11 +1,42 @@
 <?php
 /**
- * Glossary Search Filter (Shortcode)
- * Shortcode: [glossary_search_filter]
- * Neutral classes (site-search*) and glossary-aware params.
+ * Copyright (c) 2025 Kenneth Raymond
+ * All rights reserved.
  *
- * @package ExpertsInCMT
+ * Part of the Experts in CMT WordPress theme.
+ * Do not copy, modify, or redistribute without permission.
  */
+
+/**
+ * ============================================================
+ *  [glossary_filter] — CMT Glossary Filter UI
+ *  ------------------------------------------------------------
+ *  Purpose:
+ *    - Renders the Glossary’s filter controls (alpha selector,
+ *      sort dropdown, optional search field, and reset link)
+ *    - Emits GET params consumed by:
+ *        • [glossary_loop] shortcode (page-load rendering)
+ *        • glossary-ajax.js (live AJAX updates)
+ *
+ *  GET params produced by this filter:
+ *    alpha     (string)  alpha-range key (A–E, F–J, …)
+ *    g_sort    (string)  sort value
+ *    g_paged   (int)     pagination value
+ *    qs        (string)  title-only search term
+ *
+ *  Notes:
+ *    - AJAX stack handles:
+ *        dropdown + alpha changes
+ *        debounced search
+ *        clean URL updates
+ *        pagination behavior
+ *        smooth focus-to-results
+ *
+ *    - Action URL anchors to #results for native accessibility
+ *      and correct behavior when JavaScript is disabled.
+ * ============================================================
+ */
+
 
 if (!defined("ABSPATH")) {
     exit();

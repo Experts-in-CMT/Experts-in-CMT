@@ -1,12 +1,37 @@
 <?php
 /**
- * Dorsal Root — Filters (Shortcode)
- * Shortcode: [dr_filter]
- * Renders a category dropdown (taxonomy: dorsal-root) + search input.
- * - Preserves other GET params
- * - Resets pagination on submit/change
- * - Anchors to #results
+ * Copyright (c) 2025 Kenneth Raymond
+ * All rights reserved.
+ *
+ * Part of the Experts in CMT WordPress theme.
+ * Do not copy, modify, or redistribute without permission.
  */
+
+/**
+ * ============================================================
+ *  [dr_filter] — Dorsal Root Filter UI
+ *  ------------------------------------------------------------
+ *  Purpose:
+ *    - Renders the DR filter/search bar (category + search input)
+ *    - Outputs GET params consumed by the DR loop and dr-ajax.js
+ *    - Action preserves URL state and anchors to #results
+ *
+ *  Notes:
+ *    - Works in parity with Genes and Glossary filter components
+ *    - GET params used by DR loop:
+ *        dr_cat   (int)    taxonomy term_id
+ *        qs       (string) search text
+ *        dr_sort  (string) external sort selector
+ *        dr_paged (int)    pagination
+ *
+ *    - AJAX layer handles:
+ *        auto-submit on category change
+ *        debounced live search
+ *        clean URL updates
+ *        scroll and focus behavior
+ * ============================================================
+ */
+
 
 if (!defined("ABSPATH")) {
     exit();

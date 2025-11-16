@@ -1,5 +1,12 @@
 <?php
+
 /**
+ * Copyright (c) 2025 Kenneth Raymond
+ * All rights reserved.
+ *
+ * Part of the Experts in CMT WordPress theme.
+ * Do not copy, modify, or redistribute without permission.
+ *
  * Template Part: Subtype Fields Renderer
  * ------------------------------------------------------------
  * Renders all ACF-driven data for Subtype single pages.
@@ -8,12 +15,11 @@
  * Blocks:
  *   1. Subtype Overview
  *   2. Clinical & Genetic Context
- *   3. More Info (CTA's)
- *   4. Key Publication(s) (First required pub + (5th block) optional Alt Publication))
- *
- * @package ExpertsInCMT
- * @since 1.0
+ *   3. More Info (CTAs)
+ *   4. Key Publication(s)
+ *   5. Optional Alt Publication
  */
+
 
 // Exit if accessed directly
 defined("ABSPATH") || exit();

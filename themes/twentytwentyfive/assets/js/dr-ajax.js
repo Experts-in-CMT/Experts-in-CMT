@@ -1,3 +1,28 @@
+/*!
+ * Copyright (c) 2025 Kenneth Raymond
+ * All rights reserved.
+ *
+ * Part of the Experts in CMT WordPress theme.
+ * Do not copy, modify, or redistribute without permission.
+ *
+ * ------------------------------------------------------------
+ * DORSAL ROOT — AJAX
+ * ------------------------------------------------------------
+ * Purpose:
+ *   - Handles live filtering, sorting, pagination, and
+ *     native-search input for Dorsal Root posts.
+ *   - Swaps ONLY the #results wrapper inside
+ *       #dr-results-root
+ *   - Serves as the gold-standard reference architecture
+ *     (Genes and Glossary achieve parity with this stack).
+ *
+ * Notes:
+ *   - Unified GET/POST param intake
+ *   - Smooth, no-jump URL and scroll behavior
+ *   - Full DR card-grid and sort-toolbar support
+ */
+
+
 document.addEventListener('DOMContentLoaded', function() {
 	const form = document.querySelector('form.site-search[data-loop="dr"]');
 	const root = document.querySelector('#dr-results-root');

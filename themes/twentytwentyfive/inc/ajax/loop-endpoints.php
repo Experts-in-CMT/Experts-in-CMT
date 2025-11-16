@@ -1,13 +1,47 @@
 <?php
+
+/**
+ * Copyright (c) 2025 Kenneth Raymond
+ * All rights reserved.
+ *
+ * Part of the Experts in CMT WordPress theme.
+ * Do not copy, modify, or redistribute without permission.
+ */
+
+/**
+ * ============================================================
+ *  DORSAL ROOT LOOP AJAX ENDPOINT
+ *  ------------------------------------------------------------
+ *  Purpose:
+ *    - Handles AJAX requests triggered by dr-ajax.js
+ *    - Returns ONLY the rendered inner-loop HTML for swap into
+ *      #dr-results-root
+ *    - Maintains full parity with Genes and Glossary stacks
+ *
+ *  Notes:
+ *    - DR DOES NOT use a standalone fragment file.
+ *      The loop markup is rendered directly inside this endpoint.
+ *      (This matches Glossary’s architecture.)
+ *
+ *    - Accepts unified GET/POST intake:
+ *        qs        (string)  search text
+ *        dr_cat    (int)     taxonomy filter
+ *        dr_sort   (string)  sort value
+ *        dr_paged  (int)     pagination
+ *        per_page  (int)     shortcode override
+ *
+ *    - Preserves URL state cleanly (slug + query params)
+ *    - Output must wrap inner content in the #results container
+ *      so the AJAX script can replace it seamlessly.
+ * ============================================================
+ */
+
 // Exit if accessed directly
 if (!defined("ABSPATH")) {
     exit();
 }
 
-/**
- * Dorsal Root — AJAX endpoint
- * Matches data-action="dr_get_posts" and nonce 'dr_ajax_nonce'
- */
+
 add_action("wp_ajax_dr_get_posts", "eic_ajax_dr_get_posts");
 add_action("wp_ajax_nopriv_dr_get_posts", "eic_ajax_dr_get_posts");
 

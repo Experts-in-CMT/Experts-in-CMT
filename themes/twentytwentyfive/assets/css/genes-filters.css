@@ -1,3 +1,27 @@
+/*!
+ * Copyright (c) 2025 Kenneth Raymond
+ * All rights reserved.
+ *
+ * Part of the Experts in CMT WordPress theme.
+ * Do not copy, modify, or redistribute without permission.
+ *
+ * ------------------------------------------------------------
+ * GENES DB — FILTER UI
+ * ------------------------------------------------------------
+ * Styles for:
+ *   • Genes Database filter bar (2×2 selects + search)
+ *   • Sort toolbar (dropdown + clear)
+ *   • Responsive grid layout
+ *
+ * Scope:
+ *   .genesdb-filter-wrap
+ *
+ * Notes:
+ *   - Shares visual parity with Glossary + Dorsal Root filters
+ *   - Designed for the Genes AJAX stack (v0.8+)
+ */
+
+
 /* =========================================================
    Genes DB — FILTER UI (2×2 selects + search below)
    Scope: .genesdb-filter-wrap only

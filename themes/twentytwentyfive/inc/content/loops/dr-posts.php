@@ -1,12 +1,36 @@
 <?php
+
 /**
- * DR Posts Loop (Shortcode)
- * Glossary-parity structure; DR-specific card layout.
+ * Copyright (c) 2025 Kenneth Raymond
+ * All rights reserved.
  *
- * Shortcode: [dr_posts]
- *
- * @package ExpertsInCMT
+ * Part of the Experts in CMT WordPress theme.
+ * Do not copy, modify, or redistribute without permission.
  */
+
+/**
+ * ============================================================
+ *  DORSAL ROOT LOOP (Shortcode)
+ *  ------------------------------------------------------------
+ *  Purpose:
+ *    - Renders the Dorsal Root post loop on the static /dorsal-root
+ *      page using the shortcode [dr_posts].
+ *    - Provides DR-specific card markup while maintaining
+ *      full structural parity with Genes and Glossary loops.
+ *    - Pagination, sort, filter, and search behavior are handled
+ *      by dr-ajax.js and the DR AJAX endpoint.
+ *
+ *  Notes:
+ *    - Glossary DOES NOT use a standalone fragment file
+ *      (markup is rendered 100% inside this file)
+ *    - AJAX endpoint captures the full #results wrapper from
+ *      this shortcode output for swap-in behavior
+ *
+ *  Shortcode:
+ *      [dr_posts per_page="12" category_name=""]
+ *
+ */
+
 
 if (!defined("ABSPATH")) {
     exit();

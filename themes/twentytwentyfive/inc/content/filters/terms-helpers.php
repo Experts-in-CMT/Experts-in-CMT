@@ -1,17 +1,39 @@
 <?php
 /**
- * Term helpers — ordered retrieval for filter UIs
- * Uses numeric 'sort' term meta seeded by the taxonomy registrar.
+ * Copyright (c) 2025 Kenneth Raymond
+ * All rights reserved.
+ *
+ * Part of the Experts in CMT WordPress theme.
+ * Do not copy, modify, or redistribute without permission.
  */
 
 /**
- * Get terms ordered by numeric 'sort' meta (ASC).
- * Falls back to name ASC if 'sort' doesn't exist.
+ * ============================================================
+ *  Term Helpers — Ordered Retrieval for Filter UIs
+ *  ------------------------------------------------------------
+ *  Purpose:
+ *    - Provide ordered taxonomy term retrieval for all filter UI
+ *      components across the Experts in CMT project.
+ *    - Ensure consistent <select> option ordering using the
+ *      numeric 'sort' meta assigned during taxonomy registration.
  *
- * @param string $taxonomy
- * @param array  $args     Optional get_terms() args to merge.
- * @return WP_Term[]|array
+ *  Provides:
+ *    eicmt_get_ordered_terms()
+ *       → Returns WP_Term[] sorted by 'sort' meta, fallback to
+ *         name ASC when no meta is present.
+ *
+ *    eicmt_terms_options_html()
+ *       → Utility for generating ordered <option> HTML for filter
+ *         dropdowns in Genes, Glossary, and Dorsal Root UIs.
+ *
+ *  Notes:
+ *    - Centralizes ordering logic so filters stay predictable.
+ *    - Eliminates scattered get_terms() calls with inconsistent
+ *      sorting behavior.
+ * ============================================================
  */
+
+
 function eicmt_get_ordered_terms($taxonomy, $args = [])
 {
     $defaults = [

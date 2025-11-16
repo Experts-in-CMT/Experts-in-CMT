@@ -1,3 +1,31 @@
+/*!
+ * Copyright (c) 2025 Kenneth Raymond
+ * All rights reserved.
+ *
+ * Part of the Experts in CMT WordPress theme.
+ * Do not copy, modify, or redistribute without permission.
+ *
+ * ------------------------------------------------------------
+ * EDITOR STYLESHEET
+ * ------------------------------------------------------------
+ * Purpose:
+ *   - Gutenberg editor adjustments
+ *   - Fixes link underline behavior (WP issue #42319)
+ *
+ * Scope:
+ *   Applies only within the block editor iframe.
+ */
+
+/*
+ * Link styles
+ * https://github.com/WordPress/gutenberg/issues/42319
+ */
+a {
+  text-decoration-thickness: 1px !important;
+  text-underline-offset: 0.1em;
+}
+
+
 /*
  * Link styles
  * https://github.com/WordPress/gutenberg/issues/42319

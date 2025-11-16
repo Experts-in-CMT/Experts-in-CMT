@@ -1,11 +1,19 @@
 <?php
 /**
+ * Copyright (c) 2025 Kenneth Raymond
+ * All rights reserved.
+ *
+ * Part of the Experts in CMT WordPress theme.
+ * Do not copy, modify, or redistribute without permission.
+ *
  * Template Part: Glossary Source Button
  * ------------------------------------------------------------
- * Renders the single "Source" button centered on Glossary pages.
- *
- * @package ExpertsInCMT
+ * Renders the single centered "Source" button on Glossary pages.
+ * Pulls two ACF fields:
+ *   • source_url
+ *   • source_label (optional override)
  */
+
 
 defined("ABSPATH") || exit();
 

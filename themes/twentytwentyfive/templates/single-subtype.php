@@ -1,15 +1,20 @@
 <?php
+
 /**
+ * Copyright (c) 2025 Kenneth Raymond
+ * All rights reserved.
+ *
+ * Part of the Experts in CMT WordPress theme.
+ * Do not copy, modify, or redistribute without permission.
+ *
  * Template: Single Item — Subtype
  * ------------------------------------------------------------
  * Purpose:
- * - Loads the Subtype ACF field renderer
- * - Header and Footer already included globally
- * - Header banner handled by the header template itself
- *
- * @package ExpertsInCMT
- * @since 1.0
+ *   - Loads the Subtype ACF field renderer
+ *   - Header and Footer already included globally
+ *   - Header banner handled by the header template itself
  */
+
 
 // Exit if accessed directly
 defined("ABSPATH") || exit();

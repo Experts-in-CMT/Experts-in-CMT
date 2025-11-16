@@ -1,9 +1,26 @@
 <?php
+
+/**
+ * Copyright (c) 2025 Kenneth Raymond
+ * All rights reserved.
+ *
+ * Part of the Experts in CMT WordPress theme.
+ * Do not copy, modify, or redistribute without permission.
+ */
+
 /**
  * ============================================================
- *  FRAGMENT: GENES LOOP
+ *  FRAGMENT: GENES LOOP (AJAX + PAGE LOAD)
+ *  ------------------------------------------------------------
+ *  Purpose:
+ *    - Renders ONLY the inner loop markup injected by the
+ *      Genes AJAX endpoint and shortcode wrapper
+ *    - Contains search, taxonomy, and canonical sort logic
+ *      applied identically for AJAX and non-AJAX paths
+ *    - Must remain wrapper-free for proper DOM swapping
  * ============================================================
  */
+
 if (!defined('ABSPATH')) exit;
 
 /**
@@ -230,7 +247,7 @@ if ($use_canonical_sort) {
    ============================================================ */
 ?>
 
-<div id="genes-results-root">
+<div id="genes-results-root" data-per-page="<?php echo esc_attr($per_page); ?>">
 <div id="results" class="wp-block-query dr-blog" style="scroll-margin-top:100px;">
 
 <?php
@@ -373,7 +390,7 @@ $total_rows = count($rows);
 // ============================================================
 $total_pages = max(1, (int) $q->max_num_pages);
 if ($total_pages > 1) {
-    $current   = max(1, (int) ($_GET['gd_paged'] ?? 1));
+    $current = max(1, (int) ($args['paged'] ?? 1));
     $base_url  = get_permalink(get_queried_object_id()) ?: home_url('/cmt-genetics-database/');
     $qs_params = $_GET;
     unset($qs_params['gd_paged']);

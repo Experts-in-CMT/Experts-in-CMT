@@ -1,8 +1,20 @@
 <?php
 /**
- * Header Banner (Split layout)
- * Image (optional) right, text left.
+ * Copyright (c) 2025 Kenneth Raymond
+ * All rights reserved.
+ *
+ * Part of the Experts in CMT WordPress theme.
+ * Do not copy, modify, or redistribute without permission.
+ *
+ * Header Banner (Split Layout)
+ * ------------------------------------------------------------
+ * Image (optional) on the right, text on the left.
+ * Renders only when at least one of these exists:
+ *   • banner_image
+ *   • banner_title
+ *   • banner_intro
  */
+
 
 $post_id = isset($post_id) ? (int) $post_id : (int) get_queried_object_id();
 

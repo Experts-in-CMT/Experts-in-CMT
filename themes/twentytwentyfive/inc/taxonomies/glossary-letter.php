@@ -1,12 +1,23 @@
 <?php
+
 /**
+ * Copyright (c) 2025 Kenneth Raymond
+ * All rights reserved.
+ *
+ * Part of the Experts in CMT WordPress theme.
+ * Do not copy, modify, or redistribute without permission.
+ *
+ * ------------------------------------------------------------
  * Hidden Taxonomy — Glossary Letter
+ * ------------------------------------------------------------
+ * Registers the private `glossary_letter` taxonomy and keeps it
+ * auto-synced to the first alphanumeric character (A–Z, 0–9) of
+ * a Glossary term’s canonical term or title.
  *
- * Registers a hidden taxonomy for glossary CPTs and auto-syncs a post’s first
- * letter (A–Z, 0–9) on save. This allows efficient alphabetical filtering.
- *
- * @package ExpertsInCMT
+ * Used for high-performance alphabetical filtering in the
+ * Glossary loop and AJAX stack.
  */
+
 
 if (!defined("ABSPATH")) {
     exit();

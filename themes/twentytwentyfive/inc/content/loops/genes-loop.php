@@ -1,9 +1,5 @@
 <?php
-/* ============================================================
-   GENES DATABASE LOOP SHORTCODE (responsive to filter UI)
-   Simplified, reliable search using qs= and ACF/meta/tax filters.
-   Keeps all layout + styling from original.
-   ============================================================ */
+
 
 /* ============================================================
    ============================================================
@@ -105,19 +101,24 @@ add_shortcode("genes_loop", function ($atts = []) {
         $tax_query = [];
     }
 
-    /* --------------------------------------------------------
-       PASS VARIABLES TO FRAGMENT
-       -------------------------------------------------------- */
-    set_query_var('a', $a);
-    set_query_var('tax_query', $tax_query);
-    set_query_var('qs', $qs);
-    set_query_var('qs_all', $qs_all);
-    set_query_var('genes_shortcode_atts', $a); // <— ADD THIS LINE
+ /* --------------------------------------------------------
+   PASS VARIABLES TO FRAGMENT
+   -------------------------------------------------------- */
+set_query_var('a', $a);
+set_query_var('tax_query', $tax_query);
+set_query_var('qs', $qs);
+set_query_var('qs_all', $qs_all);
+set_query_var('genes_shortcode_atts', $a);
 
-    /* --------------------------------------------------------
+// PASS ACTIVE SORT (from URL → fragment)
+$current_sort = isset($_GET['gd_sort']) ? sanitize_key($_GET['gd_sort']) : '';
+set_query_var('gd_sort', $current_sort);
+
+/* --------------------------------------------------------
    INNER LOOP (fragment include)
    -------------------------------------------------------- */
 ob_start();
+
 ?>
 
 <?php
@@ -164,4 +165,3 @@ $sort_clear_url = esc_url($base . ($clear_params ? '?' . http_build_query($clear
 get_template_part('inc/content/loops/partials/fragment-loop-genes-loop');
 return ob_get_clean();
 });
-

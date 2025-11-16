@@ -1,3 +1,35 @@
+/*!
+ * Copyright (c) 2025 Kenneth Raymond
+ * All rights reserved.
+ *
+ * Part of the Experts in CMT WordPress theme.
+ * Do not copy, modify, or redistribute without permission.
+ *
+ * ------------------------------------------------------------
+ * NAVIGATION — PARENT LINK RESTORATION
+ * ------------------------------------------------------------
+ * Purpose:
+ *   - Restores clickability for parent menu items in WP’s
+ *     block-based Navigation system.
+ *   - Allows submenus to open normally while parent items
+ *     remain true links (desktop and mobile).
+ *
+ * IMPORTANT:
+ *   The array NAV_ROUTES defines **parent-level menu items**
+ *   whose links should NOT be blocked by the submenu toggle.
+ *
+ *   Whenever a new top-level menu item in the Site Editor has
+ *   children AND should stay clickable, it MUST be added to
+ *   NAV_ROUTES manually.
+ *
+ * Notes:
+ *   - No interference with submenu toggles
+ *   - No hover hijacking
+ *   - Supports nested structures
+ */
+
+
+
 /* Parent links must navigate; hover opens, mouseout closes; chevron toggles; defeat TT25 interactivity */
 (function() {
 	const HOVER_DELAY = 120;
@@ -203,6 +235,12 @@
 		init();
 	}
 })();
+
+/* ============================================================
+   ============  REGISTER CLICKABLE PARENT MENU ITEMS  =========
+   ============  ADD NEW PARENT ITEMS TO NAV_ROUTES  ===========
+   ============  REQUIRED FOR ANY PARENT WITH CHILDREN  =========
+   ============================================================ */
 
 /* --- HARD ROUTES: force parent item navigation --- */
 const NAV_ROUTES = [

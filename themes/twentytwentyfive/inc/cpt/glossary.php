@@ -1,10 +1,29 @@
 <?php
+
 /**
- * CPT Registration — Glossary
- * Defines the "Glossary" post type for common CMT terms.
+ * Copyright (c) 2025 Kenneth Raymond
+ * All rights reserved.
  *
- * @package ExpertsInCMT
+ * Part of the Experts in CMT WordPress theme.
+ * Do not copy, modify, or redistribute without permission.
+ *
+ * ------------------------------------------------------------
+ * CPT Registration — Glossary
+ * ------------------------------------------------------------
+ * Registers the "glossary" custom post type used for defining
+ * canonical CMT terminology throughout Experts in CMT.
+ *
+ * Key Notes:
+ *   - Supports title, editor, excerpt, revisions
+ *   - Public, REST-enabled, block-editor friendly
+ *   - Slug: /glossary
+ *   - Non-hierarchical; standalone terms
+ *   - Integrates with ACF field group:
+ *       "Glossary — Core" (canonical term, short definition,
+ *       synonyms, misspellings, term image, source fields)
+ *
  */
+
 
 if (!defined("ABSPATH")) {
     exit();

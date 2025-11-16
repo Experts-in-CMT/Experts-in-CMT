@@ -1,11 +1,7 @@
 <?php
-/**
- * Genes DB — custom default order for ACF `type_classification`
- * Applies ONLY to queries that set query_var 'eic_genes_custom_sort'.
- *
- * Order: CMT1, CMT2, CMT4, CMTX, CMTDI, CMTRI, dHMN, dSMA, GAN, HMSN, HSAN, HSN, SMA-LEP, Unclassified
- * Missing/blank values go LAST. Tie-breaker is post_title ASC.
- */
+
+
+
 
 if (!function_exists("eic_genes_type_ordering_clauses")) {
     function eic_genes_type_ordering_clauses(

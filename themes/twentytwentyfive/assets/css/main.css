@@ -1,5 +1,31 @@
 @import url("https://fonts.googleapis.com/css2?family=Albert+Sans:wght@300;400;500;600;700&display=swap");
 
+/*!
+ * Copyright (c) 2025 Kenneth Raymond
+ * All rights reserved.
+ *
+ * Part of the Experts in CMT WordPress theme.
+ * Do not copy, modify, or redistribute without permission.
+ *
+ * ------------------------------------------------------------
+ * MAIN STYLESHEET
+ * ------------------------------------------------------------
+ * Core global styling shared across:
+ *   • Genes Database
+ *   • Dorsal Root
+ *   • Glossary
+ *   • Subtype templates
+ *   • Navigation, layout tokens, grid systems
+ *
+ * This file defines:
+ *   – Global reset + base typography
+ *   – Layout containers and spacing system
+ *   – Filter UIs, sort toolbars, and card grids
+ *   – Bagpipe-parity component structures
+ *   – Responsive behavior for all interactive loops
+ */
+
+
 /* =========================================================
    Experts in CMT — Base Styles
    White-only backgrounds • Fluid type • Accessible by default
@@ -2382,7 +2408,7 @@ h2.wp-block-heading {
     padding: 0.5em 1.1em;
   }
 
-
+}
 
 /* === Publications: force "Note:" inline === */
 .eic-fact.eic-fact--inline-note {
@@ -2491,7 +2517,7 @@ h2.wp-block-heading {
 }
 
 /* =========================================================
-   SEARCH SHORTCODE — PARITY WITH GENES
+   SEARCH Filter
    ========================================================= */
 
 /* ========== Layout & Container ========== */
@@ -2635,4 +2661,7 @@ h2.wp-block-heading {
 .wp-block-query-no-results {
   display: none !important;
 }
+
+
+
 

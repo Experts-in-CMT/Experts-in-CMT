@@ -1,4 +1,13 @@
 <?php
+
+/**
+ * Copyright (c) 2025 Kenneth Raymond
+ * All rights reserved.
+ *
+ * Part of the Experts in CMT WordPress theme.
+ * Do not copy, modify, or redistribute without permission.
+ */
+
 /**
  * Search Filter (Shortcode)
  * Shortcode: [search_filter]

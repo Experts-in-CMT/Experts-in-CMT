@@ -1,9 +1,27 @@
 <?php
 /**
- * Register Genes Database taxonomies for CPT `subtype`
- * - CMT Type, Inheritance, Neuropathy, Chromosome
- * Hierarchical (checkbox UI), seeded terms, and seeded numeric 'sort' order.
+ * Copyright (c) 2025 Kenneth Raymond
+ * All rights reserved.
+ *
+ * Part of the Experts in CMT WordPress theme.
+ * Do not copy, modify, or redistribute without permission.
+ *
+ * ------------------------------------------------------------
+ * Genes Database — Taxonomy Registration
+ * ------------------------------------------------------------
+ * Registers the four core taxonomies used by the Subtype CPT:
+ *   - cmt_type
+ *   - inheritance
+ *   - neuropathy
+ *   - chromosome
+ *
+ * Features:
+ *   • Hierarchical taxonomies (checkbox UI)
+ *   • Seeded default terms
+ *   • Numeric "sort" term meta for stable ordering
+ *   • One-time reseeding keyed by `subtype_taxonomies_seeded_v4`
  */
+
 
 add_action("init", function () {
     $taxes = [

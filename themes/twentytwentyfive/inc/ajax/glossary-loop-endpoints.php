@@ -1,13 +1,35 @@
 <?php
 /**
- * Glossary AJAX endpoint
+ * Copyright (c) 2025 Kenneth Raymond
+ * All rights reserved.
  *
- * File: /inc/ajax/glossary-loop-endpoints.php
- * Purpose: Return the FULL <div id="results">…</div> wrapper for Glossary,
- *          using the exact same rendering path as the non-AJAX page
- *          (via the [glossary_loop] shortcode). This mirrors the DR pipeline
- *          so JS can swap the entire block via outerHTML.
+ * Part of the *Experts in CMT* WordPress theme.
+ * Do not copy, modify, or redistribute without permission.
  */
+
+/**
+ * ============================================================
+ *  GLOSSARY LOOP AJAX ENDPOINT
+ *  ------------------------------------------------------------
+ *  Purpose:
+ *    - Handles AJAX requests triggered by glossary-ajax.js
+ *    - Returns the full <div id="results">…</div> wrapper
+ *      for drop-in replacement inside #glossary-results-root
+ *
+ *  Architecture:
+ *    - Glossary does NOT use a standalone fragment file
+ *    - The shortcode [glossary_loop] renders the entire loop
+ *    - This endpoint re-renders that shortcode, then extracts
+ *      the #results wrapper using DOMDocument for precise swap
+ *
+ *  Notes:
+ *    - Accepts unified GET/POST params (alpha, g_sort, g_paged, qs)
+ *    - Preserves clean URL state for refresh/new-tab behavior
+ *    - Maintains full parity with Dorsal Root’s AJAX extraction model
+ * ============================================================
+ */
+
+
 
 if (!defined('ABSPATH')) {
     exit;

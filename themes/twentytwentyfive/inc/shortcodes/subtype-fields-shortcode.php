@@ -1,13 +1,23 @@
 <?php
 /**
+ * Copyright (c) 2025 Kenneth Raymond
+ * All rights reserved.
+ *
+ * Part of the Experts in CMT WordPress theme.
+ * Do not copy, modify, or redistribute without permission.
+ *
+ * ------------------------------------------------------------
  * Shortcode: [subtype_fields]
  * ------------------------------------------------------------
- * Outputs the contents of /templates/subtype-fields-template.php
- * so you can drop [subtype_fields] into a Gutenberg Shortcode block.
+ * Renders the Subtype field display template inside a Gutenberg
+ * Shortcode block. Used exclusively on single Subtype pages.
  *
- * @package ExpertsInCMT
- * @since 1.0
+ * Notes:
+ *   - Loads templates/subtype-fields-template.php
+ *   - Silent fail with HTML comment if the template is missing
+ *   - Only runs on is_singular('subtype')
  */
+
 
 // Prevent direct access
 defined("ABSPATH") || exit();

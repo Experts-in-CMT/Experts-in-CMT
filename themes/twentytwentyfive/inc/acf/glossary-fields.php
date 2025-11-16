@@ -1,8 +1,31 @@
 <?php
+
 /**
- * Glossary — Core (ACF PHP Registration)
- * Location: Post Type = glossary
+ * Copyright (c) 2025 Kenneth Raymond
+ * All rights reserved.
+ *
+ * Part of the Experts in CMT WordPress theme.
+ * Do not copy, modify, or redistribute without permission.
+ *
+ * ------------------------------------------------------------
+ * Glossary — Field Group (ACF PHP Registration)
+ * ------------------------------------------------------------
+ * Registers the main field group for Glossary entries:
+ *   - Canonical Term (uniqueness + search)
+ *   - Short Definition
+ *   - Term Image + Alt Text Override
+ *   - Synonyms / AKA list
+ *   - Common Misspellings
+ *   - Source URL + Source Label
+ *   - Admin Notes (internal only)
+ *
+ * Location:
+ *   Post Type = glossary
+ *
+ * Loaded via acf/init and stored in the theme repo to
+ * ensure stable JSON-free ACF configuration.
  */
+
 
 if (!defined("ABSPATH")) {
     exit();

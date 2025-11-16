@@ -1,12 +1,32 @@
 <?php
 /**
- * The Dorsal Root — 3-wide featured section (no categories)
- * Pulls 'post' entries marked with post meta _is_featured = '1'.
- * Fallback: latest posts if none are featured.
+ * Copyright (c) 2025 Kenneth Raymond
+ * All rights reserved.
  *
- * Accepts $args:
- * - count (int) default 3
+ * Part of the Experts in CMT WordPress theme.
+ * Do not copy, modify, or redistribute without permission.
+ *
+ * ============================================================
+ * Component: Section — The Dorsal Root (Homepage Feature)
+ * ------------------------------------------------------------
+ * Renders the 3-wide featured grid for Dorsal Root articles.
+ *
+ * Behavior:
+ *   - Pulls posts where post meta `_is_featured` = '1'
+ *   - Falls back to latest posts if none are featured
+ *
+ * Usage:
+ *   - Included as a template partial within the homepage layout
+ *
+ * Parameters:
+ *   $args['count']  (int)  Number of posts to display (default: 3)
+ *
+ * Notes:
+ *   - Uses DR card structure consistent with Glossary and Genes
+ *   - Maintains bagpipe card parity (media → heading → excerpt)
+ * ============================================================
  */
+
 
 $count = isset($args['count']) ? intval($args['count']) : 3;
 

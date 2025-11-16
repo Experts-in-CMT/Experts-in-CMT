@@ -1,13 +1,24 @@
 <?php
+
 /**
- * Shortcode: [glossary_fields]
- * Renders the Glossary Source button using the glossary-fields-template.php partial.
+ * Copyright (c) 2025 Kenneth Raymond
+ * All rights reserved.
  *
- * Usage: Add a Shortcode block in the Glossary single template and insert:
- * [glossary_fields]
+ * Part of the Experts in CMT WordPress theme.
+ * Do not copy, modify, or redistribute without permission.
  *
- * @package ExpertsInCMT
+ * ------------------------------------------------------------
+ * CPT Registration — Glossary
+ * ------------------------------------------------------------
+ * Renders the Glossary field display template inside a Gutenberg
+ * Shortcode block. Used exclusively on single Glossary pages.
+ *
+ * Notes:
+ *   - Supports title, editor, excerpt, revisions
+ *   - Public, REST-enabled, non-hierarchical
+ *   - Uses slug `/glossary` for pretty permalinks
  */
+
 
 if (!defined("ABSPATH")) {
     exit();

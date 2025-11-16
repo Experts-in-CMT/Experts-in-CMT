@@ -1,21 +1,31 @@
 <?php
 
 /**
+ * Copyright (c) 2025 Kenneth Raymond
+ * All rights reserved.
+ *
+ * Part of the Experts in CMT WordPress theme.
+ * Do not copy, modify, or redistribute without permission.
+ *
+ * ------------------------------------------------------------
  * DO NOT EDIT WITHOUT REVIEW — load order is critical.
- * - main.css loads ONLY via 'experts-main' @ priority 999.
- * - nav CSS/JS must depend on 'experts-main'.
- * - If you touch enqueues, verify header banner styles after.
+ * ------------------------------------------------------------
+ * • main.css loads ONLY via 'experts-main' at priority 999.
+ * • nav CSS/JS must depend on 'experts-main'.
+ * • If you touch enqueues, verify header banner styles after.
+ *
+ * Core Theme Bootstrap (functions.php)
+ * ------------------------------------------------------------
+ * Loads and wires:
+ *   – CPTs, taxonomies, ACF groups
+ *   – Shortcodes, filters, AJAX endpoints
+ *   – Global assets and helper utilities
+ *   – Theme supports and editor integration
+ *
+ * This file is intentionally minimal. All feature logic lives
+ * inside /inc/ for clarity, isolation, and predictable upgrades.
  */
 
-/**
- * Twenty Twenty-Five functions and definitions.
- *
- * @link https://developer.wordpress.org/themes/basics/theme-functions/
- *
- * @package WordPress
- * @subpackage Twenty_Twenty_Five
- * @since Twenty Twenty-Five 1.0
- */
 
 // Adds theme support for post formats.
 if (!function_exists("twentytwentyfive_post_format_setup")):

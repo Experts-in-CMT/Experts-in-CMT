@@ -1,12 +1,38 @@
 <?php
 /**
+ * Copyright (c) 2025 Kenneth Raymond
+ * All rights reserved.
+ *
+ * Part of the Experts in CMT WordPress theme.
+ * Do not copy, modify, or redistribute without permission.
+ */
+
+/**
  * ============================================================
  *  GENES LOOP AJAX ENDPOINT
  *  ------------------------------------------------------------
  *  Purpose:
- *    Responds to AJAX requests triggered by genes-ajax.js.
- *    Returns only the rendered inner fragment HTML for
- *    replacement inside #genes-results-root.
+ *    Handles AJAX requests initiated by genes-ajax.js and returns
+ *    ONLY the rendered inner-loop HTML for injection into
+ *    #genes-results-root.
+ *
+ *  Behavior:
+ *    - Unified GET+POST intake for full parity with URL state.
+ *    - Applies:
+ *         • per_page overrides
+ *         • live search (ACF/meta/tax hybrid)
+ *         • taxonomy filters (cmt_type, inheritance, neuropathy, chromosome)
+ *         • sort logic (canonical FIELD() order unless overridden)
+ *         • pagination
+ *    - Sets query vars, loads fragment-loop-genes-loop.php, captures
+ *      the output, resets postdata, and returns JSON.
+ *
+ *  Notes:
+ *    - Must remain in perfect parity with Dorsal Root and Glossary stacks.
+ *    - Canonical sort is inviolable; endpoint must never disrupt
+ *      FIELD() ordering unless an explicit gd_sort value is supplied.
+ *    - Fragment file lives at:
+ *          inc/content/loops/partials/fragment-loop-genes-loop.php
  * ============================================================
  */
 
@@ -29,12 +55,16 @@ function eic_genes_loop_endpoint() {
     }
 
     // ============================================================
-    // Build Query Args (mirrors Genes non-AJAX logic)
+    // Build Query Args — unified GET/POST intake
     // ============================================================
-    $paged    = isset($_POST['gd_paged']) ? max(1, (int) $_POST['gd_paged']) : 1;
-    $per_page = isset($_POST['per_page']) ? max(1, (int) $_POST['per_page']) : 12;
-    $search   = isset($_POST['qs']) ? sanitize_text_field($_POST['qs']) : '';
-    $sort     = isset($_POST['gd_sort']) ? sanitize_key($_POST['gd_sort']) : '';
+
+    // Accept BOTH POST (AJAX) and GET (URL state) for full parity
+    $req = array_merge($_GET, $_POST);
+
+    $paged    = isset($req['gd_paged']) ? max(1, (int) $req['gd_paged']) : 1;
+    $per_page = isset($req['per_page']) ? max(1, (int) $req['per_page']) : 12;
+    $search   = isset($req['qs']) ? sanitize_text_field($req['qs']) : '';
+    $sort     = isset($req['gd_sort']) ? sanitize_key($req['gd_sort']) : '';
 
     $args = [
         'post_type'      => 'subtype',
@@ -45,8 +75,7 @@ function eic_genes_loop_endpoint() {
         'order'          => 'ASC',
     ];
 
-    // 🔑 IMPORTANT: NO $args['s'] HERE.
-    // We rely ONLY on meta_query so searches like "PMP22" / "1993" hit ACF/meta fields.
+    // IMPORTANT: NO $args['s'] HERE. Meta query only.
     if ($search !== '') {
         $args['meta_query'] = [
             'relation' => 'OR',
@@ -60,18 +89,18 @@ function eic_genes_loop_endpoint() {
         ];
     }
 
-    /* ------------------------------------------------------------
-       Taxonomy filters
-       ------------------------------------------------------------ */
+    // ============================================================
+    // Taxonomy filters (UPDATED TO USE $req, NOT $_POST)
+    // ============================================================
     $tax_query = ['relation' => 'AND'];
     $tax_keys  = ['cmt_type', 'inheritance', 'neuropathy', 'chromosome'];
 
     foreach ($tax_keys as $tax) {
-        if (!empty($_POST[$tax]) && $_POST[$tax] !== '0') {
+        if (!empty($req[$tax]) && $req[$tax] !== '0') {
             $tax_query[] = [
                 'taxonomy' => $tax,
                 'field'    => 'term_id',
-                'terms'    => (int) $_POST[$tax],
+                'terms'    => (int) $req[$tax],
             ];
         }
     }
@@ -80,41 +109,26 @@ function eic_genes_loop_endpoint() {
         $args['tax_query'] = $tax_query;
     }
 
-    /* ------------------------------------------------------------
-       Canonical sort logic
-       ------------------------------------------------------------ */
-    $use_canonical_sort = !isset($_POST['gd_sort']) || $sort === '' || $sort === 'default';
-
-    if ($use_canonical_sort) {
-        $args['eic_genes_custom_sort'] = true;
-        add_filter('posts_clauses', 'eic_genes_custom_sort_clauses', 10, 2);
-    }
-
-    /* ------------------------------------------------------------
-       Execute query
-       ------------------------------------------------------------ */
-    $q = new WP_Query($args);
-
-    if ($use_canonical_sort) {
-        remove_filter('posts_clauses', 'eic_genes_custom_sort_clauses', 10);
-    }
-
- /* ------------------------------------------------------------
+/* ------------------------------------------------------------
    Pass to fragment and output JSON
    ------------------------------------------------------------ */
-// If any helper still looks at $wp_query, keep this:
-$GLOBALS['wp_query'] = $q;
+
+// Make per_page visible to the fragment, same as shortcode path
+set_query_var('genes_shortcode_atts', [ 'per_page' => $per_page ]);
+
+// Pass tax_query so fragment logic stays identical to page-load
+set_query_var('tax_query', $args['tax_query'] ?? []);
 
 set_query_var('genes_args', $args);
 set_query_var('qs', $search);
-set_query_var('gd_sort', $sort);   // ← INSERT THIS LINE
+set_query_var('gd_sort', $sort);
 
 ob_start();
 get_template_part('inc/content/loops/partials/fragment-loop-genes-loop');
 $html = ob_get_clean();
 
+wp_reset_postdata();
 
-    wp_reset_postdata();
+wp_send_json_success(['html' => $html]);
 
-    wp_send_json_success(['html' => $html]);
 }

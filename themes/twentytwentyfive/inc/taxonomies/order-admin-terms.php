@@ -1,8 +1,28 @@
 <?php
+
 /**
- * Force admin term checklists (Subtype editor) to use 'sort' ordering
- * and disable "checked on top" reshuffle for stable muscle-memory order.
+ * Copyright (c) 2025 Kenneth Raymond
+ * All rights reserved.
+ *
+ * Part of the Experts in CMT WordPress theme.
+ * Do not copy, modify, or redistribute without permission.
+ *
+ * ------------------------------------------------------------
+ * Admin Term Ordering (Subtype Editor)
+ * ------------------------------------------------------------
+ * Enforces stable, muscle-memory-friendly ordering for taxonomy
+ * term checklists in the Subtype editor by:
+ *
+ * 1) Ordering terms by numeric meta `sort` (meta_value_num ASC)
+ * 2) Disabling WordPress's “checked on top” reshuffle
+ *
+ * Applies to the following taxonomies:
+ *   - chromosome
+ *   - cmt_type
+ *   - inheritance
+ *   - neuropathy
  */
+
 
 // Which taxonomies to control
 function eicmt_ordered_taxonomies()

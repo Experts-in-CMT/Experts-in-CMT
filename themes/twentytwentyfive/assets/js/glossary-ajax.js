@@ -1,3 +1,27 @@
+/*!
+ * Copyright (c) 2025 Kenneth Raymond
+ * All rights reserved.
+ *
+ * Part of the Experts in CMT WordPress theme.
+ * Do not copy, modify, or redistribute without permission.
+ *
+ * ------------------------------------------------------------
+ * GLOSSARY — AJAX 
+ * ------------------------------------------------------------
+ * Purpose:
+ *   - Handles live alpha filtering, sorting, pagination,
+ *     and native-search input for Glossary terms.
+ *   - Swaps ONLY the #results wrapper inside
+ *       #glossary-results-root
+ *   - Maintains full parity with Genes and Dorsal Root stacks.
+ *
+ * Notes:
+ *   - Uses unified GET/POST param intake
+ *   - Prevents double-handling and jitter
+ *   - Preserves slug + query params in URL state
+ *   - Focus/scroll behaviors match DR + Genes
+ */
+
 (function () {
   if (!window.GL_AJAX) return;
 

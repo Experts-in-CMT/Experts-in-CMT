@@ -1,3 +1,31 @@
+/**
+ * Copyright (c) 2025 Kenneth Raymond
+ * All rights reserved.
+ *
+ * Part of the Experts in CMT WordPress theme.
+ * Do not copy, modify, or redistribute without permission.
+ *
+ * ============================================================
+ * Accessibility — Global Keyboard Navigation System
+ * ------------------------------------------------------------
+ * Status: Not currently enabled in production.
+ *
+ * Purpose:
+ *   - Arrow-key + WASD spatial navigation (nearest-neighbor focus)
+ *   - Smooth scrolling between focusable elements
+ *   - ESC key exits form fields
+ *   - Live region announcements for screen readers
+ *
+ * Notes:
+ *   - Safe to keep in the repository in its disabled state
+ *   - Before re-enabling, confirm:
+ *       • No interference with AJAX-driven loop updates
+ *       • Proper cooperation with loop focus targets (#results roots)
+ *       • Harmony with future modal/off-canvas components
+ * ============================================================
+ */
+
+
 /* =========================================================
    Global Keyboard Navigation — Arrow Keys + WASD
    - Spatial navigation using nearest neighbor logic
