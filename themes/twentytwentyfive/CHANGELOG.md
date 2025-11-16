@@ -25,6 +25,57 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.9.0] – 2025-11-16
+
+### Added
+
+- **Genes AJAX Stack Completion**: Implemented full DR-parity AJAX system for the Genes Database, including live search, taxonomy/meta filtering, canonical sorting preservation, pagination transport, and fragment-only replacement via `genes-loop-endpoints.php`.
+- **Genes Live Search**: Added live search across all key ACF/meta fields with stable URL state and preserved FIELD() canonical order.
+- **Genes Pagination Overrides**: Added shortcode-controlled per-page overrides and integrated them into AJAX query transport.
+- **Glossary Sort UI + Search UI**: Added Genes-style sort toolbar and search controls to the Glossary loop, with global search facet integration.
+- **Glossary AJAX Loader**: Implemented smooth AJAX swap behavior identical to Dorsal Root, with scroll management and parameter preservation.
+- **DR Filter UI**: Added `[dr_filter]` shortcode with category selector (`dorsal-root`), search input, auto-submit behavior, and fully responsive Genes/Glossary-style UI.
+- **DR Query Expansion**: Implemented OR-based search across title, excerpt, content, tags, and taxonomy term names.
+- **DR Static Page Rewrite (2025)**: Completed migration of Dorsal Root from WP archive to static page using ACF and a custom loop (`dr-posts.php`).
+- **Maintenance Toolbox**: Added `/tools/` directory containing Prettier, Stylelint, PHP CS Fixer, PHPCS, EditorConfig, and npm/composer scripts (`fmt:all`, `lint:all`, etc.) for unified theme formatting.
+- **Subtype Publication Notes**: Added new WYSIWYG fields (Publication Note, Alt Publication Note) with grid-aligned rendering inside `subtype-fields-template.php`.
+- **Subtype CTA Block**: Added 2×2 “More Info” section with external-link CTAs (Symptoms, Research, What is CMTX, What is Intermediate CMT), plus custom `$research_label` support.
+- **Subtype Updated Line**: Added final metadata footer (“Updated: {date} | By: K. Raymond”) to subtype single template.
+- **Genes/Glossary/DR Shared Scripts**: Standardized toolbar, reset behavior, parameter handling, scroll logic, and event interception across all loops.
+
+### Changed
+
+- **Canonical Sort Enforcement**: Restored and protected the canonical FIELD() sort order for Genes under all conditions (default load, reset, clear, AJAX reloads, and URL state).
+- **Genes/Glossary/DR Pagination**: Unified paging behavior; all loops now reset pagination on filter changes and maintain position on reload.
+- **Global Form Handling**: Replaced default WP form bubbling with custom JS to prevent duplicate reloads, lost params, and anchor jumps across all CPT loops.
+- **AJAX Transport Model**: Standardized POST/GET handling (`$req = array_merge($_GET, $_POST)`) across all endpoints.
+- **DR Taxonomy Scope**: Switched all legacy `category` references to the `dorsal-root` taxonomy.
+- **Glossary Rendering**: Updated glossary loop to match Genes/DR structure (bagpipe card parity, featured image fallback, bottom alignment).
+- **Glossary & Genes Scroll Behavior**: Reworked anchors and scroll offsets to eliminate jump scrolling on reloads and resets.
+- **Subtype Single Template Refinements (v0.7.2)**: Updated grid spacing, alignment, note placement, CTAs, dividers, and universal padding rhythm.
+- **Genes Loop Restructure**: Split the Genes loop into shortcode wrapper + fragment (`loop-fragment-genes-loop.php`) for endpoint parity.
+- **Codebase Cleanup**: Ran full theme through formatting + maintenance QC (JS/PHP/CSS), removed redundant wrappers, corrected loader paths, fixed invalid markup, and normalized indentation.
+- **Filter File Restructure**: Moved all filter PHP files into `/inc/content/filters` for modular organization.
+
+### Fixed
+
+- **Genes AJAX Regression**: Resolved full breakdown of filter logic, sort state, and pagination caused by WP form-hook conflicts and redundant reloads.
+- **Genes Canonical Sorting Breakage**: Fixed sort resets that previously killed the FIELD() order; canonical ordering now persists across every reload type.
+- **Glossary AJAX Jitter**: Eliminated double-render jitter by adding global `window.GL_AJAX` guards and ensuring single pipeline execution.
+- **Glossary Bottom Alignment Issue**: Restored bagpipe card alignment via glossary-scoped flex/calc fix without affecting DR or Genes.
+- **DR Tax Query Bug**: Corrected `tax_query` shape for category-only views and removed duplicated sort switch.
+- **DR Reset Jump Scroll**: Fixed jump scroll on DR selector reset; now reloads smoothly without anchor jump.
+- **DR Button Autop Injection**: Fixed WP auto-`<p>` and `<br>` insertion around “More From The Dorsal Root” by wrapping the anchor in `<span class="dr-more-wrap">`.
+- **Genes Loader Path Issues**: Fixed loader script inconsistencies between shortcode and endpoint.
+- **Genes Fragment Mismatch**: Corrected swapped file names (`fragment-loop-genes-loop.php`) and restored consistent include paths.
+- **Filter Reset Behavior**: RESET links on all loops now correctly clear filter params without breaking scroll or losing state.
+- **Multiple Markup Hygiene Issues**: Removed duplicate closing tags in `genes-filter.php`, fixed rogue `<br>` injection, and normalized HTML structure across templates.
+
+### Removed
+
+- Deprecated smooth-scroll scripts from pre-AJAX Genes and Glossary loops (now handled by unified anchor-based navigation).
+- Legacy pagination wrappers from Genes loop after AJAX parity implementation.
+
 ## [0.7.7] - 2025-11-07
 
 ### Added
