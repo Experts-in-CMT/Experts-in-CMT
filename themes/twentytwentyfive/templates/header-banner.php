@@ -15,7 +15,6 @@
  *   • banner_intro
  */
 
-
 $post_id = isset($post_id) ? (int) $post_id : (int) get_queried_object_id();
 
 $img = get_field("banner_image", $post_id) ?: null;

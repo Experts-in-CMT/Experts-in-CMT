@@ -40,7 +40,6 @@
  * ============================================================
  */
 
-
 if (shortcode_exists("genes_filter")) {
     return;
 }
@@ -67,9 +66,30 @@ function _eicmt_gf_get_terms_ordered($taxonomy, $args = [])
 
     if ($taxonomy === "chromosome") {
         $wanted = [
-            "1","2","3","4","5","6","7","8","9","10",
-            "11","12","13","14","15","16","17","18","19","20",
-            "21","22","X","Y",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17",
+            "18",
+            "19",
+            "20",
+            "21",
+            "22",
+            "X",
+            "Y",
         ];
         $map = [];
         $all = get_terms([
@@ -138,20 +158,19 @@ function _eicmt_gf_options_html_single(
 }
 
 add_shortcode("genes_filter", function ($atts = []) {
-
     // Inject shortcode attributes, including per_page
     $a = shortcode_atts(
         [
-            'per_page' => 12,
+            "per_page" => 12,
         ],
         $atts
     );
 
     $sel_cmt_type = isset($_GET["cmt_type"]) ? (int) $_GET["cmt_type"] : 0;
-    $sel_inherit  = isset($_GET["inheritance"]) ? (int) $_GET["inheritance"] : 0;
-    $sel_neuro    = isset($_GET["neuropathy"]) ? (int) $_GET["neuropathy"] : 0;
-    $sel_chrom    = isset($_GET["chromosome"]) ? (int) $_GET["chromosome"] : 0;
-    $search_text  = isset($_GET["qs"])
+    $sel_inherit = isset($_GET["inheritance"]) ? (int) $_GET["inheritance"] : 0;
+    $sel_neuro = isset($_GET["neuropathy"]) ? (int) $_GET["neuropathy"] : 0;
+    $sel_chrom = isset($_GET["chromosome"]) ? (int) $_GET["chromosome"] : 0;
+    $search_text = isset($_GET["qs"])
         ? sanitize_text_field((string) $_GET["qs"])
         : "";
 
@@ -166,7 +185,7 @@ add_shortcode("genes_filter", function ($atts = []) {
     }
 
     $action_url = esc_url($base . "#" . $anchor);
-    $reset_url  = esc_url($base . "#" . $anchor);
+    $reset_url = esc_url($base . "#" . $anchor);
 
     $current_sort = isset($_GET["gd_sort"])
         ? sanitize_key($_GET["gd_sort"])
@@ -189,7 +208,7 @@ add_shortcode("genes_filter", function ($atts = []) {
       data-paged-param="gd_paged"
       data-sort-param="gd_sort"
       data-anchor="#results"
-      data-per-page="<?php echo esc_attr( $a['per_page'] ); ?>"
+      data-per-page="<?php echo esc_attr($a["per_page"]); ?>"
       role="search">
 
     <div class="genes-filter__bar">
@@ -200,19 +219,23 @@ add_shortcode("genes_filter", function ($atts = []) {
   <span class="genes-filter__label">Select Type</span>
   <?php
   $type_terms = _eicmt_gf_get_terms_ordered("cmt_type");
-  $type_curr  = isset($_GET["cmt_type"]) ? (int) $_GET["cmt_type"] : 0;
+  $type_curr = isset($_GET["cmt_type"]) ? (int) $_GET["cmt_type"] : 0;
   ?>
   <select name="cmt_type" id="gf-type" class="genes-filter__select">
     <option value="0"<?php selected($type_curr, 0); ?>>Browse All</option>
     <?php foreach ($type_terms as $term):
-      $tid   = is_object($term) ? (int) $term->term_id : (int) ($term["term_id"] ?? 0);
-      $tobj  = $tid ? get_term($tid, "cmt_type") : null;
-      $tname = $tobj && !is_wp_error($tobj) ? (string) $tobj->name : "";
-    ?>
+
+        $tid = is_object($term)
+            ? (int) $term->term_id
+            : (int) ($term["term_id"] ?? 0);
+        $tobj = $tid ? get_term($tid, "cmt_type") : null;
+        $tname = $tobj && !is_wp_error($tobj) ? (string) $tobj->name : "";
+        ?>
       <option value="<?php echo $tid; ?>" <?php selected($type_curr, $tid); ?>>
         <?php echo esc_html($tname); ?>
       </option>
-    <?php endforeach; ?>
+    <?php
+    endforeach; ?>
   </select>
 </label>
 
@@ -221,19 +244,31 @@ add_shortcode("genes_filter", function ($atts = []) {
   <span class="genes-filter__label">Select Inheritance</span>
   <?php
   $inheritance_terms = _eicmt_gf_get_terms_ordered("inheritance");
-  $inheritance_curr  = isset($_GET["inheritance"]) ? (int) $_GET["inheritance"] : 0;
+  $inheritance_curr = isset($_GET["inheritance"])
+      ? (int) $_GET["inheritance"]
+      : 0;
   ?>
   <select name="inheritance" id="gf-inheritance" class="genes-filter__select">
-    <option value="0"<?php selected($inheritance_curr, 0); ?>>All Inheritance</option>
+    <option value="0"<?php selected(
+        $inheritance_curr,
+        0
+    ); ?>>All Inheritance</option>
     <?php foreach ($inheritance_terms as $term):
-      $tid   = is_object($term) ? (int) $term->term_id : (int) ($term["term_id"] ?? 0);
-      $tobj  = $tid ? get_term($tid, "inheritance") : null;
-      $tname = $tobj && !is_wp_error($tobj) ? (string) $tobj->name : "";
-    ?>
-      <option value="<?php echo $tid; ?>" <?php selected($inheritance_curr, $tid); ?>>
+
+        $tid = is_object($term)
+            ? (int) $term->term_id
+            : (int) ($term["term_id"] ?? 0);
+        $tobj = $tid ? get_term($tid, "inheritance") : null;
+        $tname = $tobj && !is_wp_error($tobj) ? (string) $tobj->name : "";
+        ?>
+      <option value="<?php echo $tid; ?>" <?php selected(
+    $inheritance_curr,
+    $tid
+); ?>>
         <?php echo esc_html($tname); ?>
       </option>
-    <?php endforeach; ?>
+    <?php
+    endforeach; ?>
   </select>
 </label>
 
@@ -242,19 +277,29 @@ add_shortcode("genes_filter", function ($atts = []) {
   <span class="genes-filter__label">Select Neuropathy</span>
   <?php
   $neuropathy_terms = _eicmt_gf_get_terms_ordered("neuropathy");
-  $neuropathy_curr  = isset($_GET["neuropathy"]) ? (int) $_GET["neuropathy"] : 0;
+  $neuropathy_curr = isset($_GET["neuropathy"]) ? (int) $_GET["neuropathy"] : 0;
   ?>
   <select name="neuropathy" id="gf-neuropathy" class="genes-filter__select">
-    <option value="0"<?php selected($neuropathy_curr, 0); ?>>All Neuropathy</option>
+    <option value="0"<?php selected(
+        $neuropathy_curr,
+        0
+    ); ?>>All Neuropathy</option>
     <?php foreach ($neuropathy_terms as $term):
-      $tid   = is_object($term) ? (int) $term->term_id : (int) ($term["term_id"] ?? 0);
-      $tobj  = $tid ? get_term($tid, "neuropathy") : null;
-      $tname = $tobj && !is_wp_error($tobj) ? (string) $tobj->name : "";
-    ?>
-      <option value="<?php echo $tid; ?>" <?php selected($neuropathy_curr, $tid); ?>>
+
+        $tid = is_object($term)
+            ? (int) $term->term_id
+            : (int) ($term["term_id"] ?? 0);
+        $tobj = $tid ? get_term($tid, "neuropathy") : null;
+        $tname = $tobj && !is_wp_error($tobj) ? (string) $tobj->name : "";
+        ?>
+      <option value="<?php echo $tid; ?>" <?php selected(
+    $neuropathy_curr,
+    $tid
+); ?>>
         <?php echo esc_html($tname); ?>
       </option>
-    <?php endforeach; ?>
+    <?php
+    endforeach; ?>
   </select>
 </label>
 
@@ -263,19 +308,29 @@ add_shortcode("genes_filter", function ($atts = []) {
   <span class="genes-filter__label">Select Chromosome</span>
   <?php
   $chromosome_terms = _eicmt_gf_get_terms_ordered("chromosome");
-  $chromosome_curr  = isset($_GET["chromosome"]) ? (int) $_GET["chromosome"] : 0;
+  $chromosome_curr = isset($_GET["chromosome"]) ? (int) $_GET["chromosome"] : 0;
   ?>
   <select name="chromosome" id="gf-chromosome" class="genes-filter__select">
-    <option value="0"<?php selected($chromosome_curr, 0); ?>>All Chromosomes</option>
+    <option value="0"<?php selected(
+        $chromosome_curr,
+        0
+    ); ?>>All Chromosomes</option>
     <?php foreach ($chromosome_terms as $term):
-      $tid   = is_object($term) ? (int) $term->term_id : (int) ($term["term_id"] ?? 0);
-      $tobj  = $tid ? get_term($tid, "chromosome") : null;
-      $tname = $tobj && !is_wp_error($tobj) ? (string) $tobj->name : "";
-    ?>
-      <option value="<?php echo $tid; ?>" <?php selected($chromosome_curr, $tid); ?>>
+
+        $tid = is_object($term)
+            ? (int) $term->term_id
+            : (int) ($term["term_id"] ?? 0);
+        $tobj = $tid ? get_term($tid, "chromosome") : null;
+        $tname = $tobj && !is_wp_error($tobj) ? (string) $tobj->name : "";
+        ?>
+      <option value="<?php echo $tid; ?>" <?php selected(
+    $chromosome_curr,
+    $tid
+); ?>>
         <?php echo esc_html($tname); ?>
       </option>
-    <?php endforeach; ?>
+    <?php
+    endforeach; ?>
   </select>
 </label>
 
@@ -300,34 +355,46 @@ add_shortcode("genes_filter", function ($atts = []) {
 <div class="genes-filter__actions" id="genes-filter-hint">
   <button type="submit" class="genes-filter__btn">BROWSE</button>
   <a class="genes-filter__link"
-     href="<?php echo esc_url( $reset_url ); ?>"
+     href="<?php echo esc_url($reset_url); ?>"
      data-role="genes-reset">RESET</a>
 </div>
 
-<?php
-// Preserve other GET params (skip visible controls and gd_* we manage)
+<?php // Preserve other GET params (skip visible controls and gd_* we manage)
 foreach ($_GET as $k => $v) {
-  if (in_array($k, [
-    'cmt_type',
-    'inheritance',
-    'neuropathy',
-    'chromosome',
-    'qs',
-    'gd_sort',
-    'gd_paged', // skip to prevent duplicate
-  ], true)) {
-    continue;
-  }
-  if (is_scalar($v)) {
-    printf('<input type="hidden" name="%s" value="%s">', esc_attr($k), esc_attr($v));
-  }
-}
-?>
+    if (
+        in_array(
+            $k,
+            [
+                "cmt_type",
+                "inheritance",
+                "neuropathy",
+                "chromosome",
+                "qs",
+                "gd_sort",
+                "gd_paged", // skip to prevent duplicate
+            ],
+            true
+        )
+    ) {
+        continue;
+    }
+    if (is_scalar($v)) {
+        printf(
+            '<input type="hidden" name="%s" value="%s">',
+            esc_attr($k),
+            esc_attr($v)
+        );
+    }
+} ?>
 
 <noscript><button type="submit">Apply</button></noscript>
 
-<input type="hidden" name="gd_paged" value="<?php echo isset($_GET['gd_paged']) ? esc_attr(wp_unslash($_GET['gd_paged'])) : '1'; ?>">
-<input type="hidden" name="per_page" value="<?php echo esc_attr( $a['per_page'] ); ?>">
+<input type="hidden" name="gd_paged" value="<?php echo isset($_GET["gd_paged"])
+    ? esc_attr(wp_unslash($_GET["gd_paged"]))
+    : "1"; ?>">
+<input type="hidden" name="per_page" value="<?php echo esc_attr(
+    $a["per_page"]
+); ?>">
 
       </div>
     </div>

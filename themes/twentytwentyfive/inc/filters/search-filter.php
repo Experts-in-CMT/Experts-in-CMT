@@ -1,10 +1,28 @@
 <?php
+
 /**
- * Search Filter (Shortcode)
+ * Copyright (c) 2025 Kenneth Raymond
+ * All rights reserved.
  *
- * Shortcode: [search_filter]
+ * Part of the Experts in CMT WordPress theme.
+ * Do not copy, modify, or redistribute without permission.
  *
- * @package ExpertsInCMT
+ * ------------------------------------------------------------
+ * Base Search Filter Shortcode (Template Seed)
+ * ------------------------------------------------------------
+ * Purpose:
+ *   This file is not loaded directly. It serves as the master
+ *   reference for building new filter.php implementations.
+ *
+ * Usage:
+ *   • Copy/paste the contents into a new filter shortcode file.
+ *   • Add or remove facets as needed.
+ *   • Keep search + reset behavior consistent with Genes.
+ *
+ * Notes:
+ *   • Mirrors genes-filter.php defaults.
+ *   • Provides exact bar/row/field markup for parity.
+ *   • Includes hidden GET preservation and anchored reload.
  */
 
 if (!defined("ABSPATH")) {
@@ -59,7 +77,8 @@ if (!shortcode_exists("search_filter")) {
             </div>
 
             <?php // Preserve other GET params (don’t duplicate qs or pagination/sort)
-            foreach ($_GET as $k => $v) {
+
+        foreach ($_GET as $k => $v) {
                 if (in_array($k, ["qs", "gd_paged", "gd_sort"], true)) {
                     continue;
                 }

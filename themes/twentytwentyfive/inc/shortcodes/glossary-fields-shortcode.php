@@ -19,7 +19,6 @@
  *   - Uses slug `/glossary` for pretty permalinks
  */
 
-
 if (!defined("ABSPATH")) {
     exit();
 }

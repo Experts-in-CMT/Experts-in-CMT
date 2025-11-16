@@ -1,7 +1,28 @@
 <?php
 
-
-
+/*
+ * Copyright (c) 2025 Kenneth Raymond
+ * All rights reserved.
+ *
+ * Part of the Experts in CMT WordPress theme.
+ * Do not copy, modify, or redistribute without permission.
+ *
+ * ------------------------------------------------------------
+ * Genes Database — Canonical Sort Rules
+ * ------------------------------------------------------------
+ * Defines the immutable FIELD() ordering for ACF key
+ * `type_classification` used across all Genes DB queries.
+ *
+ * IMPORTANT:
+ * • This is the highest-priority rule in the Genes stack.
+ * • Do not rename aliases, reorder sequence, or change JOIN logic.
+ * • This file must not emit output, BOMs, or whitespace.
+ * • Triggered only when query_var `eic_genes_custom_sort` is set.
+ *
+ * Canonical order enforced:
+ *   CMT1, CMT2, CMT4, CMTX, CMTDI, CMTRI,
+ *   dHMN, dSMA, GAN, HMSN, HSAN, HSN, SMA-LEP, Unclassified
+ */
 
 if (!function_exists("eic_genes_type_ordering_clauses")) {
     function eic_genes_type_ordering_clauses(

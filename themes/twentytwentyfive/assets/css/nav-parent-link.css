@@ -19,7 +19,6 @@
  *   and prevents WP from overriding parent link behavior.
  */
 
-
 /* Hide submenus by default */
 .wp-block-navigation .has-child > .wp-block-navigation__submenu-container {
   display: none;

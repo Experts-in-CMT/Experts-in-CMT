@@ -18,7 +18,6 @@
  * Glossary loop and AJAX stack.
  */
 
-
 if (!defined("ABSPATH")) {
     exit();
 }

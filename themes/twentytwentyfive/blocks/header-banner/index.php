@@ -1,7 +1,23 @@
 <?php
+
 /**
- * Dynamic render for layout/header-banner
- * Always resolve the right post ID so ACF works from templates & editor.
+ * Copyright (c) 2025 Kenneth Raymond
+ * All rights reserved.
+ *
+ * Part of the Experts in CMT WordPress theme.
+ * Do not copy, modify, or redistribute without permission.
+ *
+ * ------------------------------------------------------------
+ * Header Banner Index Loader
+ * ------------------------------------------------------------
+ * Purpose:
+ *   Resolve the correct post ID for block-based and template-based
+ *   rendering so the header banner ACF fields load reliably.
+ *
+ * Notes:
+ *   • Supports Site Editor block context
+ *   • Falls back cleanly for templates and queried objects
+ *   • Passes $post_id into templates/header-banner.php
  */
 
 if ( ! function_exists( 'get_field' ) ) {

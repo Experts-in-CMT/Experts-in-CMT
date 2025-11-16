@@ -1,8 +1,24 @@
 <?php
-/**
- * Plugin Name: ACF JSON Loader
- * Description: Centralized save/load path for ACF JSON field groups.
- * Author: Your Team
+
+/*
+ * Copyright (c) 2025 Kenneth Raymond
+ * All rights reserved.
+ *
+ * Part of the Experts in CMT WordPress theme.
+ * Do not copy, modify, or redistribute without permission.
+ *
+ * ------------------------------------------------------------
+ * MU Plugin: ACF JSON Loader
+ * ------------------------------------------------------------
+ * Purpose:
+ * • Centralizes save/load locations for all ACF field groups
+ * • Ensures consistent version control via wp-content/acf-json
+ * • Allows optional suppression of ACF UI in production
+ *
+ * Notes:
+ * • Save path overrides the default ACF location
+ * • Load path must keep the default index removed
+ * • Only hide the ACF UI if WP_ENV=production is explicitly set
  */
 
 // Save ACF field groups to wp-content/acf-json

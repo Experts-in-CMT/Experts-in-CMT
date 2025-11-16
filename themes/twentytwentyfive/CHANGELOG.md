@@ -1,3 +1,7 @@
+> **© 2025 Kenneth Raymond — All rights reserved.**  
+> Part of the Experts in CMT WordPress theme.  
+> Do not copy, modify, or redistribute without permission.
+
 # Changelog
 
 All notable changes to this project will be documented in this file.
@@ -8,18 +12,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+
 - (placeholder)
 
 ### Changed
+
 - (placeholder)
 
 ### Fixed
+
 - (placeholder)
 
 ---
 
 ## [0.7.7] - 2025-11-07
+
 ### Added
+
 - **Dorsal Root Filters UI:** Introduced the `[dr_filter]` shortcode with category dropdown (taxonomy: `dorsal-root`) and search input styled via the global `.site-search__row`. The dropdown auto-submits, resets pagination, and anchors to `#results`.
 - **Glossary (CMT Words) AJAX pipeline:** Implemented a modular AJAX loader with the `glossary_get_loop` endpoint returning identical inner `#results` markup for parity with the non-AJAX shortcode render.
 - **AJAX guards:** Unified `DR_AJAX` and `GL_AJAX` safeguards across both stacks to prevent double-handling, jitter, and redundant reloads. Added `stopImmediatePropagation()` to ensure single-path events.
@@ -27,6 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Dorsal Root filter styling:** Added a page-specific CSS rule to match the category `<select>` height (46 px) to the search input for consistent visual rhythm.
 
 ### Changed
+
 - **DR loop query logic:** Search now performs a union across post title, excerpt, and content plus tag names and `dorsal-root` terms. When a category is selected, results are the intersection (Category ∩ Union). “Only category” path uses a single `tax_query` with `include_children`.
 - **Taxonomy scope:** Replaced core `category` references with the custom `dorsal-root` taxonomy.
 - **Parameter handling:** Unified GET handling for DR (`qs`, `dr_paged`, `dr_sort`, `dr_cat`) with hidden inputs preserving all other parameters. Reset clears `qs`, `dr_paged`, and `dr_cat`.
@@ -34,6 +44,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **CSS structure:** Added a dedicated `/* DORSAL ROOT FILTERS */` section at the end of `main.css` for scoped styling, maintaining modular cascade order.
 
 ### Fixed
+
 - **Duplicate sort switch** removed; ensured a single `new WP_Query($args)` call.
 - **`tax_query` shape** corrected for “only category” case.
 - **Anchor jump trimming:** Pagination and submit flows now preserve `#results` and scroll position.
@@ -42,14 +53,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Visual offset:** Fixed mismatch between DR category selector and search input height; full pixel-perfect parity achieved.
 
 ### Known Issues / Next
+
 - **RESET jump edge case:** A native anchor jump may still occur on DR reset; planned refinement via `history.replaceState` + programmatic reload.
 - **Glossary render-offset investigation:** Occasional overlap behind hero/search wrapper remains under review (layout flow / z-index vs space reservation).
 - **Genes AJAX stack:** Next milestone will port this validated DR/Glossary architecture to the Genes Database loop.
 
-
 ## [0.7.6] - 2025-11-05
 
 ### Added
+
 - **Development Toolbox** under `/tools/`: Prettier, Stylelint, PHP CS Fixer, PHPCS, and EditorConfig with npm scripts to format and lint JS, CSS, and PHP.
 - **Dorsal Root Filters UI**: `[dr_filter]` renders a `dorsal-root` category dropdown and a search input using global form styles. Input UX set with `inputmode="search"`, `autocomplete="on"`, `autocapitalize="none"`, `spellcheck="false"`, and `enterkeyhint="search"`.
 - **Auto-submit on category change**: Resets pagination and appends `#results`. “All Categories” omits `dr_cat`.
@@ -60,6 +72,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Scoped UI classes for consistent grid cards and button rhythm.
 
 ### Changed
+
 - **DR Loop Query Logic**: Union search across title, excerpt, content, tag names, and `dorsal-root` term names. When a category is selected, results are intersection of Category ∩ Union. “Only category” path uses a single `tax_query` with `include_children`.
 - **Taxonomy Scope**: All DR taxonomy references switched from core `category` to custom `dorsal-root`.
 - **Param Handling**: Unified GET management for DR (`qs`, `dr_paged`, `dr_sort`, `dr_cat`). Hidden inputs preserve other params and skip these.
@@ -70,6 +83,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Subtype Single Template v0.7.2**: Publication Note and Alt Publication Note fields, “More Info” CTA section, dynamic research label, and consistent spacing and divider rhythm.
 
 ### Fixed
+
 - Removed duplicate sort switch and ensured a single `WP_Query` execution for DR loop.
 - Corrected `tax_query` array shape for the “only category” path.
 - Restored Glossary Y-axis card alignment by scoping DR button margin rules and adding glossary-only flex adjustments.
@@ -80,6 +94,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Rogue `<br>` injection and top padding mismatch fixed in Subtype template. Verified Gutenberg block integration.
 
 ### Known Issue / Next
+
 - **Jump scroll** on DR RESET click. Planned solution: client-side navigation that preserves position with a smooth reload and no anchor jump.
 
 ---
@@ -87,6 +102,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.7.2] - 2025-10-30
 
 ### Added
+
 - **Subtype Single Template v0.7.2**: Publication Note and Alt Publication Note (WYSIWYG) fields.
 - **Subtype Single Template**: “More Info” CTA grid (2×2) using `.dr-more` styling with external link safety attributes.
 - **Subtype Single Template**: Footer metadata — `Updated: {date} | By: K. Raymond`.
@@ -94,6 +110,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Genes Filter/Loop**: No-jump JS reloads for filter apply/reset, sort change, and sort clear.
 
 ### Changed
+
 - **Subtype Single Template**: Inline “Note:” label + field on one line; label in roman bold; only gene symbols (e.g., _PMP22_) italicized.
 - **Subtype Single Template**: Standardized divider/spacing rhythm (50px between `.eic-block` sections); bottom divider restored on final block.
 - **Subtype Single Template**: Unified WYSIWYG + inline typography (`font-size: 0.95rem; line-height: 1.45`) and font inheritance across the section.
@@ -102,6 +119,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Layout refinements across Overview, Clinical & Genetic Context, More Info, Key Publications, Alt Publications, and Updated line for clear hierarchy.
 
 ### Fixed
+
 - **Subtype Single Template**: Removed rogue `<br>` inside CTA buttons; corrected top-padding mismatch.
 - **Genes Loop/Filter**: Verified clean URL behavior (anchors/pagination) and stable no-jump interactions.
 - **Subtype Single Template**: Rogue `<br>` injection and top padding mismatch. Verified Gutenberg block integration.
@@ -111,14 +129,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.7.1] - 2025-10-28
 
 ### Added
+
 - MU plugin `cmtgenes-subtype-uniqueness.php` to hard-stop duplicate Subtype saves.
 - SQL index `idx_postmeta_subtype_unique` for rapid duplicate checks.
 
 ### Changed
+
 - Converted Subtype ACF group to code-registered PHP (`/inc/acf/subtype-fields.php`); deactivated UI group.
 - Updated meta mappings (e.g., `gene → gene_symbol`) across search, filter, and counts.
 
 ### Fixed
+
 - Added ACF validation filter in `cmtgenes-helpers.php` to prevent duplicate Subtype entries before save.
 - Verified core indexes active: `idx_postmeta_key_post`, `idx_term_relationships`, `idx_postmeta_subtype_unique`.
 

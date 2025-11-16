@@ -1,8 +1,24 @@
 <?php
-/**
- * Plugin Name: Experts in CMT — Subtype Uniqueness Enforcement
- * Description: Prevents duplicate Subtype posts from being saved.
- * Author: CMTA / Experts in CMT
+
+/*
+ * Copyright (c) 2025 Kenneth Raymond
+ * All rights reserved.
+ *
+ * Part of the Experts in CMT WordPress theme.
+ * Do not copy, modify, or redistribute without permission.
+ *
+ * ------------------------------------------------------------
+ * MU Plugin: Subtype Uniqueness Enforcement
+ * ------------------------------------------------------------
+ * Scope:
+ * • Prevents duplicate Subtype posts from being created
+ * • Checks ACF field “subtype” (fallback to raw meta)
+ * • Blocks save with a clear admin message when duplicates exist
+ *
+ * Critical:
+ * • Triggers on save_post_subtype
+ * • Ignores autosaves and trashed posts
+ * • Ensures a single canonical Subtype entry per value
  */
 
 add_action(

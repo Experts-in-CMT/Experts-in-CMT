@@ -14,7 +14,6 @@
  *   • source_label (optional override)
  */
 
-
 defined("ABSPATH") || exit();
 
 $post_id = get_the_ID();

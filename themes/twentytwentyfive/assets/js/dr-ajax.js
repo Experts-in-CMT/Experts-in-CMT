@@ -53,13 +53,20 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	// Updated: allow optional { scroll: true/false }
 	function focusResults(opts = {}) {
-		const { scroll = true } = opts;
+		const {
+			scroll = true
+		} = opts;
 		const t = root.querySelector(anchor);
 		if (!t) return;
 		t.setAttribute('tabindex', '-1');
-		t.focus({ preventScroll: true });
+		t.focus({
+			preventScroll: true
+		});
 		if (scroll) {
-			t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+			t.scrollIntoView({
+				behavior: 'smooth',
+				block: 'start'
+			});
 		}
 	}
 
@@ -150,98 +157,118 @@ document.addEventListener('DOMContentLoaded', function() {
 			p.delete(pagedKey);
 
 			// Skip adding #results to avoid jump
-			updateUrl(p, { includeAnchor: false });
+			updateUrl(p, {
+				includeAnchor: false
+			});
 
 			// Reload quietly (no scroll animation)
-			fetchResults(p, { scroll: false });
+			fetchResults(p, {
+				scroll: false
+			});
 		});
 	}
 
 	// Built-in clear on <input type="search"> [Glossary parity]
-const searchInput = form.querySelector(`input[name="${searchKey}"]`);
-if (searchInput) {
-	searchInput.addEventListener('search', async function () {
-		// Only act when the native "×" clear empties the field
-		if (searchInput.value !== '') return;
+	const searchInput = form.querySelector(`input[name="${searchKey}"]`);
+	if (searchInput) {
+		searchInput.addEventListener('search', async function() {
+			// Only act when the native "×" clear empties the field
+			if (searchInput.value !== '') return;
 
-		const p = paramsFromForm();
-		[searchKey, pagedKey, catKey].forEach(k => k && p.delete(k));
+			const p = paramsFromForm();
+			[searchKey, pagedKey, catKey].forEach(k => k && p.delete(k));
 
-		updateUrl(p, { includeAnchor: false });
+			updateUrl(p, {
+				includeAnchor: false
+			});
 
-		setLoading(true);
-		try {
-			await fetchResults(p, { scroll: false });
-			// Re-focus the cleared input after results refresh
-			const newInput = form.querySelector(`input[name="${searchKey}"]`);
-			if (newInput) newInput.focus({ preventScroll: true });
-		} finally {
-			setLoading(false);
-		}
-	});
-}
-
-
-// --- Live Input Search (Debounced) [Glossary parity] ---
-function debounce(fn, wait) {
-	let t;
-	return function (...args) {
-		clearTimeout(t);
-		t = setTimeout(() => fn.apply(this, args), wait);
-	};
-}
-
-document.addEventListener(
-  'input',
-  debounce(function (e) {
-    const input = e.target.closest(`input[name="${searchKey}"]`);
-    if (!input || !form.contains(input)) return;
-
-    const p = paramsFromForm();
-    p.delete(pagedKey);
-
-    updateUrl(p); // Keep anchor
-    fetchResults(p, { scroll: false }).then(() => {
-      const newInput = form.querySelector(`input[name="${searchKey}"]`);
-      if (newInput) newInput.focus({ preventScroll: true });
-    });
-  }, 350),
-  false
-);
+			setLoading(true);
+			try {
+				await fetchResults(p, {
+					scroll: false
+				});
+				// Re-focus the cleared input after results refresh
+				const newInput = form.querySelector(`input[name="${searchKey}"]`);
+				if (newInput) newInput.focus({
+					preventScroll: true
+				});
+			} finally {
+				setLoading(false);
+			}
+		});
+	}
 
 
+	// --- Live Input Search (Debounced) [Glossary parity] ---
+	function debounce(fn, wait) {
+		let t;
+		return function(...args) {
+			clearTimeout(t);
+			t = setTimeout(() => fn.apply(this, args), wait);
+		};
+	}
+
+	document.addEventListener(
+		'input',
+		debounce(function(e) {
+			const input = e.target.closest(`input[name="${searchKey}"]`);
+			if (!input || !form.contains(input)) return;
+
+			const p = paramsFromForm();
+			p.delete(pagedKey);
+
+			updateUrl(p); // Keep anchor
+			fetchResults(p, {
+				scroll: false
+			}).then(() => {
+				const newInput = form.querySelector(`input[name="${searchKey}"]`);
+				if (newInput) newInput.focus({
+					preventScroll: true
+				});
+			});
+		}, 350),
+		false
+	);
 
 
-// RESET link → clear qs, reset category, focus back on category selector
-const resetLink = form.querySelector('.site-search__reset');
-if (resetLink) {
-  resetLink.addEventListener('click', async function(e) {
-    e.preventDefault();
 
-    // Clear search input if present
-    const searchInput = form.querySelector(`input[name="${searchKey}"]`);
-    if (searchInput) searchInput.value = '';
 
-    // Reset category to default (empty string)
-    const cat = form.querySelector(`[name="${catKey}"]`);
-    if (cat) cat.value = '';
+	// RESET link → clear qs, reset category, focus back on category selector
+	const resetLink = form.querySelector('.site-search__reset');
+	if (resetLink) {
+		resetLink.addEventListener('click', async function(e) {
+			e.preventDefault();
 
-    const p = paramsFromForm();
-    [searchKey, pagedKey, catKey].forEach(k => k && p.delete(k));
+			// Clear search input if present
+			const searchInput = form.querySelector(`input[name="${searchKey}"]`);
+			if (searchInput) searchInput.value = '';
 
-    updateUrl(p, { includeAnchor: false });
+			// Reset category to default (empty string)
+			const cat = form.querySelector(`[name="${catKey}"]`);
+			if (cat) cat.value = '';
 
-    setLoading(true);
-    try {
-      await fetchResults(p, { scroll: false });
+			const p = paramsFromForm();
+			[searchKey, pagedKey, catKey].forEach(k => k && p.delete(k));
 
-      // Focus on category selector after refresh
-      if (cat) cat.focus({ preventScroll: true });
-    } finally {
-      setLoading(false);
-    }
-  });
-}
+			updateUrl(p, {
+				includeAnchor: false
+			});
+
+			setLoading(true);
+			try {
+				await fetchResults(p, {
+					scroll: false
+				});
+
+				// Focus on category selector after refresh
+				if (cat) cat.focus({
+					preventScroll: true
+				});
+			} finally {
+				setLoading(false);
+			}
+		});
+	}
 
 
 
@@ -257,7 +284,9 @@ if (resetLink) {
 			const p = new URLSearchParams(u.search);
 			updateUrl(p);
 			fetchResults(p);
-		}, { once: true });
+		}, {
+			once: true
+		});
 	}
 	bindPagination();
 });

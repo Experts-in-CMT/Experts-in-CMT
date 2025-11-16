@@ -18,7 +18,6 @@
  *   - Only runs on is_singular('subtype')
  */
 
-
 // Prevent direct access
 defined("ABSPATH") || exit();
 

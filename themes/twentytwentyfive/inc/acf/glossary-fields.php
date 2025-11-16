@@ -26,7 +26,6 @@
  * ensure stable JSON-free ACF configuration.
  */
 
-
 if (!defined("ABSPATH")) {
     exit();
 }

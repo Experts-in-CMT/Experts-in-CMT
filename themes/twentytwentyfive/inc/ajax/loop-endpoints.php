@@ -41,7 +41,6 @@ if (!defined("ABSPATH")) {
     exit();
 }
 
-
 add_action("wp_ajax_dr_get_posts", "eic_ajax_dr_get_posts");
 add_action("wp_ajax_nopriv_dr_get_posts", "eic_ajax_dr_get_posts");
 

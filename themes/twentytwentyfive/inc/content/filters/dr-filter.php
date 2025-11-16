@@ -32,7 +32,6 @@
  * ============================================================
  */
 
-
 if (!defined("ABSPATH")) {
     exit();
 }
@@ -123,7 +122,8 @@ add_shortcode("dr_filter", function ($atts = []) {
         </div>
 
         <?php // Preserve other GET params (don’t duplicate qs or pagination/sort)
-        foreach ($_GET as $k => $v) {
+
+    foreach ($_GET as $k => $v) {
             if (in_array($k, ["qs", "dr_paged", "dr_sort"], true)) {
                 continue;
             }

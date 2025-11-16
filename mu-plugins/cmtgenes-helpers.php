@@ -1,12 +1,25 @@
 <?php
-/**
- * Experts in CMT — Genes DB helpers (counts/totals + facet counts)
- * Path: /wp-content/mu-plugins/cmtgenes-helpers.php
+
+/*
+ * Copyright (c) 2025 Kenneth Raymond
+ * All rights reserved.
  *
- * NOTE: This file powers:
- *  - Inline totals (subtypes/genes/unknown)
- *  - Facet counts per taxonomy
- *  - Query ID caching with content-change invalidation
+ * Part of the Experts in CMT WordPress theme.
+ * Do not copy, modify, or redistribute without permission.
+ *
+ * ------------------------------------------------------------
+ * MU Plugin: Genes Database Helpers
+ * ------------------------------------------------------------
+ * Purpose:
+ * • Powers subtype/genes/unknown inline totals
+ * • Computes facet counts for all four taxonomies
+ * • Maintains ID-cache versioning with automatic invalidation
+ * • Provides consistent search/meta field helpers for loop logic
+ *
+ * Notes:
+ * • Core to Genes Database performance and accuracy
+ * • All caching tied to subtype CRUD via version bumps
+ * • Safe to extend; do not alter existing return structures
  */
 
 /* ============================================================

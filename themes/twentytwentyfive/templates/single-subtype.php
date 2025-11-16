@@ -15,7 +15,6 @@
  *   - Header banner handled by the header template itself
  */
 
-
 // Exit if accessed directly
 defined("ABSPATH") || exit();
 

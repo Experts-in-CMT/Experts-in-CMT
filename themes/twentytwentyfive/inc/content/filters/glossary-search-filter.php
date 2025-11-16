@@ -37,7 +37,6 @@
  * ============================================================
  */
 
-
 if (!defined("ABSPATH")) {
     exit();
 }
@@ -60,9 +59,8 @@ if (!shortcode_exists("glossary_search_filter")) {
                 : home_url("/cmt-words/");
         }
 
-     $action_url = esc_url($base . '#results');
-$reset_url  = esc_url($base . '#results');
-
+        $action_url = esc_url($base . "#results");
+        $reset_url = esc_url($base . "#results");
 
         ob_start();
         ?>
@@ -99,15 +97,19 @@ $reset_url  = esc_url($base . '#results');
         <a class="site-search__reset" data-reset="true" href="<?php echo $reset_url; ?>">RESET</a>
       </div>
 
-      <?php
-      // Preserve other GET params (keep alpha; drop qs + pagination)
+      <?php // Preserve other GET params (keep alpha; drop qs + pagination)
       foreach ($_GET as $k => $v) {
-        if (in_array($k, ['qs','g_paged'], true)) continue; // glossary uses g_paged
-        if (is_scalar($v)) {
-          printf('<input type="hidden" name="%s" value="%s" />', esc_attr($k), esc_attr($v));
-        }
-      }
-      ?>
+          if (in_array($k, ["qs", "g_paged"], true)) {
+              continue;
+          } // glossary uses g_paged
+          if (is_scalar($v)) {
+              printf(
+                  '<input type="hidden" name="%s" value="%s" />',
+                  esc_attr($k),
+                  esc_attr($v)
+              );
+          }
+      } ?>
 
       <noscript><button type="submit">Apply</button></noscript>
     </div>

@@ -197,17 +197,6 @@ add_action('loop_no_results', function() {
     remove_action('loop_no_results', 'twentytwentyfive_no_results');
 }, 1);
 
-/**
- * Genes DB — loop shortcode loader
- */
-add_action(
-    "after_setup_theme",
-    function () {
-        $rel = "/inc/content/loops/genes-loop.php";
-        require_once get_template_directory() . $rel;
-    }
-);
-
 
 /**
  * Genes DB — loop shortcode loader
@@ -248,6 +237,7 @@ add_action(
     },
     20
 );
+
 
 /**
  * Experts in CMT image sizes.
@@ -450,6 +440,14 @@ if (is_dir($loops_dir)) {
         require_once $file;
     }
 }
+
+// Glossary — fields template loader
+add_action('wp', function () {
+    if (is_singular('glossary')) {
+        include get_template_directory() . '/templates/glossary-fields-template.php';
+    }
+});
+
 
 // --- ACF Field Groups ---
 $acf_dir = get_stylesheet_directory() . "/inc/acf/";

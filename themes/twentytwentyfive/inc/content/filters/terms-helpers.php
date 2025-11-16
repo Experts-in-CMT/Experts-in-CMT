@@ -33,7 +33,6 @@
  * ============================================================
  */
 
-
 function eicmt_get_ordered_terms($taxonomy, $args = [])
 {
     $defaults = [

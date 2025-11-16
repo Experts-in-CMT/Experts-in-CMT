@@ -23,7 +23,6 @@
  *   - neuropathy
  */
 
-
 // Which taxonomies to control
 function eicmt_ordered_taxonomies()
 {

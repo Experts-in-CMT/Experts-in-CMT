@@ -36,22 +36,28 @@
  * ============================================================
  */
 
-if (!defined('ABSPATH')) exit;
+if (!defined("ABSPATH")) {
+    exit();
+}
 
 /* ============================================================
    ===================== [ SECTION: HOOK REGISTRATION ] ========
    ============================================================ */
 
-add_action('wp_ajax_genes_get_loop', 'eic_genes_loop_endpoint');
-add_action('wp_ajax_nopriv_genes_get_loop', 'eic_genes_loop_endpoint');
+add_action("wp_ajax_genes_get_loop", "eic_genes_loop_endpoint");
+add_action("wp_ajax_nopriv_genes_get_loop", "eic_genes_loop_endpoint");
 
 /* ============================================================
    ===================== [ SECTION: ENDPOINT HANDLER ] =========
    ============================================================ */
 
-function eic_genes_loop_endpoint() {
-    if (isset($_POST['nonce']) && !wp_verify_nonce($_POST['nonce'], 'genes_ajax_nonce')) {
-        wp_send_json_error('nonce_fail', 403);
+function eic_genes_loop_endpoint()
+{
+    if (
+        isset($_POST["nonce"]) &&
+        !wp_verify_nonce($_POST["nonce"], "genes_ajax_nonce")
+    ) {
+        wp_send_json_error("nonce_fail", 403);
     }
 
     // ============================================================
@@ -61,74 +67,89 @@ function eic_genes_loop_endpoint() {
     // Accept BOTH POST (AJAX) and GET (URL state) for full parity
     $req = array_merge($_GET, $_POST);
 
-    $paged    = isset($req['gd_paged']) ? max(1, (int) $req['gd_paged']) : 1;
-    $per_page = isset($req['per_page']) ? max(1, (int) $req['per_page']) : 12;
-    $search   = isset($req['qs']) ? sanitize_text_field($req['qs']) : '';
-    $sort     = isset($req['gd_sort']) ? sanitize_key($req['gd_sort']) : '';
+    $paged = isset($req["gd_paged"]) ? max(1, (int) $req["gd_paged"]) : 1;
+    $per_page = isset($req["per_page"]) ? max(1, (int) $req["per_page"]) : 12;
+    $search = isset($req["qs"]) ? sanitize_text_field($req["qs"]) : "";
+    $sort = isset($req["gd_sort"]) ? sanitize_key($req["gd_sort"]) : "";
 
     $args = [
-        'post_type'      => 'subtype',
-        'post_status'    => 'publish',
-        'posts_per_page' => $per_page,
-        'paged'          => $paged,
-        'orderby'        => 'title',
-        'order'          => 'ASC',
+        "post_type" => "subtype",
+        "post_status" => "publish",
+        "posts_per_page" => $per_page,
+        "paged" => $paged,
+        "orderby" => "title",
+        "order" => "ASC",
     ];
 
     // IMPORTANT: NO $args['s'] HERE. Meta query only.
-    if ($search !== '') {
-        $args['meta_query'] = [
-            'relation' => 'OR',
-            ['key' => 'gene',              'value' => $search, 'compare' => 'LIKE'],
-            ['key' => 'gene_symbol',       'value' => $search, 'compare' => 'LIKE'],
-            ['key' => 'subtype',           'value' => $search, 'compare' => 'LIKE'],
-            ['key' => 'year_of_discovery', 'value' => $search, 'compare' => 'LIKE'],
-            ['key' => 'alternate_gene_1',  'value' => $search, 'compare' => 'LIKE'],
-            ['key' => 'alternate_gene_2',  'value' => $search, 'compare' => 'LIKE'],
-            ['key' => 'alternate_gene_3',  'value' => $search, 'compare' => 'LIKE'],
+    if ($search !== "") {
+        $args["meta_query"] = [
+            "relation" => "OR",
+            ["key" => "gene", "value" => $search, "compare" => "LIKE"],
+            ["key" => "gene_symbol", "value" => $search, "compare" => "LIKE"],
+            ["key" => "subtype", "value" => $search, "compare" => "LIKE"],
+            [
+                "key" => "year_of_discovery",
+                "value" => $search,
+                "compare" => "LIKE",
+            ],
+            [
+                "key" => "alternate_gene_1",
+                "value" => $search,
+                "compare" => "LIKE",
+            ],
+            [
+                "key" => "alternate_gene_2",
+                "value" => $search,
+                "compare" => "LIKE",
+            ],
+            [
+                "key" => "alternate_gene_3",
+                "value" => $search,
+                "compare" => "LIKE",
+            ],
         ];
     }
 
     // ============================================================
     // Taxonomy filters (UPDATED TO USE $req, NOT $_POST)
     // ============================================================
-    $tax_query = ['relation' => 'AND'];
-    $tax_keys  = ['cmt_type', 'inheritance', 'neuropathy', 'chromosome'];
+    $tax_query = ["relation" => "AND"];
+    $tax_keys = ["cmt_type", "inheritance", "neuropathy", "chromosome"];
 
     foreach ($tax_keys as $tax) {
-        if (!empty($req[$tax]) && $req[$tax] !== '0') {
+        if (!empty($req[$tax]) && $req[$tax] !== "0") {
             $tax_query[] = [
-                'taxonomy' => $tax,
-                'field'    => 'term_id',
-                'terms'    => (int) $req[$tax],
+                "taxonomy" => $tax,
+                "field" => "term_id",
+                "terms" => (int) $req[$tax],
             ];
         }
     }
 
     if (count($tax_query) > 1) {
-        $args['tax_query'] = $tax_query;
+        $args["tax_query"] = $tax_query;
     }
 
-/* ------------------------------------------------------------
+    /* ------------------------------------------------------------
    Pass to fragment and output JSON
    ------------------------------------------------------------ */
 
-// Make per_page visible to the fragment, same as shortcode path
-set_query_var('genes_shortcode_atts', [ 'per_page' => $per_page ]);
+    // Make per_page visible to the fragment, same as shortcode path
+    set_query_var("genes_shortcode_atts", ["per_page" => $per_page]);
 
-// Pass tax_query so fragment logic stays identical to page-load
-set_query_var('tax_query', $args['tax_query'] ?? []);
+    // Pass tax_query so fragment logic stays identical to page-load
+    set_query_var("tax_query", $args["tax_query"] ?? []);
 
-set_query_var('genes_args', $args);
-set_query_var('qs', $search);
-set_query_var('gd_sort', $sort);
+    set_query_var("genes_args", $args);
+    set_query_var("qs", $search);
+    set_query_var("gd_sort", $sort);
 
-ob_start();
-get_template_part('inc/content/loops/partials/fragment-loop-genes-loop');
-$html = ob_get_clean();
+    ob_start();
+    get_template_part("inc/content/loops/partials/fragment-loop-genes-loop");
+    $html = ob_get_clean();
 
-wp_reset_postdata();
+    wp_reset_postdata();
 
-wp_send_json_success(['html' => $html]);
-
+    wp_send_json_success(["html" => $html]);
 }

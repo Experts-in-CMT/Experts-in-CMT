@@ -20,7 +20,6 @@
  *   5. Optional Alt Publication
  */
 
-
 // Exit if accessed directly
 defined("ABSPATH") || exit();
 
