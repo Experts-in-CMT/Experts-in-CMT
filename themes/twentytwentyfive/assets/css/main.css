@@ -2636,6 +2636,151 @@ h2.wp-block-heading {
   margin-top: 8px; /* tighten extra space added by block */
 }
 
+/* ============================
+   Stackable Buttons → EIC CTA
+   ============================ */
+.stk-block-button a,
+.stk-button {
+  background-color: transparent;
+  color: var(--primary);
+  border: 1.5px solid var(--primary);
+  border-radius: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75em 2.5em;
+  line-height: 1.5;
+  font-size: 16px;
+  font-weight: 600;
+  font-family: inherit;
+  letter-spacing: 2px;
+  text-align: center;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: background-color 0.15s ease,
+              color 0.15s ease,
+              box-shadow 0.25s ease,
+              border-color 0.15s ease;
+  cursor: pointer;
+}
+
+.stk-block-button a:hover,
+.stk-block-button a:focus,
+.stk-button:hover,
+.stk-button:focus {
+  background-color: var(--primary);
+  color: #ffffff;
+  border-color: var(--primary);
+}
+/* ============================
+   Stackable Buttons → EIC CTA
+   ============================ */
+.stk-block-button a,
+.stk-button {
+  background-color: transparent;
+  color: var(--primary);
+  border: 1.5px solid var(--primary);
+  border-radius: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75em 2.5em;
+  line-height: 1.5;
+  font-size: 16px;
+  font-weight: 600;
+  font-family: inherit;
+  letter-spacing: 2px;
+  text-align: center;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: background-color 0.15s ease,
+              color 0.15s ease,
+              box-shadow 0.25s ease,
+              border-color 0.15s ease;
+  cursor: pointer;
+}
+
+.stk-block-button a:hover,
+.stk-block-button a:focus,
+.stk-button:hover,
+.stk-button:focus {
+  background-color: var(--primary);
+  color: #ffffff;
+  border-color: var(--primary);
+}
+
+/* ============================================================
+   Stackable Buttons → Universal EIC Button Styling
+   ============================================================ */
+
+/* Wrapper */
+.stk-block-button,
+.stk-block-button * {
+  box-sizing: border-box;
+}
+
+/* Main clickable element (covers ALL Stackable variants) */
+.stk-block-button a,
+.stk-block-button button,
+.stk-button,
+.stk-button__inner,
+.stk-block-button__button {
+  background-color: transparent !important;
+  color: var(--primary) !important;
+  border: 1.5px solid var(--primary) !important;
+  border-radius: 16px !important;
+
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  padding: 0.75em 2.5em !important;
+  line-height: 1.5 !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  letter-spacing: 2px !important;
+  text-transform: uppercase !important;
+  text-decoration: none !important;
+  cursor: pointer !important;
+
+  transition: background-color 0.15s ease,
+              color 0.15s ease,
+              border-color 0.15s ease,
+              box-shadow 0.25s ease !important;
+}
+
+/* Hover + focus */
+.stk-block-button a:hover,
+.stk-block-button button:hover,
+.stk-button:hover,
+.stk-button__inner:hover,
+.stk-block-button__button:hover,
+.stk-block-button a:focus,
+.stk-block-button button:focus,
+.stk-button:focus,
+.stk-button__inner:focus,
+.stk-block-button__button:focus {
+  background-color: var(--primary) !important;
+  color: #ffffff !important;
+  border-color: var(--primary) !important;
+}
+
+/* Ensure Stackable's internal label (span) also switches to white */
+.stk-block-button a:hover span,
+.stk-block-button button:hover span,
+.stk-button:hover span,
+.stk-button__inner:hover span,
+.stk-block-button__button:hover span,
+.stk-block-button a:focus span,
+.stk-block-button button:focus span,
+.stk-button:focus span,
+.stk-button__inner:focus span,
+.stk-block-button__button:focus span {
+  color: #ffffff !important;
+}
+
+
+
 /* ------------------------------------------------------------------
    DORSAL ROOT FILTERS — page-specific overrides
    ------------------------------------------------------------------ */

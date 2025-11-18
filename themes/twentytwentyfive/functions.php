@@ -328,6 +328,15 @@ require_once get_stylesheet_directory() . "/inc/taxonomies/glossary-letter.php";
 // Register Glossary ACF field group (Canonical Term, Short Definition, etc.)
 require_once get_stylesheet_directory() . "/inc/acf/glossary-fields.php";
 
+
+// =========================================================
+// WHAT IS CMT CPT + ACF + SHORTCODE
+// =========================================================
+require_once get_stylesheet_directory() . '/inc/cpt/what-is-cmt-cpt.php';
+require_once get_stylesheet_directory() . '/inc/acf/what-is-cmt-fields.php';
+require_once get_stylesheet_directory() . '/inc/shortcodes/what-is-cmt-fields-shortcode.php';
+
+
 // =========================================================
 // Register header banner from /blocks/header-banner/block.json
 // =========================================================
@@ -493,50 +502,80 @@ add_shortcode("context_nav", function () {
         return "";
     }
 
-    $post_type = get_post_type($post);
-    $supported_types = ["post", "subtype", "glossary", "resource"];
-    if (!in_array($post_type, $supported_types, true)) {
-        return "";
-    }
+   $post_type = get_post_type($post);
 
-    // Label sets per CPT
-    $labels = [
-        "post" => [
-            "prev" => "← Previous Post",
-            "next" => "Next Post →",
-            "back_label" => "Return to The Dorsal Root",
-        ],
-        "subtype" => [
-            "prev" => "← Previous Subtype",
-            "next" => "Next Subtype →",
-            "back_label" => "Return to Subtypes",
-        ],
-        "glossary" => [
-            "prev" => "← Previous Term",
-            "next" => "Next Term →",
-            "back_label" => "Return to The Glossary",
-        ],
-        "resource" => [
-            "prev" => "← Previous Resource",
-            "next" => "Next Resource →",
-            "back_label" => "Return to Resources",
-        ],
-    ];
+// Supported CPTs
+$supported_types = [
+    "post",
+    "subtype",
+    "glossary",
+    "resource",
+    "what-is-cmt",
+    "cmt-breathing",
+];
 
-    // Back URL logic — explicit anchors per your request
-    if ($post_type === "post") {
-        $back_url = home_url("/dorsal-root/#blog");
-    } elseif ($post_type === "subtype") {
-        $back_url = home_url("/cmt-genetics-database/#ui");
-    } elseif ($post_type === "glossary") {
-        // Match subtype behavior: go to the glossary PAGE, not the CPT archive, and use #results
-        $back_url = home_url("/cmt-words/#results");
-    } elseif ($post_type === "resource") {
-        $archive = get_post_type_archive_link("resource");
-        $back_url = ($archive ?: home_url("/resources")) . "#resources";
-    } else {
-        $back_url = home_url("/");
-    }
+if (!in_array($post_type, $supported_types, true)) {
+    return "";
+}
+
+// Label sets per CPT
+$labels = [
+    "post" => [
+        "prev"        => "← Previous Post",
+        "next"        => "Next Post →",
+        "back_label"  => "Return to The Dorsal Root",
+    ],
+    "subtype" => [
+        "prev"        => "← Previous Subtype",
+        "next"        => "Next Subtype →",
+        "back_label"  => "Return to Subtypes",
+    ],
+    "glossary" => [
+        "prev"        => "← Previous Term",
+        "next"        => "Next Term →",
+        "back_label"  => "Return to The Glossary",
+    ],
+    "resource" => [
+        "prev"        => "← Previous Resource",
+        "next"        => "Next Resource →",
+        "back_label"  => "Return to Resources",
+    ],
+    "what-is-cmt" => [
+        "prev"        => "← Previous Topic",
+        "next"        => "Next Topic →",
+        "back_label"  => "Return to What Is CMT",
+    ],
+    "cmt-breathing" => [
+        "prev"        => "← Previous Topic",
+        "next"        => "Next Topic →",
+        "back_label"  => "Return to CMT and Breathing",
+    ],
+];
+
+// Back URL logic
+if ($post_type === "post") {
+    $back_url = home_url("/dorsal-root/#blog");
+
+} elseif ($post_type === "subtype") {
+    $back_url = home_url("/cmt-genetics-database/#ui");
+
+} elseif ($post_type === "glossary") {
+    $back_url = home_url("/cmt-words/#results");
+
+} elseif ($post_type === "resource") {
+    $archive = get_post_type_archive_link("resource");
+    $back_url = ($archive ?: home_url("/resources")) . "#resources";
+
+} elseif ($post_type === "what-is-cmt") {
+    $back_url = home_url("/what-is-cmt/#topics");
+
+} elseif ($post_type === "cmt-breathing") {
+    $back_url = home_url("/cmt-and-breathing/#topics");
+
+} else {
+    $back_url = home_url("/");
+}
+
 
     // Determine previous/next IDs
     $prev_id = $next_id = null;
@@ -802,3 +841,15 @@ add_action("wp_footer", function () {
     </script>
     <?php
 });
+
+// ============================================================
+// Shortcode: Dynamic Updated Line for What Is CMT Topics
+// ============================================================
+function eic_wic_updated_line() {
+    if (!is_singular('what-is-cmt')) return '';
+
+    $updated = get_the_modified_date('F j, Y');
+
+    return '<p class="eic-updated">Updated: ' . esc_html($updated) . ' | By: K. Raymond</p>';
+}
+add_shortcode('wic_updated', 'eic_wic_updated_line');
