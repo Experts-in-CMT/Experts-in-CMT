@@ -122,6 +122,20 @@
                 "operator": "==",
                 "value": "default"
             }
+        ],
+        [
+            {
+                "param": "post_type",
+                "operator": "==",
+                "value": "breathing"
+            }
+        ],
+        [
+            {
+                "param": "post_type",
+                "operator": "==",
+                "value": "what-is-cmt"
+            }
         ]
     ],
     "menu_order": 999,
@@ -134,5 +148,5 @@
     "description": "",
     "show_in_rest": 0,
     "display_title": "",
-    "modified": 1762313320
+    "modified": 1763510395
 }
