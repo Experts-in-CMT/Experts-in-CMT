@@ -25,6 +25,53 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.9.5] – 2025-11-18
+
+### Added
+- **CMT and Breathing CPT**
+  - Full CPT stack (`breathing`) mirroring the What Is CMT system.
+  - Supports modular educational topics with block-template rendering.
+  - URL coexistence with the static `/cmt-and-breathing/` page using unified slug rules.
+  - Admin menu integration and REST support.
+
+- **CMT and Breathing ACF Group**
+  - Same schema as What Is CMT: Overview, Key Points, CTA Link, Updated By.
+  - Fully PHP-registered inside `/inc/acf/cmt-and-breathing-fields.php`.
+
+- **Shortcodes**
+  - `[cmt_and_breathing_fields]` — inline field renderer for future expansion.
+  - `[topic_updated]` — shared dynamic updated-line for What Is CMT + CMT and Breathing.
+  - Modularized `[context_nav]` shortcode into its own include file for clarity and consistency.
+
+- **Block Template**
+  - `single-breathing.html` created and assigned, matching the What Is CMT template architecture.
+
+### Changed
+- **Shortcode architecture cleanup**
+  - Unified updated-line shortcode and removed the old single-CPT version.
+  - Context navigation now supports both What Is CMT and Breathing CPTs with correct labels and back-links.
+
+- **functions.php organization**
+  - Added require statements for all new CPT/ACF/shortcode files.
+  - Ensured load order remains intact and predictable across all includes.
+
+- **UI/UX parity**
+  - CMT and Breathing topics now follow the exact UX flow as What Is CMT topics, including nav layout, updated line, and Dorsal Root footer integration.
+
+### Fixed
+- **404 resolution for new Breathing CPT**
+  - Required rewrite flush after CPT registration.
+  - CPT now resolves correctly under `/cmt-and-breathing/topic-slug/`.
+
+- **Context nav display logic**
+  - Corrected detection for the new CPT.
+  - Ensured nav appears appropriately once more than one topic exists.
+
+- **Shortcode autoload duplication prevention**
+  - Removed accidental duplicate What Is CMT CPT declaration.
+  - Ensured correct modular loading of CPT, ACF, and shortcode files via `/inc/` directories.
+
+
 ## [0.9.0] – 2025-11-16
 
 ### Added
