@@ -9,17 +9,18 @@
  * Usage: [what_is_cmt_fields]
  */
 
-if (!defined('ABSPATH')) exit;
+if (!defined("ABSPATH")) {
+    exit();
+}
 
-add_shortcode('what_is_cmt_fields', function () {
-
+add_shortcode("what_is_cmt_fields", function () {
     // SAFETY GUARD — prevents TT25 block editor crashes
-    if (!is_singular('what-is-cmt')) {
-        return '';
+    if (!is_singular("what-is-cmt")) {
+        return "";
     }
 
     // Path to your template file
-    $template = get_template_directory() . '/templates/cmt-fields-template.php';
+    $template = get_template_directory() . "/templates/cmt-fields-template.php";
 
     // Silent fail if file missing
     if (!file_exists($template)) {
@@ -27,6 +28,6 @@ add_shortcode('what_is_cmt_fields', function () {
     }
 
     ob_start();
-    include $template;        // SAFE — only runs on real What Is CMT pages
+    include $template; // SAFE — only runs on real What Is CMT pages
     return ob_get_clean();
 });

@@ -56,4 +56,5 @@ $aria = sprintf(
     ><?php echo esc_html($btn_text); ?></a>
   </div>
 </div>
+
 <?php /* no trailing newline */ ?>

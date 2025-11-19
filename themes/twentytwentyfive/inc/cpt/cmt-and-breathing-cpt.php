@@ -5,29 +5,29 @@
  * Do not copy, modify, or redistribute without permission.
  *
  * ============================================================
- *  CPT: What Is CMT
+ *  CPT: CMT and Breathing
  * ------------------------------------------------------------
- *  Registers the `what-is-cmt` custom post type, which powers
- *  all modular educational topics for the “What Is CMT” section.
+ *  Registers the `breathing` custom post type, which powers
+ *  all modular educational topics for the “CMT and Breathing”
+ *  section. This CPT mirrors the What Is CMT architecture.
  *
  *  Notes:
- *  - Uses block templates for rendering (single-what-is-cmt.html)
- *  - Shares its slug with the static page /what-is-cmt/
+ *  - Uses block templates for rendering (single-breathing.html)
+ *  - Shares its slug with the static page /cmt-and-breathing/
  *  - Supports title and editor only; metadata handled via ACF
  * ============================================================
  */
-
 if (!defined("ABSPATH")) {
     exit();
 }
 
-add_action("init", "eic_register_what_is_cmt_cpt");
-function eic_register_what_is_cmt_cpt()
+add_action("init", "eic_register_breathing_cpt");
+function eic_register_breathing_cpt()
 {
-    register_post_type("what-is-cmt", [
+    register_post_type("breathing", [
         "labels" => [
-            "name" => "What Is CMT Topics",
-            "singular_name" => "What Is CMT Topic",
+            "name" => "CMT and Breathing Topics",
+            "singular_name" => "CMT and Breathing Topic",
             "add_new" => "Add Topic",
             "add_new_item" => "Add New Topic",
             "edit_item" => "Edit Topic",
@@ -48,9 +48,9 @@ function eic_register_what_is_cmt_cpt()
 
         "has_archive" => false,
 
-        // Critical slug override so CPT and static page share the same base.
+        // Same pattern as What Is CMT: CPT and static page share the same URL base
         "rewrite" => [
-            "slug" => "what-is-cmt",
+            "slug" => "cmt-and-breathing",
             "with_front" => false,
         ],
 

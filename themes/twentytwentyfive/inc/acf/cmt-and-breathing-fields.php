@@ -4,8 +4,8 @@
  * Part of the Experts in CMT WordPress theme.
  * Do not copy, modify, or redistribute without permission.
  *
- * File: ACF — What Is CMT Topic Fields
- * Purpose: Registers the minimal field group for the What Is CMT
+ * File: ACF — CMT and Breathing Topic Fields
+ * Purpose: Registers the minimal field group for the CMT and Breathing
  *          Topics CPT. Includes a dynamic Title field (for Meta Field Block)
  *          and a 300-character summary field used for hub page previews.
  */
@@ -14,18 +14,18 @@ if (!defined("ABSPATH")) {
     exit();
 }
 
-add_action("init", "eic_acf_what_is_cmt_fields");
-function eic_acf_what_is_cmt_fields()
+add_action("init", "eic_acf_breathing_fields");
+function eic_acf_breathing_fields()
 {
     acf_add_local_field_group([
-        "key" => "group_eic_what_is_cmt",
-        "title" => "What Is CMT Topic Fields",
+        "key" => "group_eic_breathing",
+        "title" => "CMT and Breathing Topic Fields",
         "fields" => [
             // ============================================================
             // Title (used for Meta Field Block output)
             // ============================================================
             [
-                "key" => "field_eic_wic_title",
+                "key" => "field_eic_breathing_title",
                 "label" => "Topic Title",
                 "name" => "topic_title",
                 "type" => "text",
@@ -42,14 +42,14 @@ function eic_acf_what_is_cmt_fields()
             // Summary (600-character max)
             // ============================================================
             [
-                "key" => "field_eic_wic_summary",
+                "key" => "field_eic_breathing_summary",
                 "label" => "Short Summary",
                 "name" => "summary",
                 "type" => "textarea",
                 "instructions" => "2-4 sentences. Maximum 600 characters.",
                 "maxlength" => 600,
                 "rows" => 3,
-                "new_lines" => "", // plain text only
+                "new_lines" => "",
                 "wrapper" => [
                     "width" => "100",
                 ],
@@ -61,7 +61,7 @@ function eic_acf_what_is_cmt_fields()
                 [
                     "param" => "post_type",
                     "operator" => "==",
-                    "value" => "what-is-cmt",
+                    "value" => "breathing",
                 ],
             ],
         ],

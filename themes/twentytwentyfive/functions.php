@@ -26,7 +26,6 @@
  * inside /inc/ for clarity, isolation, and predictable upgrades.
  */
 
-
 // Adds theme support for post formats.
 if (!function_exists("twentytwentyfive_post_format_setup")):
     function twentytwentyfive_post_format_setup()
@@ -140,51 +139,51 @@ endif;
 // --------------------------------------------------
 // Modular AJAX loaders
 // --------------------------------------------------
-add_action('wp_enqueue_scripts', function () {
+add_action("wp_enqueue_scripts", function () {
     $map = [
-        'dorsal-root' => [
-            'handle' => 'dr-ajax',
-            'file'   => '/assets/js/dr-ajax.js',
-            'var'    => 'DR_AJAX',
-            'nonce'  => 'dr_ajax_nonce',
+        "dorsal-root" => [
+            "handle" => "dr-ajax",
+            "file" => "/assets/js/dr-ajax.js",
+            "var" => "DR_AJAX",
+            "nonce" => "dr_ajax_nonce",
         ],
-        'cmt-words' => [
-            'handle' => 'glossary-ajax',
-            'file'   => '/assets/js/glossary-ajax.js',
-            'var'    => 'GL_AJAX',
-            'nonce'  => 'glossary_ajax_nonce',
+        "cmt-words" => [
+            "handle" => "glossary-ajax",
+            "file" => "/assets/js/glossary-ajax.js",
+            "var" => "GL_AJAX",
+            "nonce" => "glossary_ajax_nonce",
         ],
-         'cmt-genetics-database' => [
-             'handle' => 'genes-ajax',
-             'file'   => '/assets/js/genes-ajax.js',
-             'var'    => 'GENES_AJAX',
-             'nonce'  => 'genes_ajax_nonce',
-         ],
+        "cmt-genetics-database" => [
+            "handle" => "genes-ajax",
+            "file" => "/assets/js/genes-ajax.js",
+            "var" => "GENES_AJAX",
+            "nonce" => "genes_ajax_nonce",
+        ],
     ];
 
     foreach ($map as $slug => $c) {
         if (is_page($slug)) {
             // JS
             wp_enqueue_script(
-                $c['handle'],
-                get_stylesheet_directory_uri() . $c['file'],
+                $c["handle"],
+                get_stylesheet_directory_uri() . $c["file"],
                 [],
-                '1.0',
+                "1.0",
                 true
             );
 
             // CSS (shared AJAX state + layout fixes)
             wp_enqueue_style(
-                'loop-ajax',
-                get_stylesheet_directory_uri() . '/assets/css/loop-ajax.css',
+                "loop-ajax",
+                get_stylesheet_directory_uri() . "/assets/css/loop-ajax.css",
                 [],
-                '1.0'
+                "1.0"
             );
 
             // Localized vars
-            wp_localize_script($c['handle'], $c['var'], [
-                'url'   => admin_url('admin-ajax.php'),
-                'nonce' => wp_create_nonce($c['nonce']),
+            wp_localize_script($c["handle"], $c["var"], [
+                "url" => admin_url("admin-ajax.php"),
+                "nonce" => wp_create_nonce($c["nonce"]),
             ]);
         }
     }
@@ -193,10 +192,13 @@ add_action('wp_enqueue_scripts', function () {
 // ============================================================
 // Disable TT25 default "No results found" block for custom loops
 // ============================================================
-add_action('loop_no_results', function() {
-    remove_action('loop_no_results', 'twentytwentyfive_no_results');
-}, 1);
-
+add_action(
+    "loop_no_results",
+    function () {
+        remove_action("loop_no_results", "twentytwentyfive_no_results");
+    },
+    1
+);
 
 /**
  * Genes DB — loop shortcode loader
@@ -237,7 +239,6 @@ add_action(
     },
     20
 );
-
 
 /**
  * Experts in CMT image sizes.
@@ -328,14 +329,22 @@ require_once get_stylesheet_directory() . "/inc/taxonomies/glossary-letter.php";
 // Register Glossary ACF field group (Canonical Term, Short Definition, etc.)
 require_once get_stylesheet_directory() . "/inc/acf/glossary-fields.php";
 
-
 // =========================================================
 // WHAT IS CMT CPT + ACF + SHORTCODE
 // =========================================================
-require_once get_stylesheet_directory() . '/inc/cpt/what-is-cmt-cpt.php';
-require_once get_stylesheet_directory() . '/inc/acf/what-is-cmt-fields.php';
-require_once get_stylesheet_directory() . '/inc/shortcodes/what-is-cmt-fields-shortcode.php';
+require_once get_stylesheet_directory() . "/inc/cpt/what-is-cmt-cpt.php";
+require_once get_stylesheet_directory() . "/inc/acf/what-is-cmt-fields.php";
+require_once get_stylesheet_directory() .
+    "/inc/shortcodes/what-is-cmt-fields-shortcode.php";
 
+// =========================================================
+// CMT AND BREATHING CPT
+// =========================================================
+require_once get_stylesheet_directory() . "/inc/cpt/cmt-and-breathing-cpt.php";
+require_once get_stylesheet_directory() .
+    "/inc/acf/cmt-and-breathing-fields.php";
+require_once get_stylesheet_directory() .
+    "/inc/shortcodes/cmt-and-breathing-fields-shortcode.php";
 
 // =========================================================
 // Register header banner from /blocks/header-banner/block.json
@@ -345,9 +354,6 @@ add_action("init", function () {
         get_template_directory() . "/blocks/header-banner"
     );
 });
-
-
-
 
 /**
  * [header_banner] — renders the ACF banner on pages.
@@ -451,12 +457,12 @@ if (is_dir($loops_dir)) {
 }
 
 // Glossary — fields template loader
-add_action('wp', function () {
-    if (is_singular('glossary')) {
-        include get_template_directory() . '/templates/glossary-fields-template.php';
+add_action("wp", function () {
+    if (is_singular("glossary")) {
+        include get_template_directory() .
+            "/templates/glossary-fields-template.php";
     }
 });
-
 
 // --- ACF Field Groups ---
 $acf_dir = get_stylesheet_directory() . "/inc/acf/";
@@ -474,8 +480,6 @@ if (is_dir($shortcodes_dir)) {
     }
 }
 
-
-
 // --------------------------------------------------
 // Modular includes: auto-load AJAX endpoints
 // --------------------------------------------------
@@ -486,167 +490,6 @@ add_action("after_setup_theme", function () {
             require_once $file;
         }
     }
-});
-
-/**
- * [context_nav] shortcode (Prev / Back / Next) — Locked Baseline
- * Experts in CMT / Dorsal Root Unified Version
- */
-add_shortcode("context_nav", function () {
-    if (!is_singular() || is_admin()) {
-        return "";
-    }
-
-    global $post;
-    if (empty($post) || empty($post->ID)) {
-        return "";
-    }
-
-   $post_type = get_post_type($post);
-
-// Supported CPTs
-$supported_types = [
-    "post",
-    "subtype",
-    "glossary",
-    "resource",
-    "what-is-cmt",
-    "cmt-breathing",
-];
-
-if (!in_array($post_type, $supported_types, true)) {
-    return "";
-}
-
-// Label sets per CPT
-$labels = [
-    "post" => [
-        "prev"        => "← Previous Post",
-        "next"        => "Next Post →",
-        "back_label"  => "Return to The Dorsal Root",
-    ],
-    "subtype" => [
-        "prev"        => "← Previous Subtype",
-        "next"        => "Next Subtype →",
-        "back_label"  => "Return to Subtypes",
-    ],
-    "glossary" => [
-        "prev"        => "← Previous Term",
-        "next"        => "Next Term →",
-        "back_label"  => "Return to The Glossary",
-    ],
-    "resource" => [
-        "prev"        => "← Previous Resource",
-        "next"        => "Next Resource →",
-        "back_label"  => "Return to Resources",
-    ],
-    "what-is-cmt" => [
-        "prev"        => "← Previous Topic",
-        "next"        => "Next Topic →",
-        "back_label"  => "Return to What Is CMT",
-    ],
-    "cmt-breathing" => [
-        "prev"        => "← Previous Topic",
-        "next"        => "Next Topic →",
-        "back_label"  => "Return to CMT and Breathing",
-    ],
-];
-
-// Back URL logic
-if ($post_type === "post") {
-    $back_url = home_url("/dorsal-root/#blog");
-
-} elseif ($post_type === "subtype") {
-    $back_url = home_url("/cmt-genetics-database/#ui");
-
-} elseif ($post_type === "glossary") {
-    $back_url = home_url("/cmt-words/#results");
-
-} elseif ($post_type === "resource") {
-    $archive = get_post_type_archive_link("resource");
-    $back_url = ($archive ?: home_url("/resources")) . "#resources";
-
-} elseif ($post_type === "what-is-cmt") {
-    $back_url = home_url("/what-is-cmt/#topics");
-
-} elseif ($post_type === "cmt-breathing") {
-    $back_url = home_url("/cmt-and-breathing/#topics");
-
-} else {
-    $back_url = home_url("/");
-}
-
-
-    // Determine previous/next IDs
-    $prev_id = $next_id = null;
-
-    if ($post_type === "post") {
-        $prev = get_adjacent_post(false, "", true);
-        $next = get_adjacent_post(false, "", false);
-        if ($prev instanceof WP_Post) {
-            $prev_id = $prev->ID;
-        }
-        if ($next instanceof WP_Post) {
-            $next_id = $next->ID;
-        }
-    } else {
-        $ids = get_posts([
-            "post_type" => $post_type,
-            "posts_per_page" => -1,
-            "orderby" => "title",
-            "order" => "ASC",
-            "fields" => "ids",
-            "no_found_rows" => true,
-            "post_status" => "publish",
-        ]);
-        if ($ids && in_array($post->ID, $ids, true)) {
-            $i = array_search($post->ID, $ids, true);
-            $prev_id = $ids[$i - 1] ?? null;
-            $next_id = $ids[$i + 1] ?? null;
-        }
-    }
-
-    if (!$prev_id && !$next_id) {
-        return "";
-    }
-    $L = $labels[$post_type] ?? [
-        "prev" => "← Previous",
-        "next" => "Next →",
-        "back_label" => "← Return",
-    ];
-
-    ob_start();
-    ?>
-    <div class="eicmt-ctnav-wrap">
-      <nav class="eicmt-ctnav" aria-label="Post navigation">
-        <div class="eicmt-ctnav__col eicmt-ctnav__col--prev">
-          <?php if ($prev_id): ?>
-            <a class="eicmt-ctnav__link" href="<?php echo esc_url(
-                get_permalink($prev_id)
-            ); ?>">
-              <?php echo esc_html($L["prev"]); ?>
-            </a>
-          <?php endif; ?>
-        </div>
-
-        <div class="eicmt-ctnav__col eicmt-ctnav__col--back">
-          <a class="eicmt-ctnav__link" href="<?php echo esc_url($back_url); ?>">
-            <?php echo esc_html($L["back_label"]); ?>
-          </a>
-        </div>
-
-        <div class="eicmt-ctnav__col eicmt-ctnav__col--next">
-          <?php if ($next_id): ?>
-            <a class="eicmt-ctnav__link" href="<?php echo esc_url(
-                get_permalink($next_id)
-            ); ?>">
-              <?php echo esc_html($L["next"]); ?>
-            </a>
-          <?php endif; ?>
-        </div>
-      </nav>
-    </div>
-    <?php return ob_get_clean();
 });
 
 /**
@@ -843,13 +686,18 @@ add_action("wp_footer", function () {
 });
 
 // ============================================================
-// Shortcode: Dynamic Updated Line for What Is CMT Topics
+// Shortcode: Dynamic Updated Line for What Is CMT + Breathing
 // ============================================================
-function eic_wic_updated_line() {
-    if (!is_singular('what-is-cmt')) return '';
+function eic_topic_updated_line()
+{
+    if (!is_singular(["what-is-cmt", "breathing"])) {
+        return "";
+    }
 
-    $updated = get_the_modified_date('F j, Y');
+    $updated = get_the_modified_date("F j, Y");
 
-    return '<p class="eic-updated">Updated: ' . esc_html($updated) . ' | By: K. Raymond</p>';
+    return '<p class="eic-updated">Updated: ' .
+        esc_html($updated) .
+        " | By: K. Raymond</p>";
 }
-add_shortcode('wic_updated', 'eic_wic_updated_line');
+add_shortcode("topic_updated", "eic_topic_updated_line");
