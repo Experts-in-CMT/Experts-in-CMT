@@ -25,6 +25,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.9.6] - 2025-11-20
+### Added
+- **Do Not Sell My Information (DNSMI) Modal System**  
+  - Full modal experience built via `[do_not_sell_modal]` shortcode.  
+  - Success screen with EIC-standard button design and UX flow.  
+  - Cookie-based state: once submitted, visitors see a disabled confirmation link (“Your data will not be sold to any 3rd party.”).  
+  - Admin bypass: logged-in users bypass cookie restrictions for testing.
+
+### Changed
+- **Modal UX & UI Enhancements**  
+  - Applied full EIC button styling to both submit and success buttons.  
+  - Updated close button to circular EIC style with correct hover colors.  
+  - Upgraded inputs to global field patterns (radius, borders, focus ring, placeholder styling).  
+  - Fixed spacing around labels and fields; resolved rogue `<br>` behavior with markup cleanup.  
+  - Rebased modal to `<body>` to correct z-index and overlay behavior.
+
+### Fixed
+- Blocked LastPass/password manager interference inside modal.  
+- Success state now properly hides the intro text and form.  
+- Resolved hover-locked close button caused by stacking and propagation issues.  
+- Removed rogue `<p>` injection from submit button label.
+
+
 ## [0.9.5] – 2025-11-18
 
 ### Added
