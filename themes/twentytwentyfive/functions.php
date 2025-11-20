@@ -398,9 +398,9 @@ add_filter(
     2
 );
 
-/**
- * Enqueue navigation behavior fix so parent items remain clickable.
- */
+// ============================================================
+// Navigation Behavior Fix — Keep Parent Menu Items Clickable
+// ============================================================
 add_action(
     "wp_enqueue_scripts",
     function () {
@@ -423,6 +423,38 @@ add_action(
     },
     1002
 );
+
+// ============================================================
+// Do Not Sell My Info — Modal Assets
+// ============================================================
+add_action("wp_enqueue_scripts", function () {
+    // CSS
+    $css_rel = "/assets/css/do-not-sell.css";
+    $css_path = get_stylesheet_directory() . $css_rel;
+
+    if (file_exists($css_path)) {
+        wp_enqueue_style(
+            "dnsmi-modal",
+            get_stylesheet_directory_uri() . $css_rel,
+            ["experts-main"],
+            filemtime($css_path)
+        );
+    }
+
+    // JS
+    $js_rel = "/assets/js/do-not-sell-modal.js";
+    $js_path = get_stylesheet_directory() . $js_rel;
+
+    if (file_exists($js_path)) {
+        wp_enqueue_script(
+            "dnsmi-modal",
+            get_stylesheet_directory_uri() . $js_rel,
+            [],
+            filemtime($js_path),
+            true
+        );
+    }
+});
 
 // =========================================================
 // Genes Database Filter Array Taxonomy Includes
