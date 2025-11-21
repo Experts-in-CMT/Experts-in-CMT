@@ -25,6 +25,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.0] - 2025-11-20
+
+### Added
+- **Staging Deployment Pipeline (SSH + GitHub Integration):**  
+  Fully enabled SSH access on staging; added server-side deploy key; connected staging `wp-content` repo to GitHub via SSH; converted origin remote from HTTPS to SSH; authenticated server with GitHub; validated secure Git operations.
+- **Staging Environment Git Architecture:**  
+  Staging now tracks the `main` branch directly, establishing a stable production-ready deployment workflow.
+- **Complete Path Mapping:**  
+  Verified and documented staging root at `/home1/zdqowomy/public_html/staging/9105/wp-content` as the canonical remote Git root.
+- **SQL Performance Indexes:**  
+  Implemented all required database indexes on staging (`idx_postmeta_key_post`, `idx_term_relationships`, `idx_postmeta_subtype_unique`) for Genes, Glossary, Subtypes, and Dorsal Root query acceleration.
+
+### Changed
+- **Deployment Workflow:**  
+  Updated staging instance to track `main` rather than `dev`, aligning staging with production-intent code and keeping development isolated to local `dev`.
+- **Remote Configuration:**  
+  Replaced legacy HTTPS GitHub remote with authenticated SSH remote (`git@github.com:CMTKennyB/Experts-in-CMT.git`) for secure and passwordless deployment.
+- **Staging Branch Alignment:**  
+  Switched staging worktree from `dev` to `main` cleanly, resolving file deltas and removing environment discrepancies.
+
+### Fixed
+- **AIO Migration Remote Drift:**  
+  Resolved issues where staging inherited incorrect Git origins following AIO Migration import.
+- **Permission Denied (publickey):**  
+  Fixed GitHub authentication failures on staging by generating server-side SSH keys and registering them as a GitHub deploy key.
+- **Shell Access & Host Key Trust:**  
+  Enabled shell access, cleared host key trust prompts, added GitHub host fingerprint, and validated secure SSH communication.
+
+---
+
+### **v1.0.0 Summary**
+This release establishes a stable, production-ready foundation for Experts in CMT. All core interactive stacks (Genes, Glossary, Dorsal Root, Subtypes, What Is CMT, DNSMI modal) are in sync across Local → GitHub → Staging. Staging is now a true deployment target, fully backed by Git, SSH, and validated branch structure.
+
+This marks the project’s transition from MVP development to stable release status.
+
+
 ## [0.9.6] - 2025-11-20
 ### Added
 - **Do Not Sell My Information (DNSMI) Modal System**  
