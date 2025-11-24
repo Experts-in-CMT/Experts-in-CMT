@@ -2805,6 +2805,37 @@ h2.wp-block-heading {
   display: none !important;
 }
 
+/* ============================================================
+   GLOBAL LINK STYLE + HOVER SCALE ANIMATION
+   Removes default underlines, restores them on hover, and applies
+   subtle scale animation used on cards and buttons.
+   ============================================================ */
+a {
+    text-decoration: none;
+    display: inline-block;
+    transition: 
+        text-decoration 0.15s ease-out,
+        transform 0.18s ease-out;
+}
+
+a:hover,
+a:focus {
+    text-decoration: underline;
+    transform: scale(1.01);
+}
+
+/* ============================================================
+   EXEMPT CTA LINKS FROM GLOBAL UNDERLINE ON HOVER
+   Applies to: .dr-more (Dorsal Root CTA)
+   ============================================================ */
+a.dr-more,
+a.dr-more:hover,
+a.dr-more:focus {
+    text-decoration: none !important;
+}
+
+
+
 /* ------------------------------------------------------------------
    Mobile Overrides
    ------------------------------------------------------------------
@@ -2954,6 +2985,12 @@ body .header-banner__intro p {
     );
     border-radius: 4px;
   }
+  
+.wp-block-navigation__responsive-container-open:hover {
+    background-color: transparent !important;
+    transform: translateY(-75px) scale(1.03);
+    transition: transform 0.18s ease-out;
+}
 
   .wp-block-navigation__responsive-container-open svg {
     display: none !important;
@@ -2978,6 +3015,82 @@ body .header-banner__intro p {
     bottom: 4px;
   }
 }
+
+/* ============================================================
+   MOBILE FOOTER LEGAL ALIGNMENT (≤600px)
+   Overrides Gutenberg’s .has-text-align-center class inside the
+   Stackable footer column to force left alignment on small screens.
+   ============================================================ */
+@media (max-width: 600px) {
+    .stk-block-column .has-text-align-center {
+        text-align: left !important;
+    }
+}
+
+/* ============================================================
+   WPForms INPUT OVERRIDES — FORCE BAGPIPE PARITY
+   ============================================================ */
+
+.wpforms-container .wpforms-field input,
+.wpforms-container .wpforms-field textarea,
+.wpforms-container .wpforms-field select {
+    font-size: 1rem !important;
+    padding: 0.75rem 1rem !important;
+    border: 1px solid #d0d7de !important;
+    border-radius: 8px !important;
+    background: #fff !important;
+    width: 100% !important;
+    color: var(--text) !important;
+}
+
+.wpforms-container .wpforms-field input:focus,
+.wpforms-container .wpforms-field textarea:focus,
+.wpforms-container .wpforms-field select:focus {
+    outline: none !important;
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 0 2px rgba(23, 71, 119, 0.25) !important;
+}
+
+/* Fix WPForms labels */
+.wpforms-container .wpforms-field-label,
+.wpforms-container .wpforms-field-sublabel {
+    font-size: 0.9rem !important;
+    font-weight: 500 !important;
+}
+
+/* Align submit button to our global button style */
+.wpforms-container .wpforms-submit-container .dr-more {
+    margin-top: 1.5rem;
+}
+
+/* ============================================================
+   WPForms Submit Button — EIC Style Override
+   Makes the submit button match dr-more: pill, border, scale.
+   ============================================================ */
+
+.wpforms-submit {
+    background: none !important;
+    color: var(--primary) !important;
+    border: 1.5px solid var(--primary) !important;
+    border-radius: 9999px !important;
+    padding: 0.55rem 1.4rem !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    cursor: pointer;
+    transition: transform 0.18s ease-out,
+                background-color 0.18s ease-out,
+                color 0.18s ease-out !important;
+}
+
+/* Hover + Focus */
+.wpforms-submit:hover,
+.wpforms-submit:focus {
+    transform: scale(1.03);
+    background: var(--primary) !important;
+    color: #fff !important;
+}
+
+
 
 
 
