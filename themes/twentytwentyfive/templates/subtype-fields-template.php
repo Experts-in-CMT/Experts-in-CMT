@@ -48,8 +48,8 @@ $research_label = trim((string) get_field("research_label"));
 $symptoms_url = trim((string) get_field("symptoms_url"));
 $what_is_cmtx_url = trim((string) get_field("what_is_cmtx_url"));
 $what_is_intermediate_url = trim(
-    (string) get_field("what_is_intermediate_url")
-);
+    (string) get_field("what_is_intermediate_url"));
+$clinvar_url = trim((string) get_field("clinvar_url")); 
 
 /* Publications — Primary */
 $publication_ttl = get_field("publication_title");
@@ -169,6 +169,21 @@ $pub_heading = $pub_count === 1 ? "Key Publication" : "Key Publications";
           <dd><?php echo esc_html($zygosity); ?></dd>
         </div>
       <?php endif; ?>
+
+<?php if (!empty($clinvar_url)): ?>
+  <div class="eic-fact">
+    <dt>ClinVar Pathogenic Variants</dt>
+    <dd>
+      <a class="dr-more"
+         href="<?php echo esc_url($clinvar_url); ?>"
+         target="_blank"
+         rel="noopener noreferrer">
+        View ClinVar Variants
+      </a>
+    </dd>
+  </div>
+<?php endif; ?>
+
 
     </dl>
   </section>

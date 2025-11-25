@@ -383,6 +383,17 @@ add_action("acf/init", function () {
             "return_format" => "Y-m-d",
             "first_day" => 0,
         ],
+[
+    "key"   => "field_clinvar_url",
+    "label" => "ClinVar Variants URL",
+    "name"  => "clinvar_url",
+    "type"  => "url",
+    "required" => 0,
+    "wrapper" => [
+        "width" => "33",
+    ],
+],
+
     ];
 
     // Apply 33% width to every field (except tabs)
