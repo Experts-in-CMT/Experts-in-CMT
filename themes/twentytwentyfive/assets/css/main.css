@@ -2825,6 +2825,35 @@ a:focus {
 }
 
 /* ============================================================
+   HARD-EXEMPT PRIMARY NAV FROM GLOBAL LINK EFFECTS
+   Applies to:
+     - Parent menu buttons (.wp-block-navigation-item__content as <button>)
+     - Regular anchor links (.wp-block-navigation-item__content as <a>)
+   ============================================================ */
+
+.wp-block-navigation button.wp-block-navigation-item__content,
+.wp-block-navigation button.wp-block-navigation-item__content:hover,
+.wp-block-navigation button.wp-block-navigation-item__content:focus,
+.wp-block-navigation a.wp-block-navigation-item__content,
+.wp-block-navigation a.wp-block-navigation-item__content:hover,
+.wp-block-navigation a.wp-block-navigation-item__content:focus {
+    transform: none !important;
+    text-decoration: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+}
+
+/* ============================================================
+   NAVIGATION — HOVER FONT WEIGHT FEEDBACK
+   (Keeps subtle feedback without any underline/scale)
+   ============================================================ */
+
+.wp-block-navigation a.wp-block-navigation-item__content:hover,
+.wp-block-navigation button.wp-block-navigation-item__content:hover {
+    font-weight: 500 !important;
+}
+
+/* ============================================================
    EXEMPT CTA LINKS FROM GLOBAL UNDERLINE ON HOVER
    Applies to: .dr-more (Dorsal Root CTA)
    ============================================================ */
@@ -2833,8 +2862,6 @@ a.dr-more:hover,
 a.dr-more:focus {
     text-decoration: none !important;
 }
-
-
 
 /* ------------------------------------------------------------------
    Mobile Overrides
