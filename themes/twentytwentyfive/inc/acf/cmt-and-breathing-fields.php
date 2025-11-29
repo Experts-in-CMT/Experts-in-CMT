@@ -34,7 +34,7 @@ function eic_acf_breathing_fields()
                 "required" => 1,
                 "maxlength" => 120,
                 "wrapper" => [
-                    "width" => "100",
+                    "width" => "33",
                 ],
             ],
 
@@ -47,12 +47,32 @@ function eic_acf_breathing_fields()
                 "name" => "summary",
                 "type" => "textarea",
                 "instructions" => "2-4 sentences. Maximum 600 characters.",
+                "required" => 1,
                 "maxlength" => 600,
                 "rows" => 3,
                 "new_lines" => "",
                 "wrapper" => [
-                    "width" => "100",
+                    "width" => "33",
                 ],
+            ],
+
+            // ============================================================
+            // Topic Order (numeric — determines next/previous sequence)
+            // ============================================================
+            [
+                "key" => "field_eic_breathing_topic_order",
+                "label" => "Topic Order",
+                "name" => "topic_order",
+                "type" => "number",
+                "instructions" =>
+                    "Set the topic sequence number (1, 2, 3...). Lower numbers appear earlier.",
+                "required" => 1,
+                "wrapper" => [
+                    "width" => "33",
+                ],
+                "min" => "",
+                "max" => "",
+                "step" => 1,
             ],
         ],
 

@@ -3117,8 +3117,24 @@ body .header-banner__intro p {
     color: #fff !important;
 }
 
+@media (max-width: 600px) {
 
+    /* Back (center) label gets wider allowance */
+    .ctnav-back-label {
+        white-space: normal;
+        display: inline-block;
+        max-width: 120px;
+        line-height: 1.3;
+    }
 
+    /* Prev/Next get narrower width */
+    .ctnav-prev-label,
+    .ctnav-next-label {
+        white-space: normal;
+        display: inline-block;
+        max-width: 80px;
+        line-height: 1.3;
+    }
 
-
+}
 
