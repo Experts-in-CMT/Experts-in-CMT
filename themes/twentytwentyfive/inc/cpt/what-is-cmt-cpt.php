@@ -7,14 +7,6 @@
  * ============================================================
  *  CPT: What Is CMT
  * ------------------------------------------------------------
- *  Registers the `what-is-cmt` custom post type, which powers
- *  all modular educational topics for the “What Is CMT” section.
- *
- *  Notes:
- *  - Uses block templates for rendering (single-what-is-cmt.html)
- *  - Shares its slug with the static page /what-is-cmt/
- *  - Supports title and editor only; metadata handled via ACF
- * ============================================================
  */
 
 if (!defined("ABSPATH")) {

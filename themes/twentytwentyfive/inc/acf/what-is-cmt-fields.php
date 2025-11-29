@@ -34,7 +34,7 @@ function eic_acf_what_is_cmt_fields()
                 "required" => 1,
                 "maxlength" => 120,
                 "wrapper" => [
-                    "width" => "100",
+                    "width" => "33",
                 ],
             ],
 
@@ -47,12 +47,32 @@ function eic_acf_what_is_cmt_fields()
                 "name" => "summary",
                 "type" => "textarea",
                 "instructions" => "2-4 sentences. Maximum 600 characters.",
+                "required" => 1,
                 "maxlength" => 600,
                 "rows" => 3,
                 "new_lines" => "", // plain text only
                 "wrapper" => [
-                    "width" => "100",
+                    "width" => "33",
                 ],
+            ],
+
+            // ============================================================
+            // Topic Order (numeric — determines next/previous sequence)
+            // ============================================================
+            [
+                "key" => "field_eic_wic_topic_order",
+                "label" => "Topic Order",
+                "name" => "topic_order",
+                "type" => "number",
+                "instructions" =>
+                    "Set the topic sequence number (1, 2, 3...). Lower numbers appear earlier.",
+                "required" => 1,
+                "wrapper" => [
+                    "width" => "33",
+                ],
+                "min" => "",
+                "max" => "",
+                "step" => 1,
             ],
         ],
 
