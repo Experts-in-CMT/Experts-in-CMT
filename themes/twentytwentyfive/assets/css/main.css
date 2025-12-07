@@ -167,18 +167,38 @@ p {
   margin: 1.5rem 0;
 }
 
-/* ---------- Links ---------- */
+/* ============================================================
+   GLOBAL LINK ANIMATION + PRIMARY NAV EXEMPTION
+   ============================================================ */
+
+/* ---------- Global Link Animation ---------- */
 a {
   color: var(--accent);
   text-decoration: underline;
   text-decoration-thickness: 1.5px;
   text-underline-offset: 2px;
+
+  display: inline-block; /* required for transform */
+  transition: transform 0.18s ease-out;
 }
+
 a:hover,
 a:focus {
-  text-decoration-thickness: 2px; /* stronger underline on hover/focus */
+  transform: scale(1.01);
+  text-decoration-thickness: 2px;
   opacity: 0.9;
 }
+
+/* ---------- Exempt Primary Navigation Links ---------- */
+.wp-block-navigation a,
+.wp-block-navigation a:hover,
+.wp-block-navigation a:focus {
+  transform: none !important;
+  transition: none !important;
+  opacity: 1 !important;
+  text-decoration-thickness: 1.5px !important;
+}
+
 
 /* === Lists === */
 ul,
@@ -2806,23 +2826,25 @@ h2.wp-block-heading {
 }
 
 /* ============================================================
-   GLOBAL LINK STYLE + HOVER SCALE ANIMATION
+  Footer LINK STYLE + HOVER SCALE ANIMATION
    Removes default underlines, restores them on hover, and applies
    subtle scale animation used on cards and buttons.
    ============================================================ */
-a {
+.stk-block-columns.stk-d0c700c p > a,
+.stk-block-columns.stk-d0c700c a {
     text-decoration: none;
     display: inline-block;
-    transition: 
+    transition:
         text-decoration 0.15s ease-out,
         transform 0.18s ease-out;
 }
 
-a:hover,
-a:focus {
+.stk-block-columns.stk-d0c700c p > a:hover,
+.stk-block-columns.stk-d0c700c p > a:focus,
+.stk-block-columns.stk-d0c700c a:hover,
+.stk-block-columns.stk-d0c700c a:focus {
     text-decoration: underline;
     transform: scale(1.01);
-}
 
 /* ============================================================
    HARD-EXEMPT PRIMARY NAV FROM GLOBAL LINK EFFECTS
