@@ -94,20 +94,27 @@ add_shortcode("context_nav", function () {
     // Determine prev/next IDs
     $prev_id = $next_id = null;
 
-    // ============================================================
-    // POSTS (Dorsal Root)
-    // ============================================================
-    if ($post_type === "post") {
+// ============================================================
+// POSTS (Dorsal Root) — publish date ASC (oldest → newest)
+// ============================================================
+if ($post_type === "post") {
 
-        $prev = get_adjacent_post(false, "", true);
-        $next = get_adjacent_post(false, "", false);
+    $ids = get_posts([
+        "post_type"      => "post",
+        "posts_per_page" => -1,
+        "orderby"        => "date",
+        "order"          => "DSC",
+        "fields"         => "ids",
+        "no_found_rows"  => true,
+        "post_status"    => "publish",
+    ]);
 
-        if ($prev instanceof WP_Post) {
-            $prev_id = $prev->ID;
-        }
-        if ($next instanceof WP_Post) {
-            $next_id = $next->ID;
-        }
+    if ($ids && in_array($post->ID, $ids, true)) {
+        $i       = array_search($post->ID, $ids, true);
+        $prev_id = $ids[$i - 1] ?? null;
+        $next_id = $ids[$i + 1] ?? null;
+    }
+
 
     // ============================================================
     // Deterministic Topic Order Logic (meta: topic_order)

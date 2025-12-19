@@ -124,6 +124,20 @@ $pub_heading = $pub_count === 1 ? "Key Publication" : "Key Publications";
           ); ?></dd>
         </div>
       <?php endif; ?>
+      
+       <?php if (!empty($symptoms_url)): ?>
+      <div class="eic-fact">
+        <dt>Symptoms</dt>
+        <dd>
+          <a class="dr-more"
+             href="<?php echo esc_url($symptoms_url); ?>"
+             target="_blank"
+             rel="noopener noreferrer">
+            <?php echo esc_html($subtype); ?> Symptoms
+          </a>
+        </dd>
+      </div>
+    <?php endif; ?>
 
     </dl>
   </section>
@@ -206,20 +220,6 @@ if ($has_cta): ?>
 
   <dl class="eic-facts">
 
-    <?php if (!empty($symptoms_url)): ?>
-      <div class="eic-fact">
-        <dt>Symptoms</dt>
-        <dd>
-          <a class="dr-more"
-             href="<?php echo esc_url($symptoms_url); ?>"
-             target="_blank"
-             rel="noopener noreferrer">
-            <?php echo esc_html($subtype); ?> Symptoms
-          </a>
-        </dd>
-      </div>
-    <?php endif; ?>
-
     <?php if (!empty($research_url)):
         // Label fallback if custom label is empty
 
@@ -279,7 +279,6 @@ if ($has_cta): ?>
 </section>
 <?php endif;
 ?>
-
 
 
    <!-- ========================================================
