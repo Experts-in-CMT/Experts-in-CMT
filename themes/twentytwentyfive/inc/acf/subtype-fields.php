@@ -392,8 +392,19 @@ add_action("acf/init", function () {
     "wrapper" => [
         "width" => "33",
     ],
+    
 ],
-
+[
+    "key"   => "field_genereviews_url",
+    "label" => "GeneReviews URL",
+    "name"  => "genereviews_url",
+    "type"  => "url",
+    "required" => 0,
+    "wrapper" => [
+        "width" => "33",
+    ],
+    
+],
     ];
 
     // Apply 33% width to every field (except tabs)

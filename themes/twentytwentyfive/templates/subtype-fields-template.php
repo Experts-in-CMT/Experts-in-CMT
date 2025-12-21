@@ -49,7 +49,10 @@ $symptoms_url = trim((string) get_field("symptoms_url"));
 $what_is_cmtx_url = trim((string) get_field("what_is_cmtx_url"));
 $what_is_intermediate_url = trim(
     (string) get_field("what_is_intermediate_url"));
-$clinvar_url = trim((string) get_field("clinvar_url")); 
+$clinvar_url = trim((string) get_field("clinvar_url"));
+$genereviews_url = trim((string) get_field('genereviews_url'));
+
+
 
 /* Publications — Primary */
 $publication_ttl = get_field("publication_title");
@@ -198,7 +201,19 @@ $pub_heading = $pub_count === 1 ? "Key Publication" : "Key Publications";
   </div>
 <?php endif; ?>
 
-
+ <?php if (!empty($genereviews_url)): ?>
+      <div class="eic-fact">
+        <dt>GeneReviews</dt>
+        <dd>
+          <a class="dr-more"
+             href="<?php echo esc_url($genereviews_url); ?>"
+             target="_blank"
+             rel="noopener noreferrer">
+            <?php echo esc_html($subtype); ?> GeneReviews
+          </a>
+        </dd>
+      </div>
+<?php endif; ?>
     </dl>
   </section>
 
