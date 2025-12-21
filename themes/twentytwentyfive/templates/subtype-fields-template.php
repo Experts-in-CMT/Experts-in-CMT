@@ -28,19 +28,21 @@ defined("ABSPATH") || exit();
    ------------------------------------------------------------ */
 $subtype = get_the_title();
 $acronym = get_field("acronym");
+$neuropathy = get_the_terms(get_the_ID(), "neuropathy");
+$inheritance = get_the_terms(get_the_ID(), "inheritance");
 
+/* Genetic Context*/
 $gene_symbol = get_field("gene_symbol");
 if ($gene_symbol === "" || $gene_symbol === null) {
     $gene_symbol = get_field("gene"); // legacy key, if any
 }
-
 $full_gene_name = get_field("full_gene_name");
 $gene_alias = get_field("gene_alias");
 $chromosome = get_field("chromosome");
 $zygosity = get_field("zygosity");
-
-$neuropathy = get_the_terms(get_the_ID(), "neuropathy");
-$inheritance = get_the_terms(get_the_ID(), "inheritance");
+$clinvar_url = trim((string) get_field("clinvar_url"));
+$genereviews_url = trim((string) get_field('genereviews_url'));
+$mitochondrial_involvement = get_field("mitochondrial_involvement");
 
 /* More Info — CTA buttons */
 $research_url = trim((string) get_field("research_url"));
@@ -49,10 +51,6 @@ $symptoms_url = trim((string) get_field("symptoms_url"));
 $what_is_cmtx_url = trim((string) get_field("what_is_cmtx_url"));
 $what_is_intermediate_url = trim(
     (string) get_field("what_is_intermediate_url"));
-$clinvar_url = trim((string) get_field("clinvar_url"));
-$genereviews_url = trim((string) get_field('genereviews_url'));
-
-
 
 /* Publications — Primary */
 $publication_ttl = get_field("publication_title");
@@ -146,7 +144,7 @@ $pub_heading = $pub_count === 1 ? "Key Publication" : "Key Publications";
   </section>
 
   <!-- ========================================================
-       BLOCK 2: CLINICAL & GENETIC CONTEXT
+       BLOCK 2: GENETIC CONTEXT
        ======================================================== -->
   <section class="eic-block eic-block--context">
     <h2 class="eic-block-title">Genetic Context</h2>
@@ -186,6 +184,12 @@ $pub_heading = $pub_count === 1 ? "Key Publication" : "Key Publications";
           <dd><?php echo esc_html($zygosity); ?></dd>
         </div>
       <?php endif; ?>
+      <?php if (isset($mitochondrial_involvement)): ?>
+  <div class="eic-fact">
+    <dt>Mitochondrial Involvement</dt>
+    <dd><?php echo $mitochondrial_involvement ? "Yes" : "No"; ?></dd>
+  </div>
+<?php endif; ?>
 
 <?php if (!empty($clinvar_url)): ?>
   <div class="eic-fact">
@@ -203,13 +207,13 @@ $pub_heading = $pub_count === 1 ? "Key Publication" : "Key Publications";
 
  <?php if (!empty($genereviews_url)): ?>
       <div class="eic-fact">
-        <dt>GeneReviews</dt>
+        <dt>GeneReviews®</dt>
         <dd>
           <a class="dr-more"
              href="<?php echo esc_url($genereviews_url); ?>"
              target="_blank"
              rel="noopener noreferrer">
-            <?php echo esc_html($subtype); ?> GeneReviews
+            <?php echo esc_html($subtype); ?> GeneReviews®
           </a>
         </dd>
       </div>

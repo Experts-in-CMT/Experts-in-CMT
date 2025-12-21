@@ -204,6 +204,19 @@ add_action("acf/init", function () {
                 "id" => "",
             ],
         ],
+        [
+            "key" => "field_mitochondrial_involvement",
+            "label" => "Mitochondrial Involvement",
+            "name" => "mitochondrial_involvement",
+            "type" => "true_false",
+            "ui" => 1,
+            "ui_on_text" => "Yes",
+            "ui_off_text" => "No",
+            "required" => 0,
+            "wrapper" => [
+            ],
+        ],
+
 
         [
             "key" => "field_year_of_discovery",
@@ -214,6 +227,28 @@ add_action("acf/init", function () {
             "min" => 1850,
             "step" => 1,
         ],
+[
+    "key" => "field_type_sort_order",
+    "label" => "Type Sort Order",
+    "name" => "type_sort_order",
+    "type" => "number",
+    "required" => 0,
+    "wrapper" => [
+        "width" => "33",
+    ],
+    "default_value" => "",
+    "min" => 0,
+    "step" => 1,
+    "conditional_logic" => [
+        [
+            [
+                "field" => "field_type_classification",
+                "operator" => "!=",
+                "value" => "",
+            ],
+        ],
+    ],
+],
 
         [
             "key" => "tab_ctas",
@@ -436,3 +471,42 @@ add_action("acf/init", function () {
         "show_in_rest" => 0,
     ]);
 });
+
+add_action("acf/save_post", function ($post_id) {
+
+    if (get_post_type($post_id) !== "subtype") {
+        return;
+    }
+
+    if (wp_is_post_autosave($post_id) || wp_is_post_revision($post_id)) {
+        return;
+    }
+
+    $type = get_field("type_classification", $post_id);
+    if (!$type) {
+        return;
+    }
+
+    $map = [
+        "cmt1"         => 1,
+        "cmt2"         => 2,
+        "cmt4"         => 3,
+        "cmtx"         => 4,
+        "cmtdi"        => 5,
+        "cmtri"        => 6,
+        "dhmn"         => 7,
+        "dsma"         => 8,
+        "gan"          => 9,
+        "hmsn"         => 10,
+        "hsan"         => 11,
+        "hsn"          => 12,
+        "smalep"       => 13,
+        "unclassified" => 14,
+    ];
+
+    if (isset($map[$type])) {
+        update_field("field_type_sort_order", $map[$type], $post_id);
+    }
+
+}, 20);
+
