@@ -255,27 +255,12 @@ if ($use_canonical_sort) {
 // [ SECTION: TOTALS ]
 // ============================================================
 
-// Use current query object directly
-$__total = (int) $q->found_posts;
-$__post_ids = wp_list_pluck($q->posts, "ID");
+// Get canonical, filter-aware totals (unpaged)
+$__totals = eic_get_genes_totals_from_filters($args);
 
-$__gene_symbols = [];
-$__unknown = 0;
-
-foreach ($__post_ids as $__id) {
-    $symbol = get_field("gene_symbol", $__id);
-    $is_unknown = (bool) get_field("unknown_gene", $__id);
-
-    if ($is_unknown) {
-        $__unknown++;
-    }
-
-    if (!empty($symbol)) {
-        $__gene_symbols[strtoupper(trim($symbol))] = true;
-    }
-}
-
-$__uniq = count($__gene_symbols);
+$__total   = (int) ($__totals['subtypes'] ?? 0);
+$__uniq    = (int) ($__totals['genes'] ?? 0);
+$__unknown = (int) ($__totals['unknown'] ?? 0);
 
 // Detect whether filters are active (supports GET or POST during AJAX)
 $filters_active = false;
