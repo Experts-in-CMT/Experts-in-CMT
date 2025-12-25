@@ -504,6 +504,14 @@ if (is_dir($acf_dir)) {
     }
 }
 
+// --- Platform Search ---
+$search_dir = get_stylesheet_directory() . "/inc/search/";
+if (is_dir($search_dir)) {
+    foreach (glob($search_dir . "*.php") as $file) {
+        require_once $file;
+    }
+}
+
 // --- Shortcodes ---
 $shortcodes_dir = get_stylesheet_directory() . "/inc/shortcodes/";
 if (is_dir($shortcodes_dir)) {
@@ -733,3 +741,5 @@ function eic_topic_updated_line()
         " | By: K. Raymond</p>";
 }
 add_shortcode("topic_updated", "eic_topic_updated_line");
+
+
