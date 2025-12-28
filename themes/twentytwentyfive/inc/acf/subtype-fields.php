@@ -17,7 +17,7 @@
  *   - CTA section (dynamic More Info buttons)
  *   - Discovery tab (year, discoverer, original paper)
  *   - Alt Publication block
- *   - Advanced / Debug fields (e.g., EIC Test Ping)
+ *   - Advanced/Debug fields (e.g., EIC Test Ping)
  *
  * Implementation notes:
  *   - Registered via acf/include_field_groups

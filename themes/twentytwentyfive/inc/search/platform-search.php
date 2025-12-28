@@ -20,6 +20,7 @@
 
 require_once get_template_directory() . '/inc/search/platform-search-variables.php';
 
+
 /**
  * ============================================================
  *  Normalization Layer
@@ -94,7 +95,6 @@ function eic_platform_search_resolve_intent($query_normalized)
      * Expanded subtype resolution (exact, deterministic)
      * ------------------------------------------------------------
      */
-
     $candidates = [
         $query_normalized,
         str_replace(' ', '-', $query_normalized),
@@ -162,9 +162,20 @@ function eic_platform_search_build_results($payload, $query_normalized)
     $results = [
         'subtypes' => [],
         'genes'    => [],
-        'types'    => [],
+        'types'    => [],   // clickable: [ [label,url], ... ]
         'content'  => [],
     ];
+
+    /**
+     * ------------------------------------------------------------
+     * Bring type anchor map + base URL into scope
+     * ------------------------------------------------------------
+     */
+    $type_anchor_map = function_exists('eic_ps_type_classification_anchors')
+        ? eic_ps_type_classification_anchors()
+        : [];
+
+    $type_base_url = get_permalink_by_slug('cmt-classifications', 'page');
 
     /**
      * ------------------------------------------------------------
@@ -185,11 +196,24 @@ function eic_platform_search_build_results($payload, $query_normalized)
             'type'  => 'Subtype',
         ];
 
+        // Type (clickable)
+        $type = get_post_meta($subtype_id, 'type_classification', true);
+        $key  = is_string($type) ? strtolower(trim($type)) : '';
+
+        if ($key !== '' && isset($type_anchor_map[$key]) && $type_base_url) {
+            $results['types'][] = [
+                'label' => strtoupper(trim($type)),
+                'url'   => $type_base_url . '#' . $type_anchor_map[$key],
+            ];
+        }
+
+        // Gene (CLICKABLE)
         $gene_symbol = get_field('gene_symbol', $subtype_id);
         if ($gene_symbol) {
             $results['genes'][] = [
                 'label' => $gene_symbol,
                 'type'  => 'Gene',
+                'url'   => '/cmt-genetics-database/?qs=' . urlencode($gene_symbol) . '#results',
             ];
         }
 
@@ -207,6 +231,8 @@ function eic_platform_search_build_results($payload, $query_normalized)
         return $results;
     }
 
+    $results['_platform'] = true;
+
     /**
      * ------------------------------------------------------------
      * Semantic payload (multi-bucket)
@@ -214,11 +240,6 @@ function eic_platform_search_build_results($payload, $query_normalized)
      */
     if (is_array($variables) && isset($variables['subtypes'])) {
 
-        /**
-         * --------------------------
-         * Subtypes (collection)
-         * --------------------------
-         */
         foreach ($variables['subtypes'] as $subtype_id) {
             if (!$subtype_id) {
                 continue;
@@ -236,66 +257,9 @@ function eic_platform_search_build_results($payload, $query_normalized)
                 $results['genes'][] = [
                     'label' => $gene_symbol,
                     'type'  => 'Gene',
+                    'url'   => '/cmt-genetics-database/?qs=' . urlencode($gene_symbol) . '#results',
                 ];
             }
-        }
-
-        /**
-         * --------------------------
-         * Subtypes — canonical order
-         * EXACT mirror of Genes DB hierarchy
-         * --------------------------
-         */
-        if (!empty($results['subtypes'])) {
-
-            $canonical_type_order = [
-                'CMT1',
-                'CMT2',
-                'CMT4',
-                'CMTX',
-                'CMTDI',
-                'CMTRI',
-                'dHMN',
-                'dSMA',
-                'GAN',
-                'HMSN',
-                'HSAN',
-                'HSN',
-                'SMA-LEP',
-                'Unclassified',
-            ];
-
-            $type_rank = array_flip($canonical_type_order);
-
-            usort($results['subtypes'], function ($a, $b) use ($type_rank) {
-
-                $a_id = $a['id'] ?? null;
-                $b_id = $b['id'] ?? null;
-
-                $a_type = $a_id ? get_post_meta($a_id, 'type_classification', true) : '';
-                $b_type = $b_id ? get_post_meta($b_id, 'type_classification', true) : '';
-
-                $a_type = is_string($a_type) ? trim($a_type) : '';
-                $b_type = is_string($b_type) ? trim($b_type) : '';
-
-                // 1) NULL / empty last
-                $a_empty = ($a_type === '');
-                $b_empty = ($b_type === '');
-                if ($a_empty !== $b_empty) {
-                    return $a_empty ? 1 : -1;
-                }
-
-                // 2) Canonical type hierarchy
-                $a_rank = $type_rank[$a_type] ?? 9999;
-                $b_rank = $type_rank[$b_type] ?? 9999;
-
-                if ($a_rank !== $b_rank) {
-                    return $a_rank <=> $b_rank;
-                }
-
-                // 3) Stable tie-break: title ASC
-                return strcasecmp($a['label'], $b['label']);
-            });
         }
 
         /**
@@ -304,28 +268,13 @@ function eic_platform_search_build_results($payload, $query_normalized)
          * --------------------------
          */
         if (!empty($variables['types'])) {
-
-            $type_map = [
-                'cmt1'         => 'CMT1',
-                'cmt2'         => 'CMT2',
-                'cmt4'         => 'CMT4',
-                'cmtx'         => 'CMTX',
-                'cmtdi'        => 'CMTDI',
-                'cmtri'        => 'CMTRI',
-                'dhmn'         => 'dHMN',
-                'dsma'         => 'dSMA',
-                'gan'          => 'GAN',
-                'hmsn'         => 'HMSN',
-                'hsan'         => 'HSAN',
-                'hsn'          => 'HSN',
-                'smalep'       => 'SMA-LEP',
-                'unclassified' => 'Unclassified',
-            ];
-
             foreach ($variables['types'] as $type) {
-                $key = strtolower($type);
-                if (isset($type_map[$key])) {
-                    $results['types'][] = $type_map[$key];
+                $key = is_string($type) ? strtolower(trim($type)) : '';
+                if ($key !== '' && isset($type_anchor_map[$key]) && $type_base_url) {
+                    $results['types'][] = [
+                        'label' => strtoupper(trim($type)),
+                        'url'   => $type_base_url . '#' . $type_anchor_map[$key],
+                    ];
                 }
             }
         }
@@ -336,7 +285,6 @@ function eic_platform_search_build_results($payload, $query_normalized)
          * --------------------------
          */
         if (empty($results['types']) && !empty($results['subtypes'])) {
-
             foreach ($results['subtypes'] as $subtype) {
                 $subtype_id = $subtype['id'] ?? null;
                 if (!$subtype_id) {
@@ -344,41 +292,50 @@ function eic_platform_search_build_results($payload, $query_normalized)
                 }
 
                 $type = get_post_meta($subtype_id, 'type_classification', true);
-                if (is_string($type) && $type !== '') {
-                    $results['types'][] = trim($type);
+                $key  = is_string($type) ? strtolower(trim($type)) : '';
+
+                if ($key !== '' && isset($type_anchor_map[$key]) && $type_base_url) {
+                    $results['types'][] = [
+                        'label' => strtoupper(trim($type)),
+                        'url'   => $type_base_url . '#' . $type_anchor_map[$key],
+                    ];
                 }
             }
         }
 
         /**
          * --------------------------
-         * Types — canonical hierarchy
+         * Types — dedup + canonical hierarchy
          * --------------------------
          */
         if (!empty($results['types'])) {
+            $seen = [];
+            $dedup = [];
 
-            $results['types'] = array_values(array_unique($results['types']));
+            foreach ($results['types'] as $t) {
+                $label = $t['label'] ?? '';
+                if ($label === '' || isset($seen[$label])) {
+                    continue;
+                }
+                $seen[$label] = true;
+                $dedup[] = $t;
+            }
 
             $canonical_type_order = [
-                'CMT1',
-                'CMT2',
-                'CMT4',
-                'CMTX',
-                'CMTDI',
-                'CMTRI',
-                'dHMN',
-                'dSMA',
-                'GAN',
-                'HMSN',
-                'HSAN',
-                'HSN',
-                'SMA-LEP',
-                'Unclassified',
+                'CMT1','CMT2','CMT4','CMTX','CMTDI','CMTRI',
+                'dHMN','dSMA','GAN','HMSN','HSAN','HSN',
+                'SMA-LEP','Unclassified',
             ];
 
-            $results['types'] = array_values(
-                array_intersect($canonical_type_order, $results['types'])
-            );
+            $rank = array_flip($canonical_type_order);
+
+            usort($dedup, function ($a, $b) use ($rank) {
+                $a_label = $a['label'] ?? '';
+                $b_label = $b['label'] ?? '';
+                return ($rank[$a_label] ?? 9999) <=> ($rank[$b_label] ?? 9999);
+            });
+
+            $results['types'] = $dedup;
         }
 
         /**
@@ -392,31 +349,16 @@ function eic_platform_search_build_results($payload, $query_normalized)
                     continue;
                 }
 
-                $post_type = get_post_type($content_id);
-                $pt_obj    = $post_type ? get_post_type_object($post_type) : null;
+                $pt = get_post_type_object(get_post_type($content_id));
 
                 $results['content'][] = [
+                    'id'    => $content_id,
                     'label' => get_the_title($content_id),
                     'url'   => get_permalink($content_id),
-                    'type'  => $pt_obj->labels->singular_name ?? 'Content',
+                    'type'  => $pt->labels->singular_name ?? 'Content',
                 ];
             }
         }
-
-        /**
-         * --------------------------
-         * Genes — de-dup + A–Z
-         * --------------------------
-         */
-        $genes = array_unique(array_column($results['genes'], 'label'));
-        sort($genes, SORT_NATURAL | SORT_FLAG_CASE);
-
-        $results['genes'] = array_map(
-            fn($label) => ['label' => $label, 'type' => 'Gene'],
-            $genes
-        );
-
-        return $results;
     }
 
     /**
@@ -424,28 +366,149 @@ function eic_platform_search_build_results($payload, $query_normalized)
      * Basic variable discovery
      * ------------------------------------------------------------
      */
-    foreach ($variables as $subtype_id) {
-        if (!$subtype_id) {
-            continue;
-        }
+    if (is_array($variables) && !isset($variables['subtypes'])) {
+        foreach ($variables as $subtype_id) {
+            if (!$subtype_id) {
+                continue;
+            }
 
-        $results['subtypes'][] = [
-            'id'    => $subtype_id,
-            'label' => get_the_title($subtype_id),
-            'url'   => get_permalink($subtype_id),
-            'type'  => 'Subtype',
-        ];
-
-        $gene_symbol = get_field('gene_symbol', $subtype_id);
-        if ($gene_symbol) {
-            $results['genes'][] = [
-                'label' => $gene_symbol,
-                'type'  => 'Gene',
+            $results['subtypes'][] = [
+                'id'    => $subtype_id,
+                'label' => get_the_title($subtype_id),
+                'url'   => get_permalink($subtype_id),
+                'type'  => 'Subtype',
             ];
+
+            $gene_symbol = get_field('gene_symbol', $subtype_id);
+            if ($gene_symbol) {
+                $results['genes'][] = [
+                    'label' => $gene_symbol,
+                    'type'  => 'Gene',
+                    'url'   => '/cmt-genetics-database/?qs=' . urlencode($gene_symbol) . '#results',
+                ];
+            }
+
+            $type = get_post_meta($subtype_id, 'type_classification', true);
+            $key  = is_string($type) ? strtolower(trim($type)) : '';
+
+            if ($key !== '' && isset($type_anchor_map[$key]) && $type_base_url) {
+                $results['types'][] = [
+                    'label' => strtoupper(trim($type)),
+                    'url'   => $type_base_url . '#' . $type_anchor_map[$key],
+                ];
+            }
         }
     }
 
-    return $results;
+  /**
+ * ------------------------------------------------------------
+ * GLOBAL DE-DUP (ALL PATHS)
+ * ------------------------------------------------------------
+ */
+
+// Subtypes — by ID
+if (!empty($results['subtypes'])) {
+    $subtype_map = [];
+    foreach ($results['subtypes'] as $s) {
+        if (!empty($s['id'])) {
+            $subtype_map[$s['id']] = $s;
+        }
+    }
+    $results['subtypes'] = array_values($subtype_map);
+
+    /**
+     * --------------------------------------------------------
+     * CANONICAL SUBTYPE ORDER
+     * --------------------------------------------------------
+     * Primary: canonical type_classification order
+     * Secondary: subtype label A–Z
+     * Unclassified sorts absolute last by law
+     */
+    $canonical_type_order = [
+        'CMT1','CMT2','CMT4','CMTX','CMTDI','CMTRI',
+        'dHMN','dSMA','GAN','HMSN','HSAN','HSN',
+        'SMA-LEP','Unclassified',
+    ];
+
+    $type_rank = array_flip($canonical_type_order);
+
+    usort($results['subtypes'], function ($a, $b) use ($type_rank) {
+
+        $a_id = $a['id'] ?? 0;
+        $b_id = $b['id'] ?? 0;
+
+        $a_type = get_post_meta($a_id, 'type_classification', true);
+        $b_type = get_post_meta($b_id, 'type_classification', true);
+
+        $a_rank = $type_rank[$a_type] ?? PHP_INT_MAX;
+        $b_rank = $type_rank[$b_type] ?? PHP_INT_MAX;
+
+        if ($a_rank !== $b_rank) {
+            return $a_rank <=> $b_rank;
+        }
+
+        return strnatcasecmp($a['label'] ?? '', $b['label'] ?? '');
+    });
+}
+
+
+    // Genes — by label, A–Z
+    if (!empty($results['genes'])) {
+        $gene_map = [];
+        foreach ($results['genes'] as $g) {
+            if (!empty($g['label'])) {
+                $gene_map[$g['label']] = $g;
+            }
+        }
+        ksort($gene_map, SORT_NATURAL | SORT_FLAG_CASE);
+        $results['genes'] = array_values($gene_map);
+    }
+
+    // Content — by ID
+    if (!empty($results['content'])) {
+        $content_map = [];
+        foreach ($results['content'] as $c) {
+            if (!empty($c['id'])) {
+                $content_map[$c['id']] = $c;
+            }
+        }
+        $results['content'] = array_values($content_map);
+    }
+
+  // Types — de-dup + canonical order (FINAL)
+if (!empty($results['types'])) {
+    $seen  = [];
+    $dedup = [];
+
+    foreach ($results['types'] as $t) {
+        $label = $t['label'] ?? '';
+        if ($label === '' || isset($seen[$label])) {
+            continue;
+        }
+        $seen[$label] = true;
+        $dedup[] = $t;
+    }
+
+    $canonical_type_order = [
+        'CMT1','CMT2','CMT4','CMTX','CMTDI','CMTRI',
+        'dHMN','dSMA','GAN','HMSN','HSAN','HSN',
+        'SMA-LEP','Unclassified',
+    ];
+
+    $rank = array_flip($canonical_type_order);
+
+    usort($dedup, function ($a, $b) use ($rank) {
+        $a_label = $a['label'] ?? '';
+        $b_label = $b['label'] ?? '';
+
+        return ($rank[$a_label] ?? PHP_INT_MAX)
+             <=> ($rank[$b_label] ?? PHP_INT_MAX);
+    });
+
+    $results['types'] = $dedup;
+}
+
+return $results;
 }
 
 

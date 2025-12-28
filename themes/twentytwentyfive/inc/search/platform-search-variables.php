@@ -16,6 +16,34 @@ if (!defined("ABSPATH")) {
     exit;
 }
 
+/**
+ * ============================================================
+ *  CMT Type → Classification Anchor Map
+ * ============================================================
+ *
+ * Single source of truth for mapping resolved CMT types
+ * to their canonical classification anchors.
+ */
+function eic_ps_type_classification_anchors(): array
+{
+    return [
+        'cmt1'         => 'cmt1',
+        'cmt2'         => 'cmt2',
+        'cmt4'         => 'cmt4',
+        'cmtx'         => 'cmtx',
+        'cmtdi'        => 'cmtdi',
+        'cmtri'        => 'cmtri',
+        'dhmn'         => 'dhmn',
+        'dsma'         => 'dsma',
+        'gan'          => 'gan',
+        'hmsn'         => 'hmsn',
+        'hsan'         => 'hsan',
+        'hsn'          => 'hsn',
+        'sma-lep'      => 'smalep',
+        'unclassified' => 'unclassified',
+    ];
+}
+
 
 /**
  * ============================================================
@@ -24,15 +52,15 @@ if (!defined("ABSPATH")) {
  */
 function eic_platform_search_variable_subtypes(string $normalized_query): array
 {
-    /**
-     * ------------------------------------------------------------
-     * DEBUG: Function entry
-     * ------------------------------------------------------------
-     */
-    $GLOBALS['eic_ps_debug'][] = [
-        'stage' => 'variable_subtypes_enter',
-        'query' => $normalized_query,
-    ];
+    // ------------------------------------------------------------
+    // Tokenization (required for ACF + taxonomy resolution)
+    // ------------------------------------------------------------
+    $tokens = preg_split('/\s+/', $normalized_query);
+
+    // ------------------------------------------------------------
+    // Accumulator for extended resolution
+    // ------------------------------------------------------------
+    $resolved_subtype_ids = [];
 
     /**
      * ------------------------------------------------------------
@@ -41,103 +69,89 @@ function eic_platform_search_variable_subtypes(string $normalized_query): array
      */
     $semantic = eic_ps_semantic_cmt_1f_2e($normalized_query);
 
-
     if (!empty($semantic)) {
         return $semantic;
     }
 
-/**
- * ------------------------------------------------------------
- * Type classification → subtype discovery
- * ------------------------------------------------------------
- */
-$type = strtolower(str_replace(' ', '', $normalized_query));
+    /**
+     * ------------------------------------------------------------
+     * Type classification → subtype discovery
+     * ------------------------------------------------------------
+     */
+    $type = strtolower(str_replace(' ', '', $normalized_query));
 
-// allow cmt1, cmt2, cmt4, cmtx, etc.
-if (preg_match('/^cmt[0-9x]+$/', $type)) {
+    // allow cmt1, cmt2, cmt4, cmtx, etc.
+    if (preg_match('/^cmt[0-9x]+$/', $type)) {
 
-    $type_matches = get_posts([
+        $type_matches = get_posts([
+            'post_type'      => 'subtype',
+            'post_status'    => 'publish',
+            'posts_per_page' => -1,
+            'fields'         => 'ids',
+            'meta_query'     => [
+                [
+                    'key'     => 'type_classification',
+                    'value'   => $type,
+                    'compare' => '=',
+                ],
+            ],
+        ]);
+
+        if (!empty($type_matches)) {
+            return [
+                'subtypes' => array_values(array_unique($type_matches)),
+                'types'    => [$type],
+            ];
+        }
+    }
+
+    /**
+     * ------------------------------------------------------------
+     * Gene symbol → subtype discovery
+     * ------------------------------------------------------------
+     */
+    $gene_symbol = strtoupper($normalized_query);
+
+    $gene_matches = get_posts([
         'post_type'      => 'subtype',
         'post_status'    => 'publish',
         'posts_per_page' => -1,
         'fields'         => 'ids',
         'meta_query'     => [
             [
-                'key'     => 'type_classification',
-                'value'   => $type,
+                'key'     => 'gene_symbol',
+                'value'   => $gene_symbol,
                 'compare' => '=',
             ],
         ],
     ]);
 
-    if (!empty($type_matches)) {
+    if (!empty($gene_matches)) {
+
+        $types = [];
+
+        foreach ($gene_matches as $subtype_id) {
+            $type = get_post_meta($subtype_id, 'type_classification', true);
+            if (is_string($type) && $type !== '') {
+                $types[] = strtolower(trim($type));
+            }
+        }
+
         return [
-            'subtypes' => array_values(array_unique($type_matches)),
-            'types'    => [$type],
+            'subtypes' => array_values(array_unique($gene_matches)),
+            'types'    => array_values(array_unique($types)),
         ];
     }
-}
 
-
-/**
+  /**
  * ------------------------------------------------------------
- * Gene symbol → subtype discovery
+ * 2) Basic pattern variables (number–letter discovery)
  * ------------------------------------------------------------
  */
-$gene_symbol = strtoupper($normalized_query);
+$matches = [];
 
-$gene_matches = get_posts([
-    'post_type'      => 'subtype',
-    'post_status'    => 'publish',
-    'posts_per_page' => -1,
-    'fields'         => 'ids',
-    'meta_query'     => [
-        [
-            'key'     => 'gene_symbol',
-            'value'   => $gene_symbol,
-            'compare' => '=',
-        ],
-    ],
-]);
-
-if (!empty($gene_matches)) {
-
-    $types = [];
-
-    foreach ($gene_matches as $subtype_id) {
-        $type = get_post_meta($subtype_id, 'type_classification', true);
-        if (is_string($type) && $type !== '') {
-            $types[] = strtolower(trim($type));
-        }
-    }
-
-    return [
-        'subtypes' => array_values(array_unique($gene_matches)),
-        'types'    => array_values(array_unique($types)),
-    ];
-}
-
-    /**
-     * ------------------------------------------------------------
-     * 2) Basic pattern variables (number–letter discovery)
-     * ------------------------------------------------------------
-     */
-    $matches = [];
-
-    /**
-     * DEBUG: Regex gate check
-     */
-    $GLOBALS['eic_ps_debug'][] = [
-        'stage' => 'basic_regex_check',
-        'regex' => '/^[0-9]+[a-z]$|^[a-z][0-9]+$/',
-        'query' => $normalized_query,
-        'pass'  => (bool) preg_match('/^[0-9]+[a-z]$|^[a-z][0-9]+$/', $normalized_query),
-    ];
-
-    // Only proceed for strict number-letter tokens (e.g. 1a, 2e, x1)
-    if (!preg_match('/^[0-9]+[a-z]$|^[a-z][0-9]+$/', $normalized_query)) {
-        return [];
-    }
+// Only attempt number–letter discovery for strict tokens (e.g. 1a, 2e, x1)
+if (preg_match('/^[0-9]+[a-z]$|^[a-z][0-9]+$/', $normalized_query)) {
 
     // Fetch all published subtypes
     $subtypes = get_posts([
@@ -147,7 +161,6 @@ if (!empty($gene_matches)) {
         'fields'         => 'ids',
     ]);
 
-    
     foreach ($subtypes as $subtype_id) {
         $slug  = get_post_field('post_name', $subtype_id);
         $title = get_the_title($subtype_id);
@@ -171,21 +184,238 @@ if (!empty($gene_matches)) {
             $matches[] = $subtype_id;
         }
     }
+}
 
-    /**
-     * DEBUG: Basic variable matches
-     */
-    $GLOBALS['eic_ps_debug'][] = [
-        'stage'   => 'basic_variable_matches',
-        'matches' => $matches,
-    ];
 
-    return array_values(array_unique($matches));
+    // ============================================================
+    // ACF METADATA RESOLUTION
+    // ============================================================
+
+    // ------------------------------------------------------------
+    // Numeric Token Detection (Year-based resolution)
+    // ------------------------------------------------------------
+    $numeric_tokens = [];
+
+    foreach ($tokens as $token) {
+        if (ctype_digit($token) && strlen($token) === 4) {
+            $numeric_tokens[] = (int) $token;
+        }
+    }
+
+    // ------------------------------------------------------------
+    // Resolver: Year of Discovery (ACF - Core tab)
+    // ------------------------------------------------------------
+    if (!empty($numeric_tokens)) {
+
+        foreach ($numeric_tokens as $year) {
+
+            $year_matches = get_posts([
+                'post_type'      => 'subtype',
+                'posts_per_page' => -1,
+                'fields'         => 'ids',
+                'meta_query'     => [
+                    [
+                        'key'     => 'year_of_discovery',
+                        'value'   => (string) $year,
+                        'compare' => '='
+                    ]
+                ]
+            ]);
+
+            if (!empty($year_matches)) {
+                $resolved_subtype_ids = array_merge(
+                    $resolved_subtype_ids,
+                    $year_matches
+                );
+            }
+        }
+    }
+
+    // ------------------------------------------------------------
+    // Resolver: Publication Title (Primary)
+    // ------------------------------------------------------------
+    foreach ($tokens as $token) {
+
+        if (strlen($token) < 3) {
+            continue;
+        }
+
+        $pub_title_matches = get_posts([
+            'post_type'      => 'subtype',
+            'posts_per_page' => -1,
+            'fields'         => 'ids',
+            'meta_query'     => [
+                [
+                    'key'     => 'publication_title',
+                    'value'   => $token,
+                    'compare' => 'LIKE'
+                ]
+            ]
+        ]);
+
+        if (!empty($pub_title_matches)) {
+            $resolved_subtype_ids = array_merge(
+                $resolved_subtype_ids,
+                $pub_title_matches
+            );
+        }
+    }
+
+    // ------------------------------------------------------------
+    // Resolver: Publication Authors (APA-style token matching)
+    // ------------------------------------------------------------
+    foreach ($tokens as $token) {
+
+        if (strlen($token) < 3) {
+            continue;
+        }
+
+        $author_matches = get_posts([
+            'post_type'      => 'subtype',
+            'posts_per_page' => -1,
+            'fields'         => 'ids',
+            'meta_query'     => [
+                [
+                    'key'     => 'publication_authors',
+                    'value'   => $token,
+                    'compare' => 'LIKE'
+                ]
+            ]
+        ]);
+
+        if (!empty($author_matches)) {
+            $resolved_subtype_ids = array_merge(
+                $resolved_subtype_ids,
+                $author_matches
+            );
+        }
+    }
+
+    // ------------------------------------------------------------
+    // Resolver: Alt Publication Title
+    // ------------------------------------------------------------
+    foreach ($tokens as $token) {
+
+        if (strlen($token) < 3) {
+            continue;
+        }
+
+        $alt_pub_title_matches = get_posts([
+            'post_type'      => 'subtype',
+            'posts_per_page' => -1,
+            'fields'         => 'ids',
+            'meta_query'     => [
+                [
+                    'key'     => 'alt_publication_title',
+                    'value'   => $token,
+                    'compare' => 'LIKE'
+                ]
+            ]
+        ]);
+
+        if (!empty($alt_pub_title_matches)) {
+            $resolved_subtype_ids = array_merge(
+                $resolved_subtype_ids,
+                $alt_pub_title_matches
+            );
+        }
+    }
+
+    // ------------------------------------------------------------
+    // Resolver: Alt Publication Authors
+    // ------------------------------------------------------------
+    foreach ($tokens as $token) {
+
+        if (strlen($token) < 3) {
+            continue;
+        }
+
+        $alt_author_matches = get_posts([
+            'post_type'      => 'subtype',
+            'posts_per_page' => -1,
+            'fields'         => 'ids',
+            'meta_query'     => [
+                [
+                    'key'     => 'alt_publication_authors',
+                    'value'   => $token,
+                    'compare' => 'LIKE'
+                ]
+            ]
+        ]);
+
+        if (!empty($alt_author_matches)) {
+            $resolved_subtype_ids = array_merge(
+                $resolved_subtype_ids,
+                $alt_author_matches
+            );
+        }
+    }
+
+// ============================================================
+// TAXONOMY RESOLUTION (Subtype-anchored, allowlist only)
+// ============================================================
+
+$allowed_taxonomies = [
+    'inheritance',
+    'neuropathy',
+    'chromosome',
+];
+
+foreach ($tokens as $token) {
+
+    if (strlen($token) < 2) {
+        continue;
+    }
+
+    foreach ($allowed_taxonomies as $taxonomy) {
+
+        $term = get_term_by('name', $token, $taxonomy);
+
+        if (!$term || is_wp_error($term)) {
+            $term = get_term_by('slug', sanitize_title($token), $taxonomy);
+        }
+
+        if (!$term || is_wp_error($term)) {
+            continue;
+        }
+
+        $tax_matches = get_posts([
+            'post_type'      => 'subtype',
+            'post_status'    => 'publish',
+            'posts_per_page' => -1,
+            'fields'         => 'ids',
+            'tax_query'      => [
+                [
+                    'taxonomy' => $taxonomy,
+                    'field'    => 'term_id',
+                    'terms'    => [$term->term_id],
+                ],
+            ],
+        ]);
+
+        if (!empty($tax_matches)) {
+            $resolved_subtype_ids = array_merge(
+                $resolved_subtype_ids,
+                $tax_matches
+            );
+        }
+    }
+}
+
+
+    // ------------------------------------------------------------
+    // Final return (merge basic + ACF resolution)
+    // ------------------------------------------------------------
+    return array_values(
+        array_unique(
+            array_merge($matches, $resolved_subtype_ids)
+        )
+    );
 }
 
 /**
  * ============================================================
- *  Semantic Variable: CMT1F / CMT2E (NEFL)
+ *  Semantic Variable: CMT1F/CMT2E (NEFL)
  * ============================================================
  */
 function eic_ps_semantic_cmt_1f_2e(string $normalized_query): array

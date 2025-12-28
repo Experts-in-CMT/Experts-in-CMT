@@ -1,7 +1,3 @@
-<script>
-console.log('EIC Platform Search – Genes bucket:', <?php echo json_encode($results['genes'] ?? null); ?>);
-</script>
-
 <?php
 /**
  * Copyright (c) 2025 Kenneth Raymond
@@ -48,94 +44,83 @@ function eic_render_platform_search_results(array $results = [])
 
     ob_start();
     ?>
+<section class="platform-search-results">
 
-    <section class="platform-search-results">
+<!-- =========================================
+     GROUP: Genes
+     ========================================= -->
+<?php if (!empty($results['genes'])) : ?>
+    <div class="ps-group ps-group--genes">
+        <h2 class="ps-group__title"><?php echo count($results['genes']) === 1 ? 'Gene' : 'Genes'; ?></h2>
+        <ul class="ps-list">
+            <?php foreach ($results['genes'] as $item) : ?>
+                <?php
+                    $label = $item['label'] ?? '';
+                    $url   = $item['url']   ?? '';
+                    if ($label === '') {
+                        continue;
+                    }
+                ?>
+                <li class="ps-item"><?php echo $url ? '<a href="' . esc_url($url) . '" class="ps-item__title">' . esc_html($label) . '</a>' : '<span class="ps-item__title">' . esc_html($label) . '</span>'; ?></li>
+            <?php endforeach; ?>
+        </ul>
+    </div>
+<?php endif; ?>
 
-        <!-- =========================================
-             GROUP: Genes
-             ========================================= -->
-        <?php if (!empty($results['genes'])) : ?>
-            <div class="ps-group ps-group--genes">
-                <h2 class="ps-group__title">Genes</h2>
 
-                <ul class="ps-list">
-                    <?php foreach ($results['genes'] as $item) : ?>
-                        <li class="ps-item">
-                            <span class="ps-item__title">
-                                <?php echo esc_html($item['label'] ?? ''); ?>
-                            </span>
-                        </li>
-                    <?php endforeach; ?>
-                </ul>
-            </div>
-        <?php endif; ?>
 
-        <!-- =========================================
-             GROUP: Type
-             ========================================= -->
-        <?php if (!empty($results['types'])) : ?>
-            <div class="ps-group ps-group--type">
-                <h2 class="ps-group__title">Type</h2>
+<!-- =========================================
+     GROUP: Type
+     ========================================= -->
+<?php if (!empty($results['types'])) : ?>
+    <div class="ps-group ps-group--type">
+        <h2 class="ps-group__title"><?php echo count($results['types']) === 1 ? 'Type' : 'Types'; ?></h2>
+        <ul class="ps-list">
+            <?php foreach ($results['types'] as $item) : ?>
+                <?php if (empty($item['label']) || empty($item['url'])) { continue; } ?>
+                <li class="ps-item"><a href="<?php echo esc_url($item['url']); ?>" class="ps-item__title"><?php echo esc_html(strtoupper($item['label'])); ?></a></li>
+            <?php endforeach; ?>
+        </ul>
+    </div>
+<?php endif; ?>
 
-                <ul class="ps-list">
-                    <?php foreach ($results['types'] as $type_label) : ?>
-                        <li class="ps-item">
-                            <span class="ps-item__title">
-                                <?php echo esc_html($type_label); ?>
-                            </span>
-                        </li>
-                    <?php endforeach; ?>
-                </ul>
-            </div>
-        <?php endif; ?>
+<!-- =========================================
+     GROUP: Subtype
+     ========================================= -->
+<?php if (!empty($results['subtypes'])) : ?>
+    <div class="ps-group ps-group--subtype">
+        <h2 class="ps-group__title"><?php echo count($results['subtypes']) === 1 ? 'Subtype' : 'Subtypes'; ?></h2>
+        <ul class="ps-list">
+            <?php foreach ($results['subtypes'] as $item) : ?>
+                <li class="ps-item"><a href="<?php echo esc_url($item['url'] ?? ''); ?>" class="ps-item__title"><?php echo esc_html($item['label'] ?? ''); ?></a></li>
+            <?php endforeach; ?>
+        </ul>
+    </div>
+<?php endif; ?>
 
-        <!-- =========================================
-             GROUP: Subtype
-             ========================================= -->
-        <?php if (!empty($results['subtypes'])) : ?>
-            <div class="ps-group ps-group--subtype">
-                <h2 class="ps-group__title">Subtype</h2>
 
-                <ul class="ps-list">
-                    <?php foreach ($results['subtypes'] as $item) : ?>
-                        <li class="ps-item">
-                            <a href="<?php echo esc_url($item['url'] ?? ''); ?>" class="ps-item__title">
-                                <?php echo esc_html($item['label'] ?? ''); ?>
-                            </a>
-                        </li>
-                    <?php endforeach; ?>
-                </ul>
-            </div>
-        <?php endif; ?>
+    <!-- =========================================
+         GROUP: Content
+         ========================================= -->
+    <?php if (!empty($results['content'])) : ?>
+        <div class="ps-group ps-group--content">
+            <h2 class="ps-group__title">Content</h2>
 
-        <!-- =========================================
-             GROUP: Content
-             ========================================= -->
-        <?php if (!empty($results['content'])) : ?>
-            <div class="ps-group ps-group--content">
-                <h2 class="ps-group__title">Content</h2>
+            <ul class="ps-list">
+                <?php foreach ($results['content'] as $item) : ?>
+                    <li class="ps-item">
+                        <?php if (!empty($item['type'])) : ?>
+                            <div class="ps-item__meta"><?php echo esc_html($item['type']); ?></div>
+                        <?php endif; ?>
+                        <a href="<?php echo esc_url($item['url'] ?? ''); ?>" class="ps-item__title"><?php echo esc_html($item['label'] ?? ''); ?></a>
+                    </li>
+                <?php endforeach; ?>
+            </ul>
+        </div>
+    <?php endif; ?>
 
-                <ul class="ps-list">
-                    <?php foreach ($results['content'] as $item) : ?>
-                        <li class="ps-item">
+</section>
 
-                            <?php if (!empty($item['type'])) : ?>
-                                <div class="ps-item__meta">
-                                    <?php echo esc_html($item['type']); ?>
-                                </div>
-                            <?php endif; ?>
-
-                            <a href="<?php echo esc_url($item['url'] ?? ''); ?>" class="ps-item__title">
-                                <?php echo esc_html($item['label'] ?? ''); ?>
-                            </a>
-
-                        </li>
-                    <?php endforeach; ?>
-                </ul>
-            </div>
-        <?php endif; ?>
-
-    </section>
 
     <?php
     return ob_get_clean();
