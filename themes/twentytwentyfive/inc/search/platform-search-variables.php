@@ -164,6 +164,47 @@ function eic_platform_search_variable_subtypes(string $normalized_query): array
         return array_values(array_unique($inheritance_matches));
     }
 
+/**
+ * ============================================================
+ *  Type Classification Semantic Intent (Authoritative Clamp)
+ * ============================================================
+ *
+ * Detects CMT type classification (CMT1, CMT2, CMT4, CMTX, etc.)
+ * anywhere in the query, regardless of word order or noise.
+ * Mirrors inheritance + chromosome behavior.
+ */
+$type_anchor_map = eic_ps_type_classification_anchors();
+
+foreach ($tokens as $token) {
+    $token_normalized = strtolower(str_replace(["-", "_"], "", $token));
+
+    if (!isset($type_anchor_map[$token_normalized])) {
+        continue;
+    }
+
+    $type_slug = $type_anchor_map[$token_normalized];
+
+    $type_matches = get_posts([
+        "post_type" => "subtype",
+        "post_status" => "publish",
+        "posts_per_page" => -1,
+        "fields" => "ids",
+        "meta_query" => [
+            [
+                "key" => "type_classification",
+                "value" => $type_slug,
+                "compare" => "=",
+            ],
+        ],
+    ]);
+
+    // HARD STOP — type classification is authoritative
+    return [
+        "subtypes" => array_values(array_unique($type_matches)),
+        "types" => [$type_slug],
+    ];
+}
+
     // ------------------------------------------------------------
     // Accumulator for extended resolution
     // ------------------------------------------------------------
