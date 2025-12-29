@@ -124,31 +124,45 @@ function eic_render_platform_search_results(array $results = [])
 <?php endif; ?>
 
 
-    <!-- =========================================
-         GROUP: Content
-         ========================================= -->
-    <?php if (!empty($results["content"])): ?>
-        <div class="ps-group ps-group--content">
-            <h2 class="ps-group__title">Content</h2>
+  <!-- =========================================
+     GROUP: Content
+     ========================================= -->
+<?php if (!empty($results["content"])): ?>
+    <div class="ps-group ps-group--content">
+        <h2 class="ps-group__title">Content</h2>
 
-            <ul class="ps-list">
-                <?php foreach ($results["content"] as $item): ?>
-                    <li class="ps-item">
-                        <?php if (!empty($item["type"])): ?>
-                            <div class="ps-item__meta"><?php echo esc_html(
-                                $item["type"]
-                            ); ?></div>
-                        <?php endif; ?>
-                        <a href="<?php echo esc_url(
-                            $item["url"] ?? ""
-                        ); ?>" class="ps-item__title"><?php echo esc_html(
-    $item["label"] ?? ""
-); ?></a>
-                    </li>
-                <?php endforeach; ?>
-            </ul>
-        </div>
-    <?php endif; ?>
+        <ul class="ps-list">
+            <?php foreach ($results["content"] as $item): ?>
+                <?php
+                $label = $item["label"] ?? "";
+                $url   = $item["url"] ?? "";
+                if ($label === "" || $url === "") {
+                    continue;
+                }
+
+                $type = $item["type"] === "Post"
+                    ? "Dorsal Root"
+                    : ($item["type"] ?? "");
+                ?>
+                <li class="ps-item">
+                    <?php
+                    if ($type) {
+                        echo '<span class="ps-item__meta" style="font-weight:600;">' .
+                             esc_html($type) .
+                             ':</span> ';
+                    }
+                    echo '<a href="' . esc_url($url) . '" class="ps-item__title">' .
+                         esc_html($label) .
+                         '</a>';
+                    ?>
+                </li>
+            <?php endforeach; ?>
+        </ul>
+    </div>
+<?php endif; ?>
+
+
+
 
 </section>
 

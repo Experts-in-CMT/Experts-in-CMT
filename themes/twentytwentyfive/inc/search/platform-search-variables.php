@@ -210,16 +210,25 @@ foreach ($tokens as $token) {
     // ------------------------------------------------------------
     $resolved_subtype_ids = [];
 
-    /**
-     * ------------------------------------------------------------
-     * 1) Semantic variables (explicit, curated meaning)
-     * ------------------------------------------------------------
-     */
-    $semantic = eic_ps_semantic_cmt_1f_2e($normalized_query);
+/**
+ * ------------------------------------------------------------
+ * 1) Semantic variables (explicit, curated meaning)
+ * ------------------------------------------------------------
+ */
+$semantic = eic_ps_semantic_cmt_1f_2e($normalized_query);
+if (!empty($semantic)) {
+    return $semantic;
+}
 
-    if (!empty($semantic)) {
-        return $semantic;
-    }
+$semantic = eic_ps_semantic_sord($normalized_query);
+if (!empty($semantic)) {
+    return $semantic;
+}
+
+$semantic = eic_ps_semantic_cmt3($normalized_query);
+if (!empty($semantic)) {
+    return $semantic;
+}
 
     /**
      * ------------------------------------------------------------
@@ -679,3 +688,122 @@ function eic_ps_semantic_cmt_1f_2e(string $normalized_query): array
         ],
     ];
 }
+
+/**
+ * ============================================================
+ *  Semantic Variable: CMT-SORD (SORD)
+ * ============================================================
+ */
+function eic_ps_semantic_sord(string $normalized_query): array
+{
+    /**
+     * ------------------------------------------------------------
+     * Normalize semantic token
+     * ------------------------------------------------------------
+     * Same normalization guarantees as all other semantic vars.
+     */
+    $q = str_replace(" ", "", $normalized_query);
+
+    /**
+     * ------------------------------------------------------------
+     * Canonical semantic keys (normalized form)
+     * ------------------------------------------------------------
+     * Includes gene, subtype, biochemical, and colloquial signals.
+     */
+    $matches = [
+        "sord",
+        "cmtsord",
+        "sordcmt",
+        "cmt-sord",
+        "sord-cmt",
+        "sords",
+        "sorbitol",
+        "sorbitoldehydrogenase",
+        "sorbitoldehydrogenasedeficiency",
+    ];
+
+    // Also allow raw substring match for noisy inputs
+    $hit =
+    in_array($q, $matches, true) ||
+    strpos($q, "sord") !== false ||
+    strpos($q, "sorbitol") !== false;
+
+
+    if (!$hit) {
+        return [];
+    }
+
+    return [
+        "subtypes" => [
+            get_page_by_path("cmt-sord", OBJECT, "subtype")->ID ?? null,
+        ],
+        "genes" => [
+            get_page_by_path("sord", OBJECT, "subtype")->ID ?? null,
+        ],
+        "content" => [
+            get_page_by_path("decoding-cmt-sord", OBJECT, "post")->ID ?? null,
+        ],
+        "meta" => [
+            "label" => "CMT-SORD (SORD)",
+            "note" => "semantic variable",
+        ],
+    ];
+}
+
+/**
+ * ============================================================
+ *  Semantic Variable: CMT3 / Dejerine-Sottas Syndrome (DSS)
+ * ============================================================
+ */
+function eic_ps_semantic_cmt3(string $normalized_query): array
+{
+    $q = str_replace(" ", "", $normalized_query);
+
+    $matches = [
+        "cmt3",
+        "dss",
+        "dejerinesottas",
+        "dejerinesottassyndrome",
+        "dejerine-sottas",
+        "dejerine-sottas-syndrome",
+        "sottas",
+    ];
+
+    $hit =
+        in_array($q, $matches, true) ||
+        strpos($q, "cmt3") !== false ||
+        strpos($q, "dss") !== false ||
+        strpos($q, "dejerine") !== false ||
+        strpos($q, "sottas") !== false;
+
+    if (!$hit) {
+        return [];
+    }
+
+    $page = get_page_by_path("cmt-classifications", OBJECT, "page");
+
+    if (!$page) {
+        return [];
+    }
+
+    return [
+        "subtypes" => [],
+        "genes"    => [],
+        "types"    => [],
+
+        // CONTENT = IDs ONLY (this is mandatory)
+        "content" => [ $page->ID ],
+
+        "meta" => [
+            "label" => "CMT3 / Dejerine-Sottas Syndrome",
+            "note"  => "archaic classification (content-only)",
+        ],
+    ];
+}
+
+
+
+
+
+
+
