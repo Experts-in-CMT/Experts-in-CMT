@@ -29,7 +29,7 @@ require_once get_template_directory() .
 
 function eic_platform_search_normalize_input($raw)
 {
-    $value = strtolower($raw);
+    $value = strtolower(remove_accents($raw)); // ← THIS LINE
 
     $value = preg_replace("/[^\p{L}\p{N}\s\-]/u", " ", $value);
     $value = str_replace(["-", "_"], " ", $value);
@@ -388,31 +388,29 @@ function eic_platform_search_build_results($payload, $query_normalized)
             $results["types"] = $dedup;
         }
 
-       /**
- * --------------------------
- * Content
- * --------------------------
- */
-if (!empty($variables["content"]) && is_array($variables["content"])) {
-    foreach ($variables["content"] as $content_id) {
-        if (!$content_id) {
-            continue;
+        if (!empty($variables["content"]) && is_array($variables["content"])) {
+            foreach ($variables["content"] as $content_id) {
+                if (!$content_id) {
+                    continue;
+                }
+
+                $pt = get_post_type_object(get_post_type($content_id));
+
+                $anchor = !empty($variables["meta"]["anchor"])
+                    ? "#" . $variables["meta"]["anchor"]
+                    : "";
+
+                $results["content"][] = [
+                    "id" => $content_id,
+                    "label" => get_the_title($content_id),
+                    "url" => get_permalink($content_id) . $anchor,
+                    "type" => $pt->labels->singular_name ?? "Content",
+                ];
+            }
         }
 
-        $pt  = get_post_type_object(get_post_type($content_id));
-        $url = get_permalink($content_id) . "#cmt3";
-
-        $results["content"][] = [
-            "id"    => $content_id,
-            "label" => get_the_title($content_id),
-            "url"   => $url,
-            "type"  => $pt->labels->singular_name ?? "Content",
-        ];
+        /** ✅ CLOSE the semantic payload block */
     }
-}
-
-}
-
 
     /**
      * ------------------------------------------------------------

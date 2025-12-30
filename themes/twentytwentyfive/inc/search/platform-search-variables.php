@@ -164,71 +164,98 @@ function eic_platform_search_variable_subtypes(string $normalized_query): array
         return array_values(array_unique($inheritance_matches));
     }
 
-/**
- * ============================================================
- *  Type Classification Semantic Intent (Authoritative Clamp)
- * ============================================================
- *
- * Detects CMT type classification (CMT1, CMT2, CMT4, CMTX, etc.)
- * anywhere in the query, regardless of word order or noise.
- * Mirrors inheritance + chromosome behavior.
- */
-$type_anchor_map = eic_ps_type_classification_anchors();
+    /**
+     * ============================================================
+     *  Type Classification Semantic Intent (Authoritative Clamp)
+     * ============================================================
+     *
+     * Detects CMT type classification (CMT1, CMT2, CMT4, CMTX, etc.)
+     * anywhere in the query, regardless of word order or noise.
+     * Mirrors inheritance + chromosome behavior.
+     */
+    $type_anchor_map = eic_ps_type_classification_anchors();
 
-foreach ($tokens as $token) {
-    $token_normalized = strtolower(str_replace(["-", "_"], "", $token));
+    foreach ($tokens as $token) {
+        $token_normalized = strtolower(str_replace(["-", "_"], "", $token));
 
-    if (!isset($type_anchor_map[$token_normalized])) {
-        continue;
-    }
+        if (!isset($type_anchor_map[$token_normalized])) {
+            continue;
+        }
 
-    $type_slug = $type_anchor_map[$token_normalized];
+        /**
+         * ------------------------------------------------------------
+         * Exception: Archaic Roussy-Lévy semantic override
+         * ------------------------------------------------------------
+         * If a type classification (e.g. CMT1) appears alongside
+         * "roussy" OR "levy", we must defer to semantic resolution
+         * instead of clamping by type.
+         */
+        if (
+            strpos($normalized_query, "roussy") !== false ||
+            strpos($normalized_query, "levy") !== false ||
+            strpos($normalized_query, "levi") !== false
+        ) {
+            break; // bypass type clamp, allow semantic variables to resolve
+        }
 
-    $type_matches = get_posts([
-        "post_type" => "subtype",
-        "post_status" => "publish",
-        "posts_per_page" => -1,
-        "fields" => "ids",
-        "meta_query" => [
-            [
-                "key" => "type_classification",
-                "value" => $type_slug,
-                "compare" => "=",
+        $type_slug = $type_anchor_map[$token_normalized];
+
+        $type_matches = get_posts([
+            "post_type" => "subtype",
+            "post_status" => "publish",
+            "posts_per_page" => -1,
+            "fields" => "ids",
+            "meta_query" => [
+                [
+                    "key" => "type_classification",
+                    "value" => $type_slug,
+                    "compare" => "=",
+                ],
             ],
-        ],
-    ]);
+        ]);
 
-    // HARD STOP — type classification is authoritative
-    return [
-        "subtypes" => array_values(array_unique($type_matches)),
-        "types" => [$type_slug],
-    ];
-}
+        // HARD STOP — type classification is authoritative
+        return [
+            "subtypes" => array_values(array_unique($type_matches)),
+            "types" => [$type_slug],
+        ];
+    }
 
     // ------------------------------------------------------------
     // Accumulator for extended resolution
     // ------------------------------------------------------------
     $resolved_subtype_ids = [];
 
-/**
- * ------------------------------------------------------------
- * 1) Semantic variables (explicit, curated meaning)
- * ------------------------------------------------------------
- */
-$semantic = eic_ps_semantic_cmt_1f_2e($normalized_query);
-if (!empty($semantic)) {
-    return $semantic;
-}
+    /**
+     * ------------------------------------------------------------
+     * Semantic variables (explicit, curated meaning)
+     * ------------------------------------------------------------
+     */
 
-$semantic = eic_ps_semantic_sord($normalized_query);
-if (!empty($semantic)) {
-    return $semantic;
-}
+    $semantic = eic_ps_semantic_roussy_levy($normalized_query);
+    if (!empty($semantic)) {
+        return $semantic;
+    }
 
-$semantic = eic_ps_semantic_cmt3($normalized_query);
-if (!empty($semantic)) {
-    return $semantic;
-}
+    $semantic = eic_ps_semantic_cmt_1f_2e($normalized_query);
+    if (!empty($semantic)) {
+        return $semantic;
+    }
+
+    $semantic = eic_ps_semantic_sord($normalized_query);
+    if (!empty($semantic)) {
+        return $semantic;
+    }
+
+    $semantic = eic_ps_semantic_cmt3($normalized_query);
+    if (!empty($semantic)) {
+        return $semantic;
+    }
+
+    $semantic = eic_ps_semantic_roussy_levy($normalized_query);
+    if (!empty($semantic)) {
+        return $semantic;
+    }
 
     /**
      * ------------------------------------------------------------
@@ -260,38 +287,53 @@ if (!empty($semantic)) {
             ];
         }
     }
-
     /**
      * ------------------------------------------------------------
      * Gene symbol → subtype discovery
      * ------------------------------------------------------------
      */
-    $gene_symbol = strtoupper($normalized_query);
+    $gene_tokens = [];
 
-    $gene_matches = get_posts([
-        "post_type" => "subtype",
-        "post_status" => "publish",
-        "posts_per_page" => -1,
-        "fields" => "ids",
-        "meta_query" => [
-            [
-                "key" => "gene_symbol",
-                "value" => $gene_symbol,
-                "compare" => "=",
+    // Extract possible gene symbols from tokens
+    foreach ($tokens as $token) {
+        if (strlen($token) >= 3 && strlen($token) <= 6 && ctype_alnum($token)) {
+            $gene_tokens[] = strtoupper($token);
+        }
+    }
+
+    $gene_matches = [];
+    $types = [];
+
+    foreach ($gene_tokens as $gene_symbol) {
+        $matches = get_posts([
+            "post_type" => "subtype",
+            "post_status" => "publish",
+            "posts_per_page" => -1,
+            "fields" => "ids",
+            "meta_query" => [
+                [
+                    "key" => "gene_symbol",
+                    "value" => $gene_symbol,
+                    "compare" => "=",
+                ],
             ],
-        ],
-    ]);
+        ]);
 
-    if (!empty($gene_matches)) {
-        $types = [];
+        if (empty($matches)) {
+            continue;
+        }
 
-        foreach ($gene_matches as $subtype_id) {
+        $gene_matches = array_merge($gene_matches, $matches);
+
+        foreach ($matches as $subtype_id) {
             $type = get_post_meta($subtype_id, "type_classification", true);
             if (is_string($type) && $type !== "") {
                 $types[] = strtolower(trim($type));
             }
         }
+    }
 
+    if (!empty($gene_matches)) {
         return [
             "subtypes" => array_values(array_unique($gene_matches)),
             "types" => array_values(array_unique($types)),
@@ -659,7 +701,8 @@ function eic_ps_semantic_cmt_1f_2e(string $normalized_query): array
      *
      * So we collapse spaces here to match canonical semantic keys.
      */
-    $q = str_replace(" ", "", $normalized_query);
+    $q = iconv("UTF-8", "ASCII//TRANSLIT", $normalized_query);
+    $q = str_replace(" ", "", strtolower($q));
 
     /**
      * ------------------------------------------------------------
@@ -668,7 +711,16 @@ function eic_ps_semantic_cmt_1f_2e(string $normalized_query): array
      */
     $matches = ["1f2e", "2e1f", "cmt1f2e", "cmt2e1f"];
 
-    if (!in_array($q, $matches, true)) {
+    $hit = false;
+
+    foreach ($matches as $m) {
+        if (strpos($q, $m) !== false) {
+            $hit = true;
+            break;
+        }
+    }
+
+    if (!$hit) {
         return [];
     }
 
@@ -702,7 +754,11 @@ function eic_ps_semantic_sord(string $normalized_query): array
      * ------------------------------------------------------------
      * Same normalization guarantees as all other semantic vars.
      */
-    $q = str_replace(" ", "", $normalized_query);
+    $q = str_replace(
+        [" ", "é", "sword", "swords", "soard", "soared", "soareds"],
+        ["", "e", "sord", "sord", "sord", "sord", "sord"],
+        $normalized_query
+    );
 
     /**
      * ------------------------------------------------------------
@@ -717,17 +773,18 @@ function eic_ps_semantic_sord(string $normalized_query): array
         "cmt-sord",
         "sord-cmt",
         "sords",
+
+        // biochemical / long-form
         "sorbitol",
         "sorbitoldehydrogenase",
         "sorbitoldehydrogenasedeficiency",
     ];
 
-    // Also allow raw substring match for noisy inputs
+    // Allow substring match for noisy real-world inputs
     $hit =
-    in_array($q, $matches, true) ||
-    strpos($q, "sord") !== false ||
-    strpos($q, "sorbitol") !== false;
-
+        in_array($q, $matches, true) ||
+        strpos($q, "sord") !== false ||
+        strpos($q, "sorbitol") !== false;
 
     if (!$hit) {
         return [];
@@ -737,9 +794,7 @@ function eic_ps_semantic_sord(string $normalized_query): array
         "subtypes" => [
             get_page_by_path("cmt-sord", OBJECT, "subtype")->ID ?? null,
         ],
-        "genes" => [
-            get_page_by_path("sord", OBJECT, "subtype")->ID ?? null,
-        ],
+        "genes" => [get_page_by_path("sord", OBJECT, "subtype")->ID ?? null],
         "content" => [
             get_page_by_path("decoding-cmt-sord", OBJECT, "post")->ID ?? null,
         ],
@@ -788,22 +843,85 @@ function eic_ps_semantic_cmt3(string $normalized_query): array
 
     return [
         "subtypes" => [],
-        "genes"    => [],
-        "types"    => [],
+        "genes" => [],
+        "types" => [],
 
         // CONTENT = IDs ONLY (this is mandatory)
-        "content" => [ $page->ID ],
+        "content" => [$page->ID],
 
         "meta" => [
             "label" => "CMT3 / Dejerine-Sottas Syndrome",
-            "note"  => "archaic classification (content-only)",
+            "note" => "archaic classification (content-only)",
+            "anchor" => "cmt3",
         ],
     ];
 }
 
+/**
+ * ============================================================
+ *  Semantic Variable: Roussy-Lévy Syndrome (archaic)
+ * ============================================================
+ */
+function eic_ps_semantic_roussy_levy(string $normalized_query): array
+{
+    /**
+     * ------------------------------------------------------------
+     * Normalize semantic token
+     * ------------------------------------------------------------
+     * Keep this var resilient to diacritics and punctuation.
+     */
+    $q = iconv("UTF-8", "ASCII//TRANSLIT", $normalized_query);
+    $q = strtolower($q);
+    $q = str_replace([" ", "-", "_"], "", $q);
 
+    /**
+     * ------------------------------------------------------------
+     * Canonical semantic keys (normalized form)
+     * ------------------------------------------------------------
+     * Includes historical, hyphenated, and CMT1-prefixed variants.
+     */
+    $matches = [
+        "roussylevy",
+        "roussylevysyndrome",
+        "roussy-levy",
+        "roussy-levy-syndrome",
 
+        "cmt1roussylevy",
+        "cmt1-roussy-levy",
+        "cmt1roussylevysyndrome",
+        "cmt1-roussy-levy-syndrome",
 
+        "charcotmarietoothroussylevy",
+    ];
 
+    $hit =
+        in_array($q, $matches, true) ||
+        strpos($q, "roussy") !== false ||
+        strpos($q, "levy") !== false ||
+        strpos($q, "levi") !== false;
 
+    if (!$hit) {
+        return [];
+    }
 
+    $page = get_page_by_path("cmt-classifications", OBJECT, "page");
+
+    if (!$page) {
+        return [];
+    }
+
+    return [
+        "subtypes" => [],
+        "genes" => [],
+        "types" => [],
+
+        // CONTENT = IDs ONLY
+        "content" => [$page->ID],
+
+        "meta" => [
+            "label" => "Roussy-Lévy Syndrome",
+            "note" => "archaic classification (content-only)",
+            "anchor" => "roussy-levy",
+        ],
+    ];
+}
