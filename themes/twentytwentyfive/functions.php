@@ -504,6 +504,42 @@ if (is_dir($acf_dir)) {
     }
 }
 
+/**
+ * Enqueue Platform Search Styles (modular & scoped)
+ */
+add_action("wp_enqueue_scripts", function () {
+
+    if (is_admin()) {
+        return;
+    }
+
+    $should_load = false;
+    global $post;
+
+    if ($post) {
+        $content = (string) $post->post_content;
+
+        // Load when the shortcode is present
+        if (has_shortcode($content, "platform_search_filter")) {
+            $should_load = true;
+        }
+    }
+
+    // Also load on native search pages
+    if (is_search()) {
+        $should_load = true;
+    }
+
+    if ($should_load) {
+        wp_enqueue_style(
+            "platform-search",
+            get_stylesheet_directory_uri() . "/inc/search/platform-search.css",
+            [],
+            filemtime(get_stylesheet_directory() . "/inc/search/platform-search.css")
+        );
+    }
+}, 1000);
+
 // --- Platform Search ---
 $search_dir = get_stylesheet_directory() . "/inc/search/";
 if (is_dir($search_dir)) {

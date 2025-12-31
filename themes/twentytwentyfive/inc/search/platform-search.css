@@ -1,0 +1,83 @@
+/* platform-search.css */
+
+/* Wrapper */
+.ps-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+/* Input + button container */
+.ps-input-group__inner {
+  display: flex;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+/* Label */
+.ps-label {
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: #1f2937;
+  margin-bottom: 4px;
+}
+
+/* Search input field */
+.ps-input {
+  flex: 1;
+  box-sizing: border-box;
+
+  /* Match the button exactly */
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+
+  border: 1px solid #d6d9de;
+  border-radius: 12px;
+  background: #fff;
+
+  font-size: 15px;
+  line-height: 1; /* neutral baseline */
+  
+  /* Horizontal padding only; vertical space comes from flex centering */
+  padding:0 14px;
+
+  /* Let the parent define height */
+  height:60px;
+
+  outline: none;
+  transition: border-color 0.12s ease, box-shadow 0.12s ease;
+}
+
+.ps-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 20%, transparent);
+}
+
+/* Ensure the button remains unchanged */
+.ps-btn {
+  background: transparent;
+  border: 1.5px solid var(--primary);
+  color: var(--primary);
+  border-radius: 16px;
+  padding: 0.75em 2.5em;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 60px;
+  transition: background-color 0.15s ease, color 0.15s ease,
+    border-color 0.15s ease, box-shadow 0.25s ease;
+}
+
+.ps-btn:hover,
+.ps-btn:focus {
+  background-color: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
