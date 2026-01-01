@@ -23,11 +23,8 @@ if (is_search()) {
     // Force banner context to Search page
     $post_id = 2975;
 } else {
-    $post_id = isset($post_id)
-        ? (int) $post_id
-        : (int) get_queried_object_id();
+    $post_id = isset($post_id) ? (int) $post_id : (int) get_queried_object_id();
 }
-
 
 $img = get_field("banner_image", $post_id) ?: null;
 $title = trim((string) get_field("banner_title", $post_id));

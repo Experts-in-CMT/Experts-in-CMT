@@ -1,4 +1,27 @@
-/* platform-search.css */
+/*!
+ * Copyright (c) 2025 Kenneth Raymond
+ * All rights reserved.
+ *
+ * Part of the Experts in CMT WordPress theme.
+ * Do not copy, modify, or redistribute without permission.
+ *
+ * ------------------------------------------------------------
+ * PLATFORM SEARCH — RESULTS UI
+ * ------------------------------------------------------------
+ * Styles for:
+ *   • Intent-aware platform search results
+ *   • Bucketed outputs (Types/Classifications, Subtypes, Genes, Content)
+ *   • Responsive grid + editorial content layout
+ *   • Typography hierarchy and negative space control
+ *
+ * Scope:
+ *   .platform-search-results
+ *
+ * Notes:
+ *   - Designed for the custom platform search stack (v1.8+)
+ *   - Prioritizes clarity, hierarchy, and cognitive ease
+ *   - Content bucket intentionally diverges from grid for readability
+ */
 
 /* Wrapper */
 .ps-row {
@@ -60,7 +83,7 @@
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 20%, transparent);
 }
 
-/* Ensure the button remains unchanged */
+/* Submit Button */
 .ps-btn {
   background: transparent;
   border: 1.5px solid var(--primary);
@@ -89,14 +112,14 @@
 
 /* Search result title */
 .ps-results-heading-wrap {
-    margin-bottom: 4rem;
+  margin-bottom: 4rem;
 }
 
 .ps-results-heading {
-    font-size: 1.75rem;
-    font-weight: 400;
-    color: var(--primary);
-    margin: 0;
+  font-size: 1.75rem;
+  font-weight: 400;
+  color: var(--primary);
+  margin: 0;
 }
 
 @media (max-width: 600px) {
@@ -109,7 +132,8 @@
 
 /* ============================================================
    Platform Search Results – Grid Layout
-   ============================================================ */
+   ============================================================
+*/
 
 /* Base: convert bullet lists to row-major grids */
 .platform-search-results .ps-list {
@@ -125,38 +149,82 @@
 
 .platform-search-results .ps-item__title {
   display: inline-block;
-  font-size: 1.075rem;
+  font-size: 1.15rem;
   line-height: 1.4;
   margin-bottom: 0.35rem;
 }
 
-.platform-search-results .ps-item__excerpt {
-  font-size: 0.9rem;
-  line-height: 1.5;
-  color: #555;
-  max-width: 42ch;
-}
-
-
-/* --------------------------------------------
+/* ============================================================
    Platform Search: Grid separation from header
---------------------------------------------- */
+   ============================================================
+*/
 
 .platform-search-results .ps-list {
   margin-top: 2rem;
 }
 
-/* --------------------------------------------
-   Prevent identifier wrapping (types / subtypes / genes)
---------------------------------------------- */
+/* ============================================================
+   Prevent identifier wrapping (types/subtypes/genes)
+   ============================================================
+*/
 
-.platform-search-results .ps-item {
+.platform-search-results .ps-group:not(.ps-group--content) .ps-item {
   white-space: nowrap;
 }
 
-/* --------------------------------------------
+/* ============================================================
+   Content Bucket: Vertical for Editorial Flow
+   ============================================================
+*/
+
+.ps-group--content .ps-list {
+  display: block;
+}
+
+/* Individual content result block */
+.ps-group--content .ps-item {
+  margin-bottom: 1.25rem;
+}
+
+/* Content title (clickable) */
+.ps-group--content .ps-item__title {
+  font-size: 1.15rem;
+  line-height: 1.4;
+}
+
+/* Content meta / source label */
+.ps-group--content .ps-item__meta {
+  margin-right: 0.25rem;
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: #174777;
+}
+
+/* Content excerpt */
+.ps-group--content .ps-item__excerpt {
+  margin-top: 0.35rem;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  max-width: 65ch;
+}
+
+/* ============================================================
+   Bucket breathing room
+   ============================================================
+*/
+
+.platform-search-results .ps-group {
+  margin-top: 6rem;
+}
+
+.platform-search-results .ps-group:first-of-type {
+  margin-top: 2rem;
+}
+
+/* ============================================================
    Responsive Breakpoints
---------------------------------------------- */
+   ============================================================
+*/
 
 @media (max-width: 1200px) {
   .platform-search-results .ps-list {
@@ -176,37 +244,13 @@
   }
 }
 
-/* ≥1600px: wide-screen density bump */
+/* ============================================================
+   ≥1600px: wide-screen density bump
+   ============================================================
+*/
+
 @media (min-width: 1600px) {
   .platform-search-results .ps-list {
     grid-template-columns: repeat(8, minmax(12ch, 1fr));
   }
-}
-
-/* --------------------------------------------
-   Bucket breathing room
---------------------------------------------- */
-
-.platform-search-results .ps-group {
-  margin-top: 6rem;
-}
-
-.platform-search-results .ps-group:first-of-type {
-  margin-top: 2rem;
-}
-
-/* --------------------------------------------
-   Content Bucket: keep editorial flow vertical
---------------------------------------------- */
-
-.ps-group--content .ps-list {
-  display: block;
-}
-
-.ps-group--content .ps-item {
-  margin-bottom: 0.75rem;
-}
-
-.ps-group--content .ps-item__meta {
-  margin-right: 0.25rem;
 }

@@ -52,7 +52,9 @@ function eic_render_platform_search_results(array $results = [])
 <?php if (!empty($results["types"])): ?>
     <div class="ps-group ps-group--type">
         <h2 class="ps-group__title">
-            <?php echo(count($results["types"]) === 1? "Type/Classification":"Types/Classifications")." Related to Your Search"; ?>
+            <?php echo (count($results["types"]) === 1
+                ? "Type/Classification"
+                : "Types/Classifications") . " Related to Your Search"; ?>
         </h2>
         <ul class="ps-list">
             <?php foreach ($results["types"] as $item): ?>
@@ -76,7 +78,9 @@ function eic_render_platform_search_results(array $results = [])
 <?php if (!empty($results["subtypes"])): ?>
     <div class="ps-group ps-group--subtype">
         <h2 class="ps-group__title">
-            <?php echo(count($results["subtypes"]) === 1? "Subtype":"Subtypes")." Related to Your Search"; ?>
+            <?php echo (count($results["subtypes"]) === 1
+                ? "Subtype"
+                : "Subtypes") . " Related to Your Search"; ?>
 
        </h2>
         <ul class="ps-list">
@@ -97,7 +101,8 @@ function eic_render_platform_search_results(array $results = [])
 <?php if (!empty($results["genes"])): ?>
     <div class="ps-group ps-group--genes">
         <h2 class="ps-group__title">
-            <?php echo(count($results["genes"]) === 1? "Gene":"Genes")." Related to Your Search"; ?>
+            <?php echo (count($results["genes"]) === 1 ? "Gene" : "Genes") .
+                " Related to Your Search"; ?>
        </h2>
         <ul class="ps-list">
             <?php foreach ($results["genes"] as $item): ?>
@@ -135,34 +140,34 @@ function eic_render_platform_search_results(array $results = [])
             <?php foreach ($results["content"] as $item): ?>
                 <?php
                 $label = $item["label"] ?? "";
-                $url   = $item["url"] ?? "";
+                $url = $item["url"] ?? "";
                 if ($label === "" || $url === "") {
                     continue;
                 }
 
-                $type = $item["type"] === "Post"
-                    ? "Dorsal Root"
-                    : ($item["type"] ?? "");
+                $type =
+                    $item["type"] === "Post"
+                        ? "Dorsal Root"
+                        : $item["type"] ?? "";
                 ?>
                 <li class="ps-item">
                     <?php
                     if ($type) {
-                        echo '<span class="ps-item__meta" style="font-weight:600;">' .
-                             esc_html($type) .
-                             ':</span> ';
+                        echo '<span class="ps-item__meta";">' .
+                            esc_html($type) .
+                            ":</span> ";
                     }
-                    echo '<a href="' . esc_url($url) . '" class="ps-item__title">' .
-                         esc_html($label) .
-                         '</a>';
+                    echo '<a href="' .
+                        esc_url($url) .
+                        '" class="ps-item__title">' .
+                        esc_html($label) .
+                        "</a>";
                     ?>
                 </li>
             <?php endforeach; ?>
         </ul>
     </div>
 <?php endif; ?>
-
-
-
 
 </section>
 

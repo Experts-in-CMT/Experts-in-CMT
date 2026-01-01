@@ -19,27 +19,25 @@ if (!defined("ABSPATH")) {
 
 if (!shortcode_exists("platform_search_filter")) {
     add_shortcode("platform_search_filter", function () {
-
         // Current search text
         $raw = "";
-if (isset($_GET["qs"]) && is_string($_GET["qs"])) {
-    $raw = (string) $_GET["qs"];
-} elseif (isset($_GET["s"]) && is_string($_GET["s"])) {
-    $raw = (string) $_GET["s"];
-}
-$search_text = $raw !== "" ? sanitize_text_field($raw) : "";
+        if (isset($_GET["qs"]) && is_string($_GET["qs"])) {
+            $raw = (string) $_GET["qs"];
+        } elseif (isset($_GET["s"]) && is_string($_GET["s"])) {
+            $raw = (string) $_GET["s"];
+        }
+        $search_text = $raw !== "" ? sanitize_text_field($raw) : "";
 
-          
-
-      // Submit to current URL for search
-$action_url = esc_url( home_url( '/' ) );
-$reset_url  = esc_url( home_url( '/' ) );
-
+        // Submit to current URL for search
+        $action_url = esc_url(home_url("/"));
+        $reset_url = esc_url(home_url("/"));
 
         ob_start();
         ?>
       <div class="ps-row">
-  <form class="ps-form" method="get" action="<?php echo esc_attr($action_url); ?>">
+  <form class="ps-form" method="get" action="<?php echo esc_attr(
+      $action_url
+  ); ?>">
     <div class="ps-input-group">
 
       <!-- SEARCH LABEL -->
@@ -62,8 +60,7 @@ $reset_url  = esc_url( home_url( '/' ) );
 
       </div>
 
-      <?php
-      // Preserve unrelated GET params
+      <?php // Preserve unrelated GET params
       foreach ($_GET as $k => $v) {
           if (in_array($k, ["s", "gd_paged", "gd_sort"], true)) {
               continue;
@@ -75,15 +72,13 @@ $reset_url  = esc_url( home_url( '/' ) );
                   esc_attr($v)
               );
           }
-      }
-      ?>
+      } ?>
 
     </div>
   </form>
 </div>
 
 
-        <?php
-        return ob_get_clean();
+        <?php return ob_get_clean();
     });
 }
