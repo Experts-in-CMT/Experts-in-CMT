@@ -26,7 +26,7 @@ add_action("init", function () {
     $taxes = [
         "cmt_type" => [
             "singular" => "CMT Type",
-            "plural" => "CMT Types",
+            "plural" => "CMT Type",
             "slug" => "cmt-type",
             "terms" => [
                 "CMT1",
@@ -42,7 +42,7 @@ add_action("init", function () {
                 "HSAN",
                 "HSN",
                 "SMA-LEP",
-                "Unclassified Subtypes",
+                "Unclassified Subtype",
             ],
             "order" => [
                 "CMT1",
@@ -58,12 +58,12 @@ add_action("init", function () {
                 "HSAN",
                 "HSN",
                 "SMA-LEP",
-                "Unclassified Subtypes",
+                "Unclassified Subtype",
             ],
         ],
         "inheritance" => [
             "singular" => "Inheritance Pattern",
-            "plural" => "Inheritance Patterns",
+            "plural" => "Inheritance Pattern",
             "slug" => "inheritance",
             "terms" => [
                 "Autosomal Dominant",
@@ -82,14 +82,14 @@ add_action("init", function () {
         ],
         "neuropathy" => [
             "singular" => "Neuropathy Type",
-            "plural" => "Neuropathy Types",
+            "plural" => "Neuropathy Type",
             "slug" => "neuropathy",
             "terms" => ["Demyelinating", "Axonal", "Intermediate"],
             "order" => ["Demyelinating", "Axonal", "Intermediate"],
         ],
         "chromosome" => [
             "singular" => "Chromosome",
-            "plural" => "Chromosomes",
+            "plural" => "Chromosome",
             "slug" => "chromosome",
             "terms" => [
                 "1",
@@ -155,13 +155,13 @@ add_action("init", function () {
                     "name" => $L["plural"],
                     "singular_name" => $L["singular"],
                     "search_items" => "Search " . $L["plural"],
-                    "all_items" => "All " . $L["plural"],
-                    "edit_item" => "Edit " . $L["singular"],
-                    "view_item" => "View " . $L["singular"],
+                    "all_items" => "All" . $L["plural"],
+                    "edit_item" => "Edit" . $L["singular"],
+                    "view_item" => "View" . $L["singular"],
                     "update_item" => "Update " . $L["singular"],
-                    "add_new_item" => "Add New " . $L["singular"],
-                    "new_item_name" => "New " . $L["singular"],
-                    "not_found" => "No " . strtolower($L["plural"]) . " found",
+                    "add_new_item" => "Add New" . $L["singular"],
+                    "new_item_name" => "New" . $L["singular"],
+                    "not_found" => "No" . strtolower($L["plural"]) . " found",
                 ],
                 "public" => true,
                 "hierarchical" => true, // checkbox UI (no typing)

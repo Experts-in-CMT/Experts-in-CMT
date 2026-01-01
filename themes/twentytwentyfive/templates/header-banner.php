@@ -6,7 +6,8 @@
  * Part of the Experts in CMT WordPress theme.
  * Do not copy, modify, or redistribute without permission.
  *
- * Header Banner (Split Layout)
+ * Since v0.5.0
+ * Feature: Header Banner (Split Layout)
  * ------------------------------------------------------------
  * Image (optional) on the right, text on the left.
  * Renders only when at least one of these exists:
@@ -15,7 +16,15 @@
  *   • banner_intro
  */
 
-$post_id = isset($post_id) ? (int) $post_id : (int) get_queried_object_id();
+// ------------------------------------------------------------
+// Resolve banner context
+// ------------------------------------------------------------
+if (is_search()) {
+    // Force banner context to Search page
+    $post_id = 2975;
+} else {
+    $post_id = isset($post_id) ? (int) $post_id : (int) get_queried_object_id();
+}
 
 $img = get_field("banner_image", $post_id) ?: null;
 $title = trim((string) get_field("banner_title", $post_id));

@@ -1,0 +1,256 @@
+/*!
+ * Copyright (c) 2025 Kenneth Raymond
+ * All rights reserved.
+ *
+ * Part of the Experts in CMT WordPress theme.
+ * Do not copy, modify, or redistribute without permission.
+ *
+ * ------------------------------------------------------------
+ * PLATFORM SEARCH — RESULTS UI
+ * ------------------------------------------------------------
+ * Styles for:
+ *   • Intent-aware platform search results
+ *   • Bucketed outputs (Types/Classifications, Subtypes, Genes, Content)
+ *   • Responsive grid + editorial content layout
+ *   • Typography hierarchy and negative space control
+ *
+ * Scope:
+ *   .platform-search-results
+ *
+ * Notes:
+ *   - Designed for the custom platform search stack (v1.8+)
+ *   - Prioritizes clarity, hierarchy, and cognitive ease
+ *   - Content bucket intentionally diverges from grid for readability
+ */
+
+/* Wrapper */
+.ps-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+/* Input + button container */
+.ps-input-group__inner {
+  display: flex;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+/* Label */
+.ps-label {
+  font-weight: 500;
+  font-size: 1.2rem;
+  color: #174777;
+  margin-bottom: 4px;
+}
+
+/* Search input field */
+.ps-input {
+  flex: 1;
+  box-sizing: border-box;
+
+  /* Match the button exactly */
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+
+  border: 1px solid #d6d9de;
+  border-radius: 12px;
+  background: #fff;
+
+  font-size: 16px;
+  line-height: normal;
+
+  /* Horizontal padding only; vertical space comes from flex centering */
+  padding: 0 14px;
+
+  /* Let the parent define height */
+  height: 60px;
+  min-height: 44px;
+
+  outline: none;
+  transition: border-color 0.12s ease, box-shadow 0.12s ease;
+
+  /* Normalize native search input rendering */
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.ps-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 20%, transparent);
+}
+
+/* Submit Button */
+.ps-btn {
+  background: transparent;
+  border: 1.5px solid var(--primary);
+  color: var(--primary);
+  border-radius: 16px;
+  padding: 0.75em 2.5em;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 60px;
+  min-height: 44px;
+  transition: background-color 0.15s ease, color 0.15s ease,
+    border-color 0.15s ease, box-shadow 0.25s ease;
+}
+
+.ps-btn:hover,
+.ps-btn:focus {
+  background-color: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
+/* Search result title */
+.ps-results-heading-wrap {
+  margin-bottom: 4rem;
+}
+
+.ps-results-heading {
+  font-size: 1.75rem;
+  font-weight: 400;
+  color: var(--primary);
+  margin: 0;
+}
+
+@media (max-width: 600px) {
+  .ps-input,
+  .ps-btn {
+    height: auto;
+    min-height: 44px;
+  }
+}
+
+/* ============================================================
+   Platform Search Results – Grid Layout
+   ============================================================
+*/
+
+/* Base: convert bullet lists to row-major grids */
+.platform-search-results .ps-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+
+  display: grid;
+  grid-template-columns: repeat(6, minmax(12ch, 1fr));
+  column-gap: 1rem;
+  row-gap: 0.75rem;
+}
+
+.platform-search-results .ps-item__title {
+  display: inline-block;
+  font-size: 1.15rem;
+  line-height: 1.4;
+  margin-bottom: 0.35rem;
+}
+
+/* ============================================================
+   Platform Search: Grid separation from header
+   ============================================================
+*/
+
+.platform-search-results .ps-list {
+  margin-top: 2rem;
+}
+
+/* ============================================================
+   Prevent identifier wrapping (types/subtypes/genes)
+   ============================================================
+*/
+
+.platform-search-results .ps-group:not(.ps-group--content) .ps-item {
+  white-space: nowrap;
+}
+
+/* ============================================================
+   Content Bucket: Vertical for Editorial Flow
+   ============================================================
+*/
+
+.ps-group--content .ps-list {
+  display: block;
+}
+
+/* Individual content result block */
+.ps-group--content .ps-item {
+  margin-bottom: 1.25rem;
+}
+
+/* Content title (clickable) */
+.ps-group--content .ps-item__title {
+  font-size: 1.15rem;
+  line-height: 1.4;
+}
+
+/* Content meta / source label */
+.ps-group--content .ps-item__meta {
+  margin-right: 0.25rem;
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: #174777;
+}
+
+/* Content excerpt */
+.ps-group--content .ps-item__excerpt {
+  margin-top: 0.35rem;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  max-width: 65ch;
+}
+
+/* ============================================================
+   Bucket breathing room
+   ============================================================
+*/
+
+.platform-search-results .ps-group {
+  margin-top: 6rem;
+}
+
+.platform-search-results .ps-group:first-of-type {
+  margin-top: 2rem;
+}
+
+/* ============================================================
+   Responsive Breakpoints
+   ============================================================
+*/
+
+@media (max-width: 1200px) {
+  .platform-search-results .ps-list {
+    grid-template-columns: repeat(4, minmax(12ch, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .platform-search-results .ps-list {
+    grid-template-columns: repeat(2, minmax(12ch, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .platform-search-results .ps-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ============================================================
+   ≥1600px: wide-screen density bump
+   ============================================================
+*/
+
+@media (min-width: 1600px) {
+  .platform-search-results .ps-list {
+    grid-template-columns: repeat(8, minmax(12ch, 1fr));
+  }
+}

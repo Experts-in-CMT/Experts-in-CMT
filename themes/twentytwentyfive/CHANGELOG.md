@@ -1,4 +1,4 @@
-> **© 2025 Kenneth Raymond — All rights reserved.**  
+> **© 2025-2026 Kenneth Raymond — All rights reserved.**  
 > Part of the Experts in CMT WordPress theme.  
 > Do not copy, modify, or redistribute without permission.
 
@@ -24,6 +24,78 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - (placeholder)
 
 ---
+
+## [1.8.0] – 2026-01-01
+
+### Added
+
+- **Platform Search System**
+  - Fully custom, intent-aware platform search spanning Subtypes, Genes, Classifications, and curated content.
+  - Deterministic resolver pipeline (normalization → intent resolution → variable anchoring → result builder → renderer).
+  - Semantic handling for subtype-specific variables (e.g., CMT1A, CMT1F/2E, chromosome and inheritance queries).
+  - Canonical ordering enforced across all result buckets (Types → Subtypes → Genes → Content).
+  - Graceful fallback to native WordPress search for general content queries.
+  - Result buckets labeled with contextual clarity (“Related to Your Search”) and accurate singular/plural handling.
+
+- **Search Results UX**
+  - Grid-based layout for identifiers (Types, Subtypes, Genes) with responsive column scaling.
+  - Editorial, vertical layout for Content results with title, source label, and excerpt support.
+  - Explicit prevention of identifier wrapping while preserving readable flow for content excerpts.
+  - Intentional spacing and negative space for scannability and reduced cognitive load.
+  - Wide-screen density scaling (≥1600px) without over-stretching sparse result sets.
+
+- **Genetics Database Enhancements**
+  - Added **ClinVar pathogenic variant** links where applicable.
+  - Added **ClinGen** gene curation links for authoritative external reference.
+  - Improved gene and subtype page layouts for clearer hierarchy and readability.
+  - Strengthened outbound link handling for safety and consistency.
+
+- **Custom Mobile Navigation Menu**
+  - Purpose-built mobile navigation experience independent of desktop constraints.
+  - Improved tap targets, spacing rhythm, and visual grouping.
+  - Reduced navigation depth to prioritize core user paths.
+  - Fully aligned with site-wide UX and accessibility standards.
+
+- **Footer Enhancements**
+  - Reworked footer layout to improve readability and visual rhythm across breakpoints.
+  - Mobile-specific refinements to prevent stacking congestion and accidental taps.
+  - Improved link grouping and negative space for easier scanning.
+  - Verified consistency across all major surfaces (Genes, Glossary, Subtypes, Search, Dorsal Root).
+
+### Changed
+
+- **Search Architecture**
+  - Eliminated reliance on native WordPress search rendering while preserving WP search as a fallback engine.
+  - Header banner behavior decoupled from WP search context for deterministic search presentation.
+  - Search results template now functions as a shell, with all logic handled by the platform search stack.
+
+- **Search UI & Typography**
+  - Matched clickable result titles across all buckets for visual consistency.
+  - Ensured content excerpts are visually subordinate to clickable titles.
+  - Removed legacy inline font rules in favor of dedicated, scoped CSS.
+
+- **Mobile UX Consistency**
+  - Unified spacing, typography, and interaction patterns across navigation, footer, and search.
+  - Reduced cramped layouts and visual pressure points on small screens.
+
+### Fixed
+
+- **Search Result Clarity**
+  - Prevented identifier wrapping that caused grid instability for long subtype and gene labels.
+  - Resolved spacing conflicts between grid-based and editorial result buckets.
+  - Removed rogue inline font-weight rules from content source labels.
+
+- **Layout Hygiene**
+  - Eliminated leftover debug artifacts and unused helpers across the search stack.
+  - Normalized spacing and margins to maintain consistent negative space site-wide.
+  - Verified no residual debug output or temporary instrumentation remains.
+
+---
+
+### **v1.8.0 Summary**
+
+This release delivers a first-class, intent-aware search experience and closes long-standing UX gaps across mobile navigation, footer layout, and genetics content surfaces. Search is no longer an afterthought. It is now a guided, readable, and predictable system that respects how people actually look for information about CMT.
+
 
 ## [1.0.0] - 2025-11-20
 

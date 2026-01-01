@@ -167,38 +167,18 @@ p {
   margin: 1.5rem 0;
 }
 
-/* ============================================================
-   GLOBAL LINK ANIMATION + PRIMARY NAV EXEMPTION
-   ============================================================ */
-
-/* ---------- Global Link Animation ---------- */
+/* ---------- Links ---------- */
 a {
   color: var(--accent);
   text-decoration: underline;
   text-decoration-thickness: 1.5px;
   text-underline-offset: 2px;
-
-  display: inline-block; /* required for transform */
-  transition: transform 0.18s ease-out;
 }
-
 a:hover,
 a:focus {
-  transform: scale(1.01);
-  text-decoration-thickness: 2px;
+  text-decoration-thickness: 2px; /* stronger underline on hover/focus */
   opacity: 0.9;
 }
-
-/* ---------- Exempt Primary Navigation Links ---------- */
-.wp-block-navigation a,
-.wp-block-navigation a:hover,
-.wp-block-navigation a:focus {
-  transform: none !important;
-  transition: none !important;
-  opacity: 1 !important;
-  text-decoration-thickness: 1.5px !important;
-}
-
 
 /* === Lists === */
 ul,
@@ -1143,7 +1123,7 @@ h2.wp-block-heading {
 }
 
 /* ==================================================
-     =========Dorsal Root: 3-wide cards (squish-safe)======
+     =========Dorsal Root: 3-wide cards======
   ================================================== */
 
 .dr-wrap {
@@ -1180,6 +1160,8 @@ h2.wp-block-heading {
     border-color 0.15s ease;
   margin-top: 25px;
   margin-bottom: 25px;
+    text-transform: uppercase;
+    font-size: 0.9rem;
 }
 .dr-more:hover,
 .dr-more:focus-visible {
@@ -1756,7 +1738,7 @@ h2.wp-block-heading {
 } /* optimal: 380–400 */
 
 /* =========================================================
-   🔥🔥🔥 CMTKENNYB CRITICAL Z-LAYER + NO-CLIP SAFETY NET 🔥🔥🔥
+     Z-LAYER + NO-CLIP SAFETY NET
    - Keeps nav dropdowns above the header banner
    - Prevents Stackable wrappers from clipping submenus
    - DO NOT SPLIT these rules; they must live together
@@ -2677,10 +2659,8 @@ h2.wp-block-heading {
   text-align: center;
   text-transform: uppercase;
   text-decoration: none;
-  transition: background-color 0.15s ease,
-              color 0.15s ease,
-              box-shadow 0.25s ease,
-              border-color 0.15s ease;
+  transition: background-color 0.15s ease, color 0.15s ease,
+    box-shadow 0.25s ease, border-color 0.15s ease;
   cursor: pointer;
 }
 
@@ -2713,10 +2693,8 @@ h2.wp-block-heading {
   text-align: center;
   text-transform: uppercase;
   text-decoration: none;
-  transition: background-color 0.15s ease,
-              color 0.15s ease,
-              box-shadow 0.25s ease,
-              border-color 0.15s ease;
+  transition: background-color 0.15s ease, color 0.15s ease,
+    box-shadow 0.25s ease, border-color 0.15s ease;
   cursor: pointer;
 }
 
@@ -2763,10 +2741,8 @@ h2.wp-block-heading {
   text-decoration: none !important;
   cursor: pointer !important;
 
-  transition: background-color 0.15s ease,
-              color 0.15s ease,
-              border-color 0.15s ease,
-              box-shadow 0.25s ease !important;
+  transition: background-color 0.15s ease, color 0.15s ease,
+    border-color 0.15s ease, box-shadow 0.25s ease !important;
 }
 
 /* Hover + focus */
@@ -2799,8 +2775,6 @@ h2.wp-block-heading {
   color: #ffffff !important;
 }
 
-
-
 /* ------------------------------------------------------------------
    DORSAL ROOT FILTERS — page-specific overrides
    ------------------------------------------------------------------ */
@@ -2826,25 +2800,28 @@ h2.wp-block-heading {
 }
 
 /* ============================================================
-  Footer LINK STYLE + HOVER SCALE ANIMATION
+   GLOBAL LINK STYLE + HOVER SCALE ANIMATION
    Removes default underlines, restores them on hover, and applies
    subtle scale animation used on cards and buttons.
    ============================================================ */
-.stk-block-columns.stk-d0c700c p > a,
-.stk-block-columns.stk-d0c700c a {
-    text-decoration: none;
-    display: inline-block;
-    transition:
-        text-decoration 0.15s ease-out,
-        transform 0.18s ease-out;
+a {
+  text-decoration: underline;
+  display: inline-block;
+  transition: text-decoration 0.15s ease-out, transform 0.18s ease-out;
 }
 
-.stk-block-columns.stk-d0c700c p > a:hover,
-.stk-block-columns.stk-d0c700c p > a:focus,
-.stk-block-columns.stk-d0c700c a:hover,
-.stk-block-columns.stk-d0c700c a:focus {
-    text-decoration: underline;
-    transform: scale(1.01);
+a:hover,
+a:focus {
+  text-decoration: underline;
+  transform: scale(1.01);
+}
+
+.stk-block-columns.stk-d0c700c p > a,
+.stk-block-columns.stk-d0c700c a {
+  text-decoration: none;
+  display: inline-block;
+  transition: text-decoration 0.15s ease-out, transform 0.18s ease-out;
+}
 
 /* ============================================================
    HARD-EXEMPT PRIMARY NAV FROM GLOBAL LINK EFFECTS
@@ -2859,10 +2836,10 @@ h2.wp-block-heading {
 .wp-block-navigation a.wp-block-navigation-item__content,
 .wp-block-navigation a.wp-block-navigation-item__content:hover,
 .wp-block-navigation a.wp-block-navigation-item__content:focus {
-    transform: none !important;
-    text-decoration: none !important;
-    box-shadow: none !important;
-    background: transparent !important;
+  transform: none !important;
+  text-decoration: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
 }
 
 /* ============================================================
@@ -2872,7 +2849,7 @@ h2.wp-block-heading {
 
 .wp-block-navigation a.wp-block-navigation-item__content:hover,
 .wp-block-navigation button.wp-block-navigation-item__content:hover {
-    font-weight: 500 !important;
+  font-weight: 500 !important;
 }
 
 /* ============================================================
@@ -2882,7 +2859,7 @@ h2.wp-block-heading {
 a.dr-more,
 a.dr-more:hover,
 a.dr-more:focus {
-    text-decoration: none !important;
+  text-decoration: none !important;
 }
 
 /* ------------------------------------------------------------------
@@ -2919,9 +2896,9 @@ body .header-banner__intro p {
 /* === Mobile: tighten totals line spacing === */
 @media (max-width: 600px) {
   .genes-totals {
-    margin-top: -150px !important;   /* pulls it upward */
+    margin-top: -150px !important; /* pulls it upward */
     margin-bottom: 125px !important; /* keeps breathing room above cards */
-    font-size: 16px !important;     /* ensures readability under the select */
+    font-size: 16px !important; /* ensures readability under the select */
     line-height: 1.4 !important;
   }
 }
@@ -2942,7 +2919,6 @@ body .header-banner__intro p {
               MOBILE HEADER LAYOUT
    =========================================== */
 @media (max-width: 600px) {
-
   header .wp-block-group {
     display: flex !important;
     flex-direction: row !important;
@@ -2977,7 +2953,6 @@ body .header-banner__intro p {
 
 /* ===== MOBILE HEADER COMPRESSION ===== */
 @media (max-width: 600px) {
-
   /* Shrink header padding */
   header.wp-block-template-part {
     padding-top: -10px !important;
@@ -3004,11 +2979,8 @@ body .header-banner__intro p {
   }
 }
 
-
 /* === MOBILE HAMBURGER RESET – TRUE THREE-LINE ICON === */
 @media (max-width: 600px) {
-
- 
   .wp-block-navigation__responsive-container-open {
     width: 60px;
     height: 42px;
@@ -3034,12 +3006,12 @@ body .header-banner__intro p {
     );
     border-radius: 4px;
   }
-  
-.wp-block-navigation__responsive-container-open:hover {
+
+  .wp-block-navigation__responsive-container-open:hover {
     background-color: transparent !important;
     transform: translateY(-75px) scale(1.03);
     transition: transform 0.18s ease-out;
-}
+  }
 
   .wp-block-navigation__responsive-container-open svg {
     display: none !important;
@@ -3071,45 +3043,45 @@ body .header-banner__intro p {
    Stackable footer column to force left alignment on small screens.
    ============================================================ */
 @media (max-width: 600px) {
-    .stk-block-column .has-text-align-center {
-        text-align: left !important;
-    }
+  .stk-block-column .has-text-align-center {
+    text-align: left !important;
+  }
 }
 
 /* ============================================================
-   WPForms INPUT OVERRIDES — FORCE BAGPIPE PARITY
+   WPForms INPUT OVERRIDES
    ============================================================ */
 
 .wpforms-container .wpforms-field input,
 .wpforms-container .wpforms-field textarea,
 .wpforms-container .wpforms-field select {
-    font-size: 1rem !important;
-    padding: 0.75rem 1rem !important;
-    border: 1px solid #d0d7de !important;
-    border-radius: 8px !important;
-    background: #fff !important;
-    width: 100% !important;
-    color: var(--text) !important;
+  font-size: 1rem !important;
+  padding: 0.75rem 1rem !important;
+  border: 1px solid #d0d7de !important;
+  border-radius: 8px !important;
+  background: #fff !important;
+  width: 100% !important;
+  color: var(--text) !important;
 }
 
 .wpforms-container .wpforms-field input:focus,
 .wpforms-container .wpforms-field textarea:focus,
 .wpforms-container .wpforms-field select:focus {
-    outline: none !important;
-    border-color: var(--primary) !important;
-    box-shadow: 0 0 0 2px rgba(23, 71, 119, 0.25) !important;
+  outline: none !important;
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 2px rgba(23, 71, 119, 0.25) !important;
 }
 
 /* Fix WPForms labels */
 .wpforms-container .wpforms-field-label,
 .wpforms-container .wpforms-field-sublabel {
-    font-size: 0.9rem !important;
-    font-weight: 500 !important;
+  font-size: 0.9rem !important;
+  font-weight: 500 !important;
 }
 
 /* Align submit button to our global button style */
 .wpforms-container .wpforms-submit-container .dr-more {
-    margin-top: 1.5rem;
+  margin-top: 1.5rem;
 }
 
 /* ============================================================
@@ -3118,45 +3090,41 @@ body .header-banner__intro p {
    ============================================================ */
 
 .wpforms-submit {
-    background: none !important;
-    color: var(--primary) !important;
-    border: 1.5px solid var(--primary) !important;
-    border-radius: 9999px !important;
-    padding: 0.55rem 1.4rem !important;
-    font-size: 16px !important;
-    font-weight: 600 !important;
-    cursor: pointer;
-    transition: transform 0.18s ease-out,
-                background-color 0.18s ease-out,
-                color 0.18s ease-out !important;
+  background: none !important;
+  color: var(--primary) !important;
+  border: 1.5px solid var(--primary) !important;
+  border-radius: 9999px !important;
+  padding: 0.55rem 1.4rem !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  cursor: pointer;
+  transition: transform 0.18s ease-out, background-color 0.18s ease-out,
+    color 0.18s ease-out !important;
 }
 
 /* Hover + Focus */
 .wpforms-submit:hover,
 .wpforms-submit:focus {
-    transform: scale(1.03);
-    background: var(--primary) !important;
-    color: #fff !important;
+  transform: scale(1.03);
+  background: var(--primary) !important;
+  color: #fff !important;
 }
 
 @media (max-width: 600px) {
+  /* Back (center) label gets wider allowance */
+  .ctnav-back-label {
+    white-space: normal;
+    display: inline-block;
+    max-width: 120px;
+    line-height: 1.3;
+  }
 
-    /* Back (center) label gets wider allowance */
-    .ctnav-back-label {
-        white-space: normal;
-        display: inline-block;
-        max-width: 120px;
-        line-height: 1.3;
-    }
-
-    /* Prev/Next get narrower width */
-    .ctnav-prev-label,
-    .ctnav-next-label {
-        white-space: normal;
-        display: inline-block;
-        max-width: 80px;
-        line-height: 1.3;
-    }
-
+  /* Prev/Next get narrower width */
+  .ctnav-prev-label,
+  .ctnav-next-label {
+    white-space: normal;
+    display: inline-block;
+    max-width: 80px;
+    line-height: 1.3;
+  }
 }
-
