@@ -44,7 +44,7 @@ $reset_url  = esc_url( home_url( '/' ) );
 
       <!-- SEARCH LABEL -->
       <label class="ps-label" for="ps-input">
-        Search by Gene, by Subtype, or by Year of Discovery
+        Site Search
       </label>
 
       <!-- INPUT + BUTTON INLINE -->
@@ -55,11 +55,11 @@ $reset_url  = esc_url( home_url( '/' ) );
           type="search"
           name="s"
           value="<?php echo esc_attr($search_text); ?>"
-          placeholder='ex: PMP22, SORD, CMTDIG, dHMN-2C, 1999 (type "All" to show everything)'
+          placeholder='Search the Platform...'
           autocomplete="off"
         />
+        <button type="submit" class="ps-btn" onclick="this.form.action = this.form.action + '#results';">Search</button>
 
-        <button type="submit" class="ps-btn">Search</button>
       </div>
 
       <?php
@@ -77,10 +77,6 @@ $reset_url  = esc_url( home_url( '/' ) );
           }
       }
       ?>
-
-      <noscript>
-        <button type="submit" class="ps-btn">Search</button>
-      </noscript>
 
     </div>
   </form>

@@ -39,9 +39,13 @@ function eic_platform_search_results_shortcode()
     // Resolve full payload
     $payload = eic_platform_search_resolve($query);
 
+    // Build the heading
+    $heading  = '<div class="ps-results-heading-wrap">';
+    $heading .= '<h2 class="ps-results-heading">Search results for “' . esc_html($query) . '”</h2>';
+    $heading .= '</div>';
 
     // Pass FLATTENED results to renderer
-    return eic_render_platform_search_results($payload['results']);
+    return $heading . eic_render_platform_search_results($payload['results']);
 }
 
 add_shortcode(
