@@ -166,6 +166,10 @@ function eic_platform_search_resolve_intent($query_normalized)
  */
 function eic_platform_search_build_results($payload, $query_normalized)
 {
+    
+    $genes_page = get_page_by_path("cmt-genetics-database", OBJECT, "page");
+    $genes_db_url = $genes_page ? get_permalink($genes_page->ID) : "";
+
     $results = [
         "subtypes" => [],
         "genes" => [],
@@ -222,16 +226,13 @@ function eic_platform_search_build_results($payload, $query_normalized)
 
         // Gene (CLICKABLE)
         $gene_symbol = get_field("gene_symbol", $subtype_id);
-        if ($gene_symbol) {
-            $results["genes"][] = [
-                "label" => $gene_symbol,
-                "type" => "Gene",
-                "url" =>
-                    "/cmt-genetics-database/?qs=" .
-                    urlencode($gene_symbol) .
-                    "#results",
-            ];
-        }
+        if ($gene_symbol && $genes_db_url) {
+    $results["genes"][] = [
+        "label" => $gene_symbol,
+        "type"  => "Gene",
+        "url"   => $genes_db_url . "?qs=" . urlencode(strtolower($gene_symbol)) . "#results",
+    ];
+}
 
         return $results;
     }
@@ -268,16 +269,13 @@ function eic_platform_search_build_results($payload, $query_normalized)
             ];
 
             $gene_symbol = get_field("gene_symbol", $subtype_id);
-            if ($gene_symbol) {
-                $results["genes"][] = [
-                    "label" => $gene_symbol,
-                    "type" => "Gene",
-                    "url" =>
-                        "/cmt-genetics-database/?qs=" .
-                        urlencode($gene_symbol) .
-                        "#results",
-                ];
-            }
+           if ($gene_symbol && $genes_db_url) {
+    $results["genes"][] = [
+        "label" => $gene_symbol,
+        "type"  => "Gene",
+        "url"   => $genes_db_url . "?qs=" . urlencode(strtolower($gene_symbol)) . "#results",
+    ];
+}
         }
 
         /**
@@ -409,7 +407,7 @@ function eic_platform_search_build_results($payload, $query_normalized)
             }
         }
 
-        /** ✅ CLOSE the semantic payload block */
+        /** CLOSE the semantic payload block */
     }
 
     /**
@@ -431,16 +429,13 @@ function eic_platform_search_build_results($payload, $query_normalized)
             ];
 
             $gene_symbol = get_field("gene_symbol", $subtype_id);
-            if ($gene_symbol) {
-                $results["genes"][] = [
-                    "label" => $gene_symbol,
-                    "type" => "Gene",
-                    "url" =>
-                        "/cmt-genetics-database/?qs=" .
-                        urlencode($gene_symbol) .
-                        "#results",
-                ];
-            }
+           if ($gene_symbol && $genes_db_url) {
+    $results["genes"][] = [
+        "label" => $gene_symbol,
+        "type"  => "Gene",
+        "url"   => $genes_db_url . "?qs=" . urlencode(strtolower($gene_symbol)) . "#results",
+    ];
+}
 
             $type = get_post_meta($subtype_id, "type_classification", true);
             $key = is_string($type) ? strtolower(trim($type)) : "";
@@ -541,16 +536,55 @@ function eic_platform_search_build_results($payload, $query_normalized)
         $results["genes"] = array_values($gene_map);
     }
 
-    // Content — by ID
-    if (!empty($results["content"])) {
-        $content_map = [];
-        foreach ($results["content"] as $c) {
-            if (!empty($c["id"])) {
-                $content_map[$c["id"]] = $c;
-            }
+    // Content — de-dup + hub pinning
+if (!empty($results["content"])) {
+
+    $content_map = [];
+    foreach ($results["content"] as $c) {
+        if (!empty($c["id"])) {
+            $content_map[$c["id"]] = $c;
         }
-        $results["content"] = array_values($content_map);
     }
+
+    $content = array_values($content_map);
+
+    // --------------------------------------------------------
+    // HUB PINNING (Opt B)
+    // --------------------------------------------------------
+    $hub = [];
+    $rest = [];
+
+    foreach ($content as $item) {
+        $post_id = $item["id"];
+        $post    = get_post($post_id);
+
+        if (!$post) {
+            $rest[] = $item;
+            continue;
+        }
+
+        $slug = $post->post_name;
+        $pt   = $post->post_type;
+
+        // canonical hub conditions
+        $is_hub =
+            $pt === "page" &&
+            (
+                $slug === $query_normalized ||
+                strpos($slug, $query_normalized) !== false
+            );
+
+        if ($is_hub) {
+            $hub[] = $item;
+        } else {
+            $rest[] = $item;
+        }
+    }
+
+    // hub(s) first, preserve WP order otherwise
+    $results["content"] = array_merge($hub, $rest);
+}
+
 
     // Types — de-dup + canonical order (FINAL)
     if (!empty($results["types"])) {

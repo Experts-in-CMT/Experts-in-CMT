@@ -131,6 +131,36 @@
 }
 
 /* ============================================================
+   Platform Search Results – No Results Message
+   ============================================================
+*/
+
+.ps-no-results {
+    margin-top: 2.5rem;
+    padding-left: 4rem;
+    text-align: left;
+    
+}
+
+.ps-no-results-title {
+    font-size: 1.15rem;
+    font-weight: 500;
+    color: #174777;
+    
+}
+
+.ps-no-results-subtitle {
+    font-size: 1.05rem;
+    color: var(--color-text-muted);
+    max-width: 38rem;
+    text-align: left;
+    line-height: 1.4;
+    margin-top: -1rem;
+    
+}
+
+
+/* ============================================================
    Platform Search Results – Grid Layout
    ============================================================
 */

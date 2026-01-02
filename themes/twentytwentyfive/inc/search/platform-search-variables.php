@@ -98,71 +98,106 @@ function eic_platform_search_variable_subtypes(string $normalized_query): array
         return array_values(array_unique($chromosome_matches));
     }
 
-    /**
-     * ============================================================
-     *  Semantic Inheritance Intent (Authoritative Clamp)
-     * ============================================================
-     *
-     * Purpose:
-     * --------
-     * Detects specific inheritance intent (e.g., autosomal dominant)
-     * at the semantic level, ignoring word order and noise.
-     * Mirrors chromosome behavior exactly:
-     *   - interpret intent
-     *   - resolve one taxonomy term
-     *   - clamp and return
-     *
-     * IMPORTANT:
-     * ----------
-     * This must run BEFORE token-based taxonomy resolution.
-     */
+/**
+ * ============================================================
+ *  Semantic Inheritance Intent (Authoritative Clamp)
+ * ============================================================
+ *
+ * Behavior:
+ * ---------
+ * - Clamp subtype discovery
+ * - Return semantic payload (subtypes + content)
+ * - Do NOT rely on downstream fallback
+ *
+ * IMPORTANT:
+ * ----------
+ * This must run BEFORE token-based taxonomy resolution.
+ */
 
-    $inheritance_map = [
-        "autosomal-dominant" => ["autosomal", "dominant"],
-        "autosomal-recessive" => ["autosomal", "recessive"],
-        "x-linked-dominant" => ["x-linked", "dominant"],
-        "x-linked-recessive" => ["x-linked", "recessive"],
-    ];
+$inheritance_map = [
+    "autosomal-dominant"   => ["autosomal", "dominant"],
+    "autosomal-recessive"  => ["autosomal", "recessive"],
+    "x-linked-dominant"    => ["x-linked", "dominant"],
+    "x-linked-recessive"   => ["x-linked", "recessive"],
+];
 
-    foreach ($inheritance_map as $term_slug => $signals) {
-        $matched = true;
+$inheritance_content_map = [
+    "autosomal-dominant"   => "autosomal-dominant",
+    "autosomal-recessive"  => "autosomal-recessive",
+    "x-linked-dominant"    => "x-linked-dominant",
+    "x-linked-recessive"   => "x-linked-recessive",
+];
 
-        foreach ($signals as $signal) {
-            if (strpos($normalized_query, $signal) === false) {
-                $matched = false;
-                break;
-            }
+foreach ($inheritance_map as $term_slug => $signals) {
+    $matched = true;
+
+    foreach ($signals as $signal) {
+        if (strpos($normalized_query, $signal) === false) {
+            $matched = false;
+            break;
         }
-
-        if (!$matched) {
-            continue;
-        }
-
-        // Resolve inheritance term
-        $term = get_term_by("slug", $term_slug, "inheritance");
-
-        if (!$term || is_wp_error($term)) {
-            continue;
-        }
-
-        // Fetch subtypes attached to this inheritance term
-        $inheritance_matches = get_posts([
-            "post_type" => "subtype",
-            "post_status" => "publish",
-            "posts_per_page" => -1,
-            "fields" => "ids",
-            "tax_query" => [
-                [
-                    "taxonomy" => "inheritance",
-                    "field" => "term_id",
-                    "terms" => [$term->term_id],
-                ],
-            ],
-        ]);
-
-        // Clamp and return — Overrides all following logic
-        return array_values(array_unique($inheritance_matches));
     }
+
+    if (!$matched) {
+        continue;
+    }
+
+    $term = get_term_by("slug", $term_slug, "inheritance");
+
+    if (!$term || is_wp_error($term)) {
+        continue;
+    }
+
+   // Clamp subtypes (authoritative)
+$inheritance_matches = get_posts([
+    "post_type"      => "subtype",
+    "post_status"    => "publish",
+    "posts_per_page" => -1,
+    "fields"         => "ids",
+    "tax_query"      => [
+        [
+            "taxonomy" => "inheritance",
+            "field"    => "term_id",
+            "terms"    => [$term->term_id],
+        ],
+    ],
+]);
+
+// Resolve inheritance explainer content (all valid carriers)
+$content_matches = get_posts([
+    "post_type"      => [
+        "post",
+        "page",
+        "what-is-cmt",
+        "glossary",
+    ],
+    "post_status"    => "publish",
+    "posts_per_page" => -1,
+    "fields"         => "ids",
+    "s"              => str_replace("-", " ", $term_slug),
+]);
+
+return [
+    "subtypes" => array_values(array_unique($inheritance_matches)),
+    "content"  => array_values(array_unique($content_matches)),
+    "meta"     => [
+        "label" => ucwords(str_replace("-", " ", $term_slug)),
+        "note"  => "inheritance pattern",
+    ],
+];
+
+
+    // Authoritative semantic return
+    return [
+        "subtypes" => array_values(array_unique($inheritance_matches)),
+        "content"  => $content,
+        "meta"     => [
+            "label" => ucwords(str_replace("-", " ", $term_slug)),
+            "note"  => "inheritance pattern",
+        ],
+    ];
+}
+
 
     /**
      * ============================================================
@@ -225,6 +260,8 @@ function eic_platform_search_variable_subtypes(string $normalized_query): array
     // Accumulator for extended resolution
     // ------------------------------------------------------------
     $resolved_subtype_ids = [];
+    $resolved_content_ids = [];
+
 
     /**
      * ------------------------------------------------------------
@@ -288,63 +325,107 @@ function eic_platform_search_variable_subtypes(string $normalized_query): array
         }
     }
     /**
-     * ------------------------------------------------------------
-     * Gene symbol → subtype discovery
-     * ------------------------------------------------------------
-     */
-    $gene_tokens = [];
+ * ------------------------------------------------------------
+ * Gene symbol → subtype discovery
+ * ------------------------------------------------------------
+ */
+$gene_tokens = [];
 
-    // Extract possible gene symbols from tokens
-    foreach ($tokens as $token) {
-        if (strlen($token) >= 3 && strlen($token) <= 6 && ctype_alnum($token)) {
-            $gene_tokens[] = strtoupper($token);
-        }
+// Extract possible gene symbols from tokens
+foreach ($tokens as $token) {
+    if (strlen($token) >= 3 && strlen($token) <= 6 && ctype_alnum($token)) {
+        $gene_tokens[] = strtoupper($token);
     }
+}
 
-    $gene_matches = [];
-    $types = [];
+$gene_matches = [];
+$types = [];
 
-    foreach ($gene_tokens as $gene_symbol) {
-        $matches = get_posts([
-            "post_type" => "subtype",
-            "post_status" => "publish",
-            "posts_per_page" => -1,
-            "fields" => "ids",
-            "meta_query" => [
-                [
-                    "key" => "gene_symbol",
-                    "value" => $gene_symbol,
-                    "compare" => "=",
-                ],
+/**
+ * ------------------------------------------------------------
+ * Primary gene symbol lookup (authoritative)
+ * ------------------------------------------------------------
+ */
+foreach ($gene_tokens as $gene_symbol) {
+    $matches = get_posts([
+        "post_type"      => "subtype",
+        "post_status"    => "publish",
+        "posts_per_page" => -1,
+        "fields"         => "ids",
+        "meta_query"     => [
+            [
+                "key"     => "gene_symbol",
+                "value"   => $gene_symbol,
+                "compare" => "=",
             ],
-        ]);
+        ],
+    ]);
 
-        if (empty($matches)) {
-            continue;
-        }
-
-        $gene_matches = array_merge($gene_matches, $matches);
-
-        foreach ($matches as $subtype_id) {
-            $type = get_post_meta($subtype_id, "type_classification", true);
-            if (is_string($type) && $type !== "") {
-                $types[] = strtolower(trim($type));
-            }
-        }
+    if (empty($matches)) {
+        continue;
     }
 
-    if (!empty($gene_matches)) {
-        return [
-            "subtypes" => array_values(array_unique($gene_matches)),
-            "types" => array_values(array_unique($types)),
-        ];
+    $gene_matches = array_merge($gene_matches, $matches);
+
+    foreach ($matches as $subtype_id) {
+        $type = get_post_meta($subtype_id, "type_classification", true);
+        if (is_string($type) && $type !== "") {
+            $types[] = strtolower(trim($type));
+        }
+    }
+}
+
+/**
+ * ------------------------------------------------------------
+ * Gene alias → subtype discovery
+ * ------------------------------------------------------------
+ * Aliases behave exactly like gene symbols for resolution,
+ * but NEVER render as a gene bucket entry.
+ */
+foreach ($gene_tokens as $gene_symbol) {
+    $normalized = strtoupper(trim($gene_symbol));
+
+    $alias_matches = get_posts([
+        "post_type"      => "subtype",
+        "post_status"    => "publish",
+        "posts_per_page" => -1,
+        "fields"         => "ids",
+        "meta_query"     => [
+            [
+                "key"     => "gene_alias",
+                "value"   => '(^|,)\s*' . preg_quote($normalized, '/') . '\s*(,|$)',
+                "compare" => "REGEXP",
+            ],
+        ],
+    ]);
+
+    if (empty($alias_matches)) {
+        continue;
     }
 
-    /**
-     * ------------------------------------------------------------
-     * 2) Basic pattern variables (number–letter discovery)
-     * ------------------------------------------------------------
-     */
+    $gene_matches = array_merge($gene_matches, $alias_matches);
+
+    foreach ($alias_matches as $subtype_id) {
+        $type = get_post_meta($subtype_id, "type_classification", true);
+        if (is_string($type) && $type !== "") {
+            $types[] = strtolower(trim($type));
+        }
+    }
+}
+
+if (!empty($gene_matches)) {
+    return [
+        "subtypes" => array_values(array_unique($gene_matches)),
+        "types"    => array_values(array_unique($types)),
+    ];
+}
+
+/**
+ * ------------------------------------------------------------
+ * 2) Basic pattern variables (number–letter discovery)
+ * ------------------------------------------------------------
+ */
+
     $matches = [];
 
     // Only attempt number–letter discovery for strict tokens (e.g. 1a, 2e, x1)
@@ -540,95 +621,101 @@ function eic_platform_search_variable_subtypes(string $normalized_query): array
         }
     }
 
+
+
+   /**
+ * ------------------------------------------------------------
+ * Inheritance single-term widener (umbrella intent)
+ * ------------------------------------------------------------
+ * Expands single inheritance concepts into concrete
+ * inheritance taxonomy terms.
+ *
+ * Behavior:
+ * ----------
+ * - Widens subtype results (no clamp)
+ * - Widens content results (posts, pages, glossary, what-is-cmt)
+ * - Uses non-hyphenated inheritance phrases for content
+ */
+
+$inheritance_single_map = [
+    "autosomal" => ["autosomal-dominant", "autosomal-recessive"],
+    "dominant"  => ["autosomal-dominant", "x-linked-dominant"],
+    "recessive" => ["autosomal-recessive", "x-linked-recessive"],
+    "x-linked"  => ["x-linked-dominant", "x-linked-recessive"],
+];
+
+// Content phrases MUST be non-hyphenated
+$inheritance_content_terms = [
+    "autosomal" => ["autosomal"],
+    "dominant"  => ["autosomal dominant", "x linked dominant"],
+    "recessive" => ["autosomal recessive", "x linked recessive"],
+    "x-linked"  => ["x linked"],
+];
+
+foreach ($tokens as $token) {
+    if (!isset($inheritance_single_map[$token])) {
+        continue;
+    }
+
     /**
-     * ------------------------------------------------------------
-     * Inheritance single-term CLAMP (authoritative)
-     * ------------------------------------------------------------
-     * "dominant" and "recessive" must STOP resolution.
-     * No widening. No taxonomy fall-through.
+     * --------------------------------------------------------
+     * Subtype widening (taxonomy-based)
+     * --------------------------------------------------------
      */
-    $inheritance_clamp_map = [
-        "dominant" => "autosomal-dominant",
-        "recessive" => "autosomal-recessive",
-    ];
+    foreach ($inheritance_single_map[$token] as $term_slug) {
+        $term = get_term_by("slug", $term_slug, "inheritance");
 
-    foreach ($inheritance_clamp_map as $token => $slug) {
-        if (in_array($token, $tokens, true)) {
-            $term = get_term_by("slug", $slug, "inheritance");
+        if (!$term || is_wp_error($term)) {
+            continue;
+        }
 
-            if (!$term || is_wp_error($term)) {
-                return [];
-            }
-
-            $ids = get_posts([
-                "post_type" => "subtype",
-                "post_status" => "publish",
-                "posts_per_page" => -1,
-                "fields" => "ids",
-                "tax_query" => [
-                    [
-                        "taxonomy" => "inheritance",
-                        "field" => "term_id",
-                        "terms" => [$term->term_id],
-                    ],
+        $matches = get_posts([
+            "post_type"      => "subtype",
+            "post_status"    => "publish",
+            "posts_per_page" => -1,
+            "fields"         => "ids",
+            "tax_query"      => [
+                [
+                    "taxonomy" => "inheritance",
+                    "field"    => "term_id",
+                    "terms"    => [$term->term_id],
                 ],
-            ]);
+            ],
+        ]);
 
-            //HARD STOP — inheritance clamp
-            return array_values(array_unique($ids));
+        if (!empty($matches)) {
+            $resolved_subtype_ids = array_merge(
+                $resolved_subtype_ids,
+                $matches
+            );
         }
     }
 
     /**
-     * ------------------------------------------------------------
-     * Inheritance single-term widener (umbrella intent)
-     * ------------------------------------------------------------
-     * Expands single inheritance concepts into concrete
-     * inheritance taxonomy terms. This widens results but
-     * never clamps.
+     * --------------------------------------------------------
+     * Content widening (search-based, non-hyphenated)
+     * --------------------------------------------------------
      */
-
-    $inheritance_single_map = [
-        "autosomal" => ["autosomal-dominant", "autosomal-recessive"],
-        "dominant" => ["autosomal-dominant", "x-linked-dominant"],
-        "recessive" => ["autosomal-recessive", "x-linked-recessive"],
-        "x-linked" => ["x-linked-dominant", "x-linked-recessive"],
-    ];
-
-    foreach ($tokens as $token) {
-        if (!isset($inheritance_single_map[$token])) {
-            continue;
-        }
-
-        foreach ($inheritance_single_map[$token] as $term_slug) {
-            $term = get_term_by("slug", $term_slug, "inheritance");
-
-            if (!$term || is_wp_error($term)) {
-                continue;
-            }
-
-            $matches = get_posts([
-                "post_type" => "subtype",
-                "post_status" => "publish",
+    if (isset($inheritance_content_terms[$token])) {
+        foreach ($inheritance_content_terms[$token] as $phrase) {
+            $content_hits = get_posts([
+                "post_type"      => ["post", "page", "what-is-cmt", "glossary"],
+                "post_status"    => "publish",
                 "posts_per_page" => -1,
-                "fields" => "ids",
-                "tax_query" => [
-                    [
-                        "taxonomy" => "inheritance",
-                        "field" => "term_id",
-                        "terms" => [$term->term_id],
-                    ],
-                ],
+                "fields"         => "ids",
+                "s"              => $phrase,
             ]);
 
-            if (!empty($matches)) {
-                $resolved_subtype_ids = array_merge(
-                    $resolved_subtype_ids,
-                    $matches
+            if (!empty($content_hits)) {
+                $resolved_content_ids = array_merge(
+                    $resolved_content_ids ?? [],
+                    $content_hits
                 );
             }
         }
     }
+}
+
 
     // ============================================================
     // TAXONOMY RESOLUTION (Subtype-anchored, allowlist only)
@@ -678,9 +765,15 @@ function eic_platform_search_variable_subtypes(string $normalized_query): array
     // ------------------------------------------------------------
     // Final return (merge basic + ACF resolution)
     // ------------------------------------------------------------
-    return array_values(
+  return [
+    "subtypes" => array_values(
         array_unique(array_merge($matches, $resolved_subtype_ids))
-    );
+    ),
+    "content" => array_values(
+        array_unique($resolved_content_ids)
+    ),
+];
+
 }
 
 /**

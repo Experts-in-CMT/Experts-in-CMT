@@ -36,16 +36,40 @@ function eic_platform_search_results_shortcode()
         return "<p>Please enter at least 2 characters.</p>";
     }
 
-    // Resolve full payload
-    $payload = eic_platform_search_resolve($query);
+// Resolve full payload
+$payload = eic_platform_search_resolve($query);
 
-    // Build the heading
-    $heading = '<div class="ps-results-heading-wrap">';
-    $heading .=
-        '<h2 class="ps-results-heading">Search results for “' .
-        esc_html($query) .
-        "”</h2>";
-    $heading .= "</div>";
+// Extract results
+$results = $payload["results"] ?? [];
+
+// Determine if all result buckets are empty
+$has_results = false;
+
+foreach (["subtypes", "genes", "types", "content"] as $bucket) {
+    if (!empty($results[$bucket])) {
+        $has_results = true;
+        break;
+    }
+}
+
+// NO RESULTS → message only (no heading)
+if (!$has_results) {
+    return
+     '<div class="ps-no-results">
+        <p class="ps-no-results-title">
+            No records matched your search terms.
+        </p>
+        <p class="ps-no-results-subtitle">
+            Search again using different terms.
+        </p>
+    </div>';
+}
+
+// RESULTS EXIST → build heading
+$heading  = '<div class="ps-results-heading-wrap">';
+$heading .= '<h2 class="ps-results-heading">Search results for “' . esc_html($query) . '”</h2>';
+$heading .= '</div>';
+
 
     // Pass FLATTENED results to renderer
     return $heading . eic_render_platform_search_results($payload["results"]);

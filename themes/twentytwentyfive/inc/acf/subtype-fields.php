@@ -17,7 +17,7 @@
  *   - CTA section (dynamic More Info buttons)
  *   - Discovery tab (year, discoverer, original paper)
  *   - Alt Publication block
- *   - Advanced/Debug fields (e.g., EIC Test Ping)
+ *   - Advanced / Debug fields (e.g., EIC Test Ping)
  *
  * Implementation notes:
  *   - Registered via acf/include_field_groups
@@ -216,8 +216,20 @@ add_action("acf/init", function () {
             "wrapper" => [
             ],
         ],
-
-
+        [
+           "key" => "field_ars_gene",
+           "label" => "Aminoacyl-tRNA Synthetase (ARS) Gene",
+           "name" => "ars_gene",
+           "type" => "true_false",
+           "instructions" => "Check if this subtype is associated with an aminoacyl-tRNA synthetase (ARS) gene.",
+           "required" => 0,
+           "conditional_logic" => 0,
+           "wrapper" => [
+           "width" => "33",
+           "class" => "",
+           "id" => "",
+           ],
+        ],
         [
             "key" => "field_year_of_discovery",
             "label" => "Year of Discovery",
@@ -305,7 +317,7 @@ add_action("acf/init", function () {
             "required" => 1,
             "media_upload" => 0,
             "tabs" => "all",
-            "toolbar" => "basic",
+            "toolbar" => "full",
             "delay" => 0,
         ],
         [
@@ -316,7 +328,7 @@ add_action("acf/init", function () {
             "required" => 0,
             "media_upload" => 0,
             "tabs" => "all",
-            "toolbar" => "basic",
+            "toolbar" => "full",
             "delay" => 0,
         ],
         [
@@ -337,7 +349,7 @@ add_action("acf/init", function () {
             "required" => 1,
             "media_upload" => 0,
             "tabs" => "all",
-            "toolbar" => "basic",
+            "toolbar" => "full",
         ],
         [
             "key" => "field_doi_url",
@@ -361,7 +373,7 @@ add_action("acf/init", function () {
             "required" => 0,
             "media_upload" => 0,
             "tabs" => "all",
-            "toolbar" => "basic",
+            "toolbar" => "full",
         ],
         [
             "key" => "field_alt_publication_note",
@@ -371,7 +383,7 @@ add_action("acf/init", function () {
             "required" => 0,
             "media_upload" => 0,
             "tabs" => "all",
-            "toolbar" => "basic",
+            "toolbar" => "full",
             "delay" => 0,
         ],
         [
@@ -382,7 +394,7 @@ add_action("acf/init", function () {
             "required" => 0,
             "media_upload" => 0,
             "tabs" => "all",
-            "toolbar" => "basic",
+            "toolbar" => "full",
         ],
         [
             "key" => "field_alt_date",
