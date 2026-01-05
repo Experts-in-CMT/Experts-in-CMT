@@ -55,6 +55,11 @@ function eic_platform_search_variable_subtypes(string $normalized_query): array
     // Tokenization (required for ACF + taxonomy resolution)
     // ------------------------------------------------------------
     $tokens = preg_split("/\s+/", $normalized_query);
+    
+    // ------------------------------------------------------------
+    //Semantic variable hit flag
+    // ------------------------------------------------------------
+    $semantic_hit = false;
 
     // ------------------------------------------------------------
     // EARLY EXIT: Chromosome intent (numeric-only, authoritative)
@@ -64,6 +69,7 @@ function eic_platform_search_variable_subtypes(string $normalized_query): array
 
     if (preg_match("/\b(chr|chromosome)\b/", $normalized_query)) {
         $chromosome_matches = [];
+        $content_matches = [];
 
         foreach ($tokens as $token) {
             // Only numeric tokens are valid chromosome identifiers
@@ -77,6 +83,9 @@ function eic_platform_search_variable_subtypes(string $normalized_query): array
                 continue;
             }
 
+            // --------------------------------------------------------
+            // Subtype clamp (authoritative)
+            // --------------------------------------------------------
             $chromosome_matches = get_posts([
                 "post_type" => "subtype",
                 "post_status" => "publish",
@@ -91,113 +100,453 @@ function eic_platform_search_variable_subtypes(string $normalized_query): array
                 ],
             ]);
 
+            // --------------------------------------------------------
+            // Content resolution (search-based, parity with inheritance/type)
+            // --------------------------------------------------------
+            $content_matches = get_posts([
+                "post_type" => [
+                    "post",
+                    "page",
+                    "what-is-cmt",
+                    "breathing",
+                    "glossary",
+                ],
+                "post_status" => "publish",
+                "posts_per_page" => -1,
+                "fields" => "ids",
+                "s" => "chromosome " . $token,
+            ]);
+
             break; // numeric chromosome found → stop token scan
         }
 
-        // Hard stop: chromosome intent overrides ALL other logic
-        return array_values(array_unique($chromosome_matches));
+        // HARD STOP — chromosome intent is authoritative
+        return [
+            "subtypes" => array_values(array_unique($chromosome_matches)),
+            "content" => array_values(array_unique($content_matches)),
+            "meta" => [
+                "label" => "Chromosome",
+                "note" => "chromosome classification",
+            ],
+        ];
     }
 
-/**
+    /**
+     * ============================================================
+     *  Semantic Inheritance Intent (Authoritative Clamp)
+     * ============================================================
+     *
+     * Behavior:
+     * ---------
+     * - Clamp subtype discovery
+     * - Return semantic payload (subtypes + content)
+     * - Do NOT rely on downstream fallback
+     *
+     * IMPORTANT:
+     * ----------
+     * This must run BEFORE token-based taxonomy resolution.
+     */
+
+    $inheritance_map = [
+        "autosomal-dominant" => ["autosomal", "dominant"],
+        "autosomal-recessive" => ["autosomal", "recessive"],
+        "x-linked-dominant" => ["x-linked", "dominant"],
+        "x-linked-recessive" => ["x-linked", "recessive"],
+    ];
+
+    $inheritance_content_map = [
+        "autosomal-dominant" => "autosomal-dominant",
+        "autosomal-recessive" => "autosomal-recessive",
+        "x-linked-dominant" => "x-linked-dominant",
+        "x-linked-recessive" => "x-linked-recessive",
+    ];
+
+    foreach ($inheritance_map as $term_slug => $signals) {
+        $matched = true;
+
+        foreach ($signals as $signal) {
+            if (strpos($normalized_query, $signal) === false) {
+                $matched = false;
+                break;
+            }
+        }
+
+        if (!$matched) {
+            continue;
+        }
+
+        $term = get_term_by("slug", $term_slug, "inheritance");
+
+        if (!$term || is_wp_error($term)) {
+            continue;
+        }
+
+        // Clamp subtypes (authoritative)
+        $inheritance_matches = get_posts([
+            "post_type" => "subtype",
+            "post_status" => "publish",
+            "posts_per_page" => -1,
+            "fields" => "ids",
+            "tax_query" => [
+                [
+                    "taxonomy" => "inheritance",
+                    "field" => "term_id",
+                    "terms" => [$term->term_id],
+                ],
+            ],
+        ]);
+
+        // Resolve inheritance content (all valid carriers)
+        $content_matches = get_posts([
+            "post_type" => [
+                "post",
+                "page",
+                "what-is-cmt",
+                "breathing",
+                "glossary",
+            ],
+            "post_status" => "publish",
+            "posts_per_page" => -1,
+            "fields" => "ids",
+            "s" => str_replace("-", " ", $term_slug),
+        ]);
+
+        return [
+            "subtypes" => array_values(array_unique($inheritance_matches)),
+            "content" => array_values(array_unique($content_matches)),
+            "meta" => [
+                "label" => ucwords(str_replace("-", " ", $term_slug)),
+                "note" => "inheritance pattern",
+            ],
+        ];
+    }
+    
+    /**
  * ============================================================
- *  Semantic Inheritance Intent (Authoritative Clamp)
+ *  Neuropathy Semantic Intent (Authoritative Clamp)
  * ============================================================
  *
  * Behavior:
  * ---------
- * - Clamp subtype discovery
- * - Return semantic payload (subtypes + content)
- * - Do NOT rely on downstream fallback
+ * - Clamp subtype discovery by neuropathy type
+ * - Resolve related content
+ * - HARD STOP (return early)
  *
- * IMPORTANT:
- * ----------
- * This must run BEFORE token-based taxonomy resolution.
+ * Notes:
+ * ------
+ * - Mirrors inheritance semantic behavior
+ * - Uses taxonomy: neuropathy
+ * - No widening, no fallthrough
  */
 
-$inheritance_map = [
-    "autosomal-dominant"   => ["autosomal", "dominant"],
-    "autosomal-recessive"  => ["autosomal", "recessive"],
-    "x-linked-dominant"    => ["x-linked", "dominant"],
-    "x-linked-recessive"   => ["x-linked", "recessive"],
+$neuropathy_terms = [
+    "demyelinating",
+    "axonal",
+    "intermediate",
 ];
 
-$inheritance_content_map = [
-    "autosomal-dominant"   => "autosomal-dominant",
-    "autosomal-recessive"  => "autosomal-recessive",
-    "x-linked-dominant"    => "x-linked-dominant",
-    "x-linked-recessive"   => "x-linked-recessive",
-];
-
-foreach ($inheritance_map as $term_slug => $signals) {
-    $matched = true;
-
-    foreach ($signals as $signal) {
-        if (strpos($normalized_query, $signal) === false) {
-            $matched = false;
-            break;
-        }
-    }
-
-    if (!$matched) {
+foreach ($neuropathy_terms as $term_slug) {
+    if (strpos($normalized_query, $term_slug) === false) {
         continue;
     }
 
-    $term = get_term_by("slug", $term_slug, "inheritance");
+    $term = get_term_by("slug", $term_slug, "neuropathy");
 
     if (!$term || is_wp_error($term)) {
         continue;
     }
 
-   // Clamp subtypes (authoritative)
-$inheritance_matches = get_posts([
-    "post_type"      => "subtype",
-    "post_status"    => "publish",
-    "posts_per_page" => -1,
-    "fields"         => "ids",
-    "tax_query"      => [
-        [
-            "taxonomy" => "inheritance",
-            "field"    => "term_id",
-            "terms"    => [$term->term_id],
+    // --------------------------------------------------------
+    // Subtype clamp (authoritative)
+    // --------------------------------------------------------
+    $neuropathy_matches = get_posts([
+        "post_type" => "subtype",
+        "post_status" => "publish",
+        "posts_per_page" => -1,
+        "fields" => "ids",
+        "tax_query" => [
+            [
+                "taxonomy" => "neuropathy",
+                "field" => "term_id",
+                "terms" => [$term->term_id],
+            ],
         ],
-    ],
-]);
+    ]);
 
-// Resolve inheritance explainer content (all valid carriers)
-$content_matches = get_posts([
-    "post_type"      => [
-        "post",
-        "page",
-        "what-is-cmt",
-        "glossary",
-    ],
-    "post_status"    => "publish",
-    "posts_per_page" => -1,
-    "fields"         => "ids",
-    "s"              => str_replace("-", " ", $term_slug),
-]);
+    // --------------------------------------------------------
+    // Content resolution (search-based, parity with inheritance)
+    // --------------------------------------------------------
+    $content_matches = get_posts([
+        "post_type" => [
+            "post",
+            "page",
+            "what-is-cmt",
+            "breathing",
+            "glossary",
+        ],
+        "post_status" => "publish",
+        "posts_per_page" => -1,
+        "fields" => "ids",
+        "s" => str_replace("-", " ", $term_slug),
+    ]);
 
-return [
-    "subtypes" => array_values(array_unique($inheritance_matches)),
-    "content"  => array_values(array_unique($content_matches)),
-    "meta"     => [
-        "label" => ucwords(str_replace("-", " ", $term_slug)),
-        "note"  => "inheritance pattern",
-    ],
-];
-
-
-    // Authoritative semantic return
+     // ------------------------------------------------------------
+    // HARD STOP — neuropathy intent is authoritative
+    // ------------------------------------------------------------
     return [
-        "subtypes" => array_values(array_unique($inheritance_matches)),
-        "content"  => $content,
-        "meta"     => [
-            "label" => ucwords(str_replace("-", " ", $term_slug)),
-            "note"  => "inheritance pattern",
+        "subtypes" => array_values(array_unique($neuropathy_matches)),
+        "content" => array_values(array_unique($content_matches)),
+        "meta" => [
+            "label" => ucwords($term_slug),
+            "note" => "neuropathy type",
         ],
     ];
 }
 
+
+    /**
+     * ============================================================
+     *  Subtype Semantic Intent (Authoritative Clamp)
+     * ============================================================
+     *
+     * Detects explicit subtype references (e.g. CMT1A, CMT-2A2B,
+     * HSN1A, dHMN-IA) regardless of punctuation, spacing,
+     * number-letter order, or bare terminal-pair input (e.g. 4C, C4).
+     *
+     * Prevents gene bleed and type-wide widening.
+     */
+
+    // ------------------------------------------------------------
+    // Normalize query tokens (strip noise, preserve structure)
+    // ------------------------------------------------------------
+    $normalized_tokens = [];
+
+    foreach ($tokens as $token) {
+        $clean = preg_replace("/[^a-z0-9]/", "", strtolower($token));
+
+        if ($clean === "") {
+            continue;
+        }
+
+        /**
+         * --------------------------------------------------------
+         * GATE: Require genetic discriminator
+         * --------------------------------------------------------
+         * Reject bare namespace tokens like "cmt"
+         * Allow only tokens that contain:
+         * - a digit (1, 2, 4, etc), OR
+         * - a terminal letter-number or number-letter pair (4c, c4)
+         */
+        // Reject bare "cmt" only
+        if ($clean === "cmt") {
+            continue;
+        }
+
+        $normalized_tokens[] = $clean;
+    }
+
+    // ------------------------------------------------------------
+    // Helper: generate terminal pair permutations
+    // ------------------------------------------------------------
+    function eic_ps_generate_suffix_variants($value)
+    {
+        $variants = [$value];
+
+        // Match trailing (roman|number)(letter) or (letter)(roman|number)
+        if (preg_match('/^(.*?)([0-9]+|i{1,4})([a-z])$/i', $value, $m)) {
+            $variants[] = $m[1] . $m[3] . $m[2];
+        } elseif (preg_match('/^(.*?)([a-z])([0-9]+|i{1,4})$/i', $value, $m)) {
+            $variants[] = $m[1] . $m[3] . $m[2];
+        }
+
+        return array_unique($variants);
+    }
+
+    // ------------------------------------------------------------
+    // Iterate all subtype posts (authoritative domain)
+    // ------------------------------------------------------------
+    $subtype_posts = get_posts([
+        "post_type" => "subtype",
+        "post_status" => "publish",
+        "posts_per_page" => -1,
+        "fields" => "ids",
+    ]);
+
+    $matched_subtypes = [];
+    $types = [];
+    $content_hits = [];
+
+    foreach ($subtype_posts as $subtype_id) {
+        $raw_subtype = get_post_meta($subtype_id, "subtype", true);
+
+        if (!is_string($raw_subtype) || $raw_subtype === "") {
+            continue;
+        }
+
+        // Normalize subtype
+        $subtype_norm = preg_replace(
+            "/[^a-z0-9]/",
+            "",
+            strtolower($raw_subtype)
+        );
+
+        // Generate acceptable forms (handles 1A ↔ A1, IA ↔ AI)
+        $candidates = eic_ps_generate_suffix_variants($subtype_norm);
+
+        // --------------------------------------------
+        // Match logic:
+        // 1) Exact token match
+        // 2) Terminal-pair suffix match (authoritative)
+        // --------------------------------------------
+        $matched = false;
+
+        foreach ($normalized_tokens as $token) {
+            if (in_array($token, $candidates, true)) {
+                $matched = true;
+                break;
+            }
+
+            foreach ($candidates as $candidate) {
+                if (strlen($token) >= 2 && str_ends_with($candidate, $token)) {
+                    $matched = true;
+                    break 2;
+                }
+            }
+        }
+
+        if (!$matched) {
+            continue;
+        }
+
+        // --------------------------------------------
+        // Collect subtype
+        // --------------------------------------------
+        $matched_subtypes[] = $subtype_id;
+
+        // --------------------------------------------
+        // Resolve parent type
+        // --------------------------------------------
+        $type = get_post_meta($subtype_id, "type_classification", true);
+        if (is_string($type) && $type !== "") {
+            $types[] = strtolower(trim($type));
+        }
+
+        // --------------------------------------------
+        // Content resolution (subtype-specific)
+        // --------------------------------------------
+        $hits = get_posts([
+            "post_type" => [
+                "post",
+                "page",
+                "what-is-cmt",
+                "breathing",
+                "glossary",
+            ],
+            "post_status" => "publish",
+            "posts_per_page" => -1,
+            "fields" => "ids",
+            "s" => $raw_subtype,
+        ]);
+
+        $content_hits = array_merge($content_hits, $hits);
+    }
+
+    // ------------------------------------------------------------
+    // HARD STOP — subtype intent is most specific
+    // ------------------------------------------------------------
+    if (!empty($matched_subtypes)) {
+        return [
+            "subtypes" => array_values(array_unique($matched_subtypes)),
+            "types" => array_values(array_unique($types)),
+            "content" => array_values(array_unique($content_hits)),
+            "meta" => [
+                "note" => "explicit subtype",
+            ],
+        ];
+    }
+
+    // ============================================================
+    // CMT DISCRIMINATOR GATE (block bare CMT only)
+    // ============================================================
+    $has_cmt = false;
+    $has_genetic_discriminator = false;
+
+    foreach ($tokens as $token) {
+        $clean = preg_replace("/[^a-z0-9]/", "", strtolower($token));
+
+        if ($clean === "") {
+            continue;
+        }
+
+        /**
+         * --------------------------------------------------------
+         * EXPLICIT genetic namespace forms
+         * --------------------------------------------------------
+         * cmt1a, cmt2e, cmt4c, cmtx1, etc.
+         * These MUST count as genetically discriminated.
+         */
+        if (preg_match('/^cmt[0-9]+[a-z]*$/', $clean)) {
+            $has_genetic_discriminator = true;
+            continue;
+        }
+
+        /**
+         * --------------------------------------------------------
+         * Other genetic discriminators
+         * --------------------------------------------------------
+         * 1a, a1, hsn1a, dhmn2, etc.
+         */
+        if (preg_match("/[0-9]/", $clean)) {
+            $has_genetic_discriminator = true;
+            continue;
+        }
+
+        /**
+         * --------------------------------------------------------
+         * Bare namespace token
+         * --------------------------------------------------------
+         */
+        if ($clean === "cmt") {
+            $has_cmt = true;
+        }
+    }
+
+    // Only block when it is *truly* bare CMT
+    if ($has_cmt && !$has_genetic_discriminator && !$semantic_hit) {
+        $content_q = trim(preg_replace("/\bcmt\b/i", "", $normalized_query));
+        if ($content_q === "") {
+            $content_q = $normalized_query;
+        }
+
+        $content_matches = get_posts([
+            "post_type" => [
+                "post",
+                "page",
+                "what-is-cmt",
+                "glossary",
+                "breathing",
+            ],
+            "post_status" => "publish",
+            "posts_per_page" => -1,
+            "fields" => "ids",
+            "s" => $content_q,
+        ]);
+
+        if (!empty($content_matches)) {
+            return [
+                "subtypes" => [],
+                "types" => [],
+                "genes" => [],
+                "content" => array_values(array_unique($content_matches)),
+                "meta" => [
+                    "label" => "General content search",
+                    "note" => "bare CMT blocked from genetic resolution",
+                ],
+            ];
+        }
+
+        return [];
+    }
 
     /**
      * ============================================================
@@ -208,10 +557,15 @@ return [
      * anywhere in the query, regardless of word order or noise.
      * Mirrors inheritance + chromosome behavior.
      */
+
     $type_anchor_map = eic_ps_type_classification_anchors();
 
     foreach ($tokens as $token) {
         $token_normalized = strtolower(str_replace(["-", "_"], "", $token));
+
+        if ($token_normalized === "cmt") {
+            continue;
+        }
 
         if (!isset($type_anchor_map[$token_normalized])) {
             continue;
@@ -235,6 +589,9 @@ return [
 
         $type_slug = $type_anchor_map[$token_normalized];
 
+        // ------------------------------------------------------------
+        // Subtype clamp (authoritative)
+        // ------------------------------------------------------------
         $type_matches = get_posts([
             "post_type" => "subtype",
             "post_status" => "publish",
@@ -249,10 +606,28 @@ return [
             ],
         ]);
 
+        // ------------------------------------------------------------
+        // Content resolution (search-based, parity with inheritance)
+        // ------------------------------------------------------------
+        $content_matches = get_posts([
+            "post_type" => [
+                "post",
+                "page",
+                "what-is-cmt",
+                "breathing",
+                "glossary",
+            ],
+            "post_status" => "publish",
+            "posts_per_page" => -1,
+            "fields" => "ids",
+            "s" => $type_slug,
+        ]);
+
         // HARD STOP — type classification is authoritative
         return [
             "subtypes" => array_values(array_unique($type_matches)),
             "types" => [$type_slug],
+            "content" => array_values(array_unique($content_matches)),
         ];
     }
 
@@ -262,37 +637,42 @@ return [
     $resolved_subtype_ids = [];
     $resolved_content_ids = [];
 
-
     /**
      * ------------------------------------------------------------
-     * Semantic variables (explicit, curated meaning)
+     * Semantic variable loader (explicit, curated meaning)
      * ------------------------------------------------------------
      */
 
-    $semantic = eic_ps_semantic_roussy_levy($normalized_query);
-    if (!empty($semantic)) {
-        return $semantic;
-    }
-
     $semantic = eic_ps_semantic_cmt_1f_2e($normalized_query);
     if (!empty($semantic)) {
+        $semantic_hit = true;
         return $semantic;
     }
 
     $semantic = eic_ps_semantic_sord($normalized_query);
     if (!empty($semantic)) {
+        $semantic_hit = true;
         return $semantic;
     }
 
     $semantic = eic_ps_semantic_cmt3($normalized_query);
     if (!empty($semantic)) {
+        $semantic_hit = true;
         return $semantic;
     }
 
     $semantic = eic_ps_semantic_roussy_levy($normalized_query);
     if (!empty($semantic)) {
+        $semantic_hit = true;
         return $semantic;
     }
+    
+    $semantic = eic_ps_semantic_ars($normalized_query);
+    if (!empty($semantic)) {
+        $semantic_hit = true;
+    return $semantic;
+    }
+
 
     /**
      * ------------------------------------------------------------
@@ -325,106 +705,179 @@ return [
         }
     }
     /**
- * ------------------------------------------------------------
- * Gene symbol → subtype discovery
- * ------------------------------------------------------------
- */
-$gene_tokens = [];
+     * ------------------------------------------------------------
+     * Gene symbol → subtype discovery
+     * ------------------------------------------------------------
+     */
+    $gene_tokens = [];
 
-// Extract possible gene symbols from tokens
-foreach ($tokens as $token) {
-    if (strlen($token) >= 3 && strlen($token) <= 6 && ctype_alnum($token)) {
-        $gene_tokens[] = strtoupper($token);
-    }
-}
-
-$gene_matches = [];
-$types = [];
-
-/**
- * ------------------------------------------------------------
- * Primary gene symbol lookup (authoritative)
- * ------------------------------------------------------------
- */
-foreach ($gene_tokens as $gene_symbol) {
-    $matches = get_posts([
-        "post_type"      => "subtype",
-        "post_status"    => "publish",
-        "posts_per_page" => -1,
-        "fields"         => "ids",
-        "meta_query"     => [
-            [
-                "key"     => "gene_symbol",
-                "value"   => $gene_symbol,
-                "compare" => "=",
-            ],
-        ],
-    ]);
-
-    if (empty($matches)) {
-        continue;
-    }
-
-    $gene_matches = array_merge($gene_matches, $matches);
-
-    foreach ($matches as $subtype_id) {
-        $type = get_post_meta($subtype_id, "type_classification", true);
-        if (is_string($type) && $type !== "") {
-            $types[] = strtolower(trim($type));
+    // Extract possible gene symbols from tokens
+    foreach ($tokens as $token) {
+        if (strlen($token) >= 3 && strlen($token) <= 6 && ctype_alnum($token)) {
+            $gene_tokens[] = strtoupper($token);
         }
     }
-}
 
-/**
- * ------------------------------------------------------------
- * Gene alias → subtype discovery
- * ------------------------------------------------------------
- * Aliases behave exactly like gene symbols for resolution,
- * but NEVER render as a gene bucket entry.
- */
-foreach ($gene_tokens as $gene_symbol) {
-    $normalized = strtoupper(trim($gene_symbol));
+    $gene_matches = [];
+    $types = [];
 
-    $alias_matches = get_posts([
-        "post_type"      => "subtype",
-        "post_status"    => "publish",
-        "posts_per_page" => -1,
-        "fields"         => "ids",
-        "meta_query"     => [
-            [
-                "key"     => "gene_alias",
-                "value"   => '(^|,)\s*' . preg_quote($normalized, '/') . '\s*(,|$)',
-                "compare" => "REGEXP",
+    /**
+     * ------------------------------------------------------------
+     * Primary gene symbol lookup (authoritative)
+     * ------------------------------------------------------------
+     */
+    foreach ($gene_tokens as $gene_symbol) {
+        $matches = get_posts([
+            "post_type" => "subtype",
+            "post_status" => "publish",
+            "posts_per_page" => -1,
+            "fields" => "ids",
+            "meta_query" => [
+                [
+                    "key" => "gene_symbol",
+                    "value" => $gene_symbol,
+                    "compare" => "=",
+                ],
             ],
-        ],
-    ]);
+        ]);
 
-    if (empty($alias_matches)) {
-        continue;
-    }
+        if (empty($matches)) {
+            continue;
+        }
 
-    $gene_matches = array_merge($gene_matches, $alias_matches);
+        // --------------------------------------------------------
+        // Subtype + type resolution (authoritative)
+        // --------------------------------------------------------
+        $gene_matches = array_merge($gene_matches, $matches);
 
-    foreach ($alias_matches as $subtype_id) {
-        $type = get_post_meta($subtype_id, "type_classification", true);
-        if (is_string($type) && $type !== "") {
-            $types[] = strtolower(trim($type));
+        foreach ($matches as $subtype_id) {
+            $type = get_post_meta($subtype_id, "type_classification", true);
+            if (is_string($type) && $type !== "") {
+                $types[] = strtolower(trim($type));
+            }
+        }
+
+        // --------------------------------------------------------
+        // Content resolution (search-based, parity with inheritance/type)
+        // --------------------------------------------------------
+        $content_hits = get_posts([
+            "post_type" => [
+                "post",
+                "page",
+                "what-is-cmt",
+                "breathing",
+                "glossary",
+            ],
+            "post_status" => "publish",
+            "posts_per_page" => -1,
+            "fields" => "ids",
+            "s" => $gene_symbol,
+        ]);
+
+        if (!empty($content_hits)) {
+            $resolved_content_ids = array_merge(
+                $resolved_content_ids ?? [],
+                $content_hits
+            );
         }
     }
-}
 
-if (!empty($gene_matches)) {
-    return [
-        "subtypes" => array_values(array_unique($gene_matches)),
-        "types"    => array_values(array_unique($types)),
-    ];
-}
+    /**
+     * ------------------------------------------------------------
+     * Gene symbol lookup return (authoritative)
+     * ------------------------------------------------------------
+     */
+    if (!empty($gene_matches)) {
+        return [
+            "subtypes" => array_values(array_unique($gene_matches)),
+            "types" => array_values(array_unique($types)),
+            "content" => array_values(
+                array_unique($resolved_content_ids ?? [])
+            ),
+        ];
+    }
 
-/**
- * ------------------------------------------------------------
- * 2) Basic pattern variables (number–letter discovery)
- * ------------------------------------------------------------
- */
+    /**
+     * ------------------------------------------------------------
+     * Gene alias → subtype discovery
+     * ------------------------------------------------------------
+     * Aliases behave exactly like gene symbols for resolution,
+     * but NEVER render as a gene bucket entry.
+     */
+    foreach ($gene_tokens as $gene_symbol) {
+        $normalized = strtoupper(trim($gene_symbol));
+
+        $alias_matches = get_posts([
+            "post_type" => "subtype",
+            "post_status" => "publish",
+            "posts_per_page" => -1,
+            "fields" => "ids",
+            "meta_query" => [
+                [
+                    "key" => "gene_alias",
+                    "value" =>
+                        "(^|,)\s*" . preg_quote($normalized, "/") . '\s*(,|$)',
+                    "compare" => "REGEXP",
+                ],
+            ],
+        ]);
+
+        if (empty($alias_matches)) {
+            continue;
+        }
+
+        // --------------------------------------------------------
+        // Subtype + type resolution (authoritative)
+        // --------------------------------------------------------
+        $gene_matches = array_merge($gene_matches, $alias_matches);
+
+        foreach ($alias_matches as $subtype_id) {
+            $type = get_post_meta($subtype_id, "type_classification", true);
+            if (is_string($type) && $type !== "") {
+                $types[] = strtolower(trim($type));
+            }
+        }
+
+        // --------------------------------------------------------
+        // Content resolution (search-based, parity with gene symbol)
+        // --------------------------------------------------------
+        $content_hits = get_posts([
+            "post_type" => [
+                "post",
+                "page",
+                "what-is-cmt",
+                "breathing",
+                "glossary",
+            ],
+            "post_status" => "publish",
+            "posts_per_page" => -1,
+            "fields" => "ids",
+            "s" => $normalized,
+        ]);
+
+        if (!empty($content_hits)) {
+            $resolved_content_ids = array_merge(
+                $resolved_content_ids ?? [],
+                $content_hits
+            );
+        }
+    }
+
+    if (!empty($gene_matches)) {
+        return [
+            "subtypes" => array_values(array_unique($gene_matches)),
+            "types" => array_values(array_unique($types)),
+            "content" => array_values(
+                array_unique($resolved_content_ids ?? [])
+            ),
+        ];
+    }
+
+    /**
+     * ------------------------------------------------------------
+     * 2) Basic pattern variables (number–letter discovery)
+     * ------------------------------------------------------------
+     */
 
     $matches = [];
 
@@ -621,101 +1074,104 @@ if (!empty($gene_matches)) {
         }
     }
 
-
-
-   /**
- * ------------------------------------------------------------
- * Inheritance single-term widener (umbrella intent)
- * ------------------------------------------------------------
- * Expands single inheritance concepts into concrete
- * inheritance taxonomy terms.
- *
- * Behavior:
- * ----------
- * - Widens subtype results (no clamp)
- * - Widens content results (posts, pages, glossary, what-is-cmt)
- * - Uses non-hyphenated inheritance phrases for content
- */
-
-$inheritance_single_map = [
-    "autosomal" => ["autosomal-dominant", "autosomal-recessive"],
-    "dominant"  => ["autosomal-dominant", "x-linked-dominant"],
-    "recessive" => ["autosomal-recessive", "x-linked-recessive"],
-    "x-linked"  => ["x-linked-dominant", "x-linked-recessive"],
-];
-
-// Content phrases MUST be non-hyphenated
-$inheritance_content_terms = [
-    "autosomal" => ["autosomal"],
-    "dominant"  => ["autosomal dominant", "x linked dominant"],
-    "recessive" => ["autosomal recessive", "x linked recessive"],
-    "x-linked"  => ["x linked"],
-];
-
-foreach ($tokens as $token) {
-    if (!isset($inheritance_single_map[$token])) {
-        continue;
-    }
-
     /**
-     * --------------------------------------------------------
-     * Subtype widening (taxonomy-based)
-     * --------------------------------------------------------
+     * ------------------------------------------------------------
+     * Inheritance single-term widener (umbrella intent)
+     * ------------------------------------------------------------
+     * Expands single inheritance concepts into concrete
+     * inheritance taxonomy terms.
+     *
+     * Behavior:
+     * ----------
+     * - Widens subtype results (no clamp)
+     * - Widens content results (posts, pages, breathing, glossary, what-is-cmt)
+     * - Uses non-hyphenated inheritance phrases for content
      */
-    foreach ($inheritance_single_map[$token] as $term_slug) {
-        $term = get_term_by("slug", $term_slug, "inheritance");
 
-        if (!$term || is_wp_error($term)) {
+    $inheritance_single_map = [
+        "autosomal" => ["autosomal-dominant", "autosomal-recessive"],
+        "dominant" => ["autosomal-dominant", "x-linked-dominant"],
+        "recessive" => ["autosomal-recessive", "x-linked-recessive"],
+        "x-linked" => ["x-linked-dominant", "x-linked-recessive"],
+    ];
+
+    // Content phrases MUST be non-hyphenated
+    $inheritance_content_terms = [
+        "autosomal" => ["autosomal"],
+        "dominant" => ["autosomal dominant", "x linked dominant"],
+        "recessive" => ["autosomal recessive", "x linked recessive"],
+        "x-linked" => ["x linked"],
+    ];
+
+    foreach ($tokens as $token) {
+        if (!isset($inheritance_single_map[$token])) {
             continue;
         }
 
-        $matches = get_posts([
-            "post_type"      => "subtype",
-            "post_status"    => "publish",
-            "posts_per_page" => -1,
-            "fields"         => "ids",
-            "tax_query"      => [
-                [
-                    "taxonomy" => "inheritance",
-                    "field"    => "term_id",
-                    "terms"    => [$term->term_id],
-                ],
-            ],
-        ]);
+        /**
+         * --------------------------------------------------------
+         * Subtype widening (taxonomy-based)
+         * --------------------------------------------------------
+         */
+        foreach ($inheritance_single_map[$token] as $term_slug) {
+            $term = get_term_by("slug", $term_slug, "inheritance");
 
-        if (!empty($matches)) {
-            $resolved_subtype_ids = array_merge(
-                $resolved_subtype_ids,
-                $matches
-            );
-        }
-    }
+            if (!$term || is_wp_error($term)) {
+                continue;
+            }
 
-    /**
-     * --------------------------------------------------------
-     * Content widening (search-based, non-hyphenated)
-     * --------------------------------------------------------
-     */
-    if (isset($inheritance_content_terms[$token])) {
-        foreach ($inheritance_content_terms[$token] as $phrase) {
-            $content_hits = get_posts([
-                "post_type"      => ["post", "page", "what-is-cmt", "glossary"],
-                "post_status"    => "publish",
+            $matches = get_posts([
+                "post_type" => "subtype",
+                "post_status" => "publish",
                 "posts_per_page" => -1,
-                "fields"         => "ids",
-                "s"              => $phrase,
+                "fields" => "ids",
+                "tax_query" => [
+                    [
+                        "taxonomy" => "inheritance",
+                        "field" => "term_id",
+                        "terms" => [$term->term_id],
+                    ],
+                ],
             ]);
 
-            if (!empty($content_hits)) {
-                $resolved_content_ids = array_merge(
-                    $resolved_content_ids ?? [],
-                    $content_hits
+            if (!empty($matches)) {
+                $resolved_subtype_ids = array_merge(
+                    $resolved_subtype_ids,
+                    $matches
                 );
             }
         }
-    }
-}
 
+        /**
+         * --------------------------------------------------------
+         * Content widening (search-based, non-hyphenated)
+         * --------------------------------------------------------
+         */
+        if (isset($inheritance_content_terms[$token])) {
+            foreach ($inheritance_content_terms[$token] as $phrase) {
+                $content_hits = get_posts([
+                    "post_type" => [
+                        "post",
+                        "page",
+                        "what-is-cmt",
+                        "breathing",
+                        "glossary",
+                    ],
+                    "post_status" => "publish",
+                    "posts_per_page" => -1,
+                    "fields" => "ids",
+                    "s" => $phrase,
+                ]);
+
+                if (!empty($content_hits)) {
+                    $resolved_content_ids = array_merge(
+                        $resolved_content_ids ?? [],
+                        $content_hits
+                    );
+                }
+            }
+        }
+    }
 
     // ============================================================
     // TAXONOMY RESOLUTION (Subtype-anchored, allowlist only)
@@ -763,19 +1219,69 @@ foreach ($tokens as $token) {
     }
 
     // ------------------------------------------------------------
+    // WordPress content fallback (authoritative last resort)
+    // ------------------------------------------------------------
+    // If NO intent, taxonomy, or ACF resolution occurred,
+    // attempt a general WP search here. If still nothing, return []
+    // so the upstream controller can fall through however it wants.
+    if (
+        empty($matches) &&
+        empty($resolved_subtype_ids) &&
+        empty($resolved_content_ids)
+    ) {
+        $content_matches = get_posts([
+            "post_type" => [
+                "post",
+                "page",
+                "what-is-cmt",
+                "breathing",
+                "glossary",
+            ],
+            "post_status" => "publish",
+            "posts_per_page" => -1,
+            "fields" => "ids",
+            "s" => $normalized_query,
+        ]);
+
+        if (!empty($content_matches)) {
+            return [
+                "subtypes" => [],
+                "content" => array_values(array_unique($content_matches)),
+                "meta" => [
+                    "label" => "General content search",
+                    "note" => "no semantic intent detected",
+                ],
+            ];
+        }
+
+        return [];
+    }
+
+    // ------------------------------------------------------------
     // Final return (merge basic + ACF resolution)
     // ------------------------------------------------------------
-  return [
-    "subtypes" => array_values(
+    $final_subtypes = array_values(
         array_unique(array_merge($matches, $resolved_subtype_ids))
-    ),
-    "content" => array_values(
-        array_unique($resolved_content_ids)
-    ),
-];
+    );
+    $final_content = array_values(array_unique($resolved_content_ids));
 
+    // If we resolved nothing at all, return [] so upstream can fall through
+    // to general WP search (e.g., "breathing").
+    if (empty($final_subtypes) && empty($final_content)) {
+        return [];
+    }
+
+    return [
+        "subtypes" => $final_subtypes,
+        "content" => $final_content,
+    ];
 }
 
+/**
+ * ============================================================
+ *  Semantic Variables
+ * ============================================================
+ */
 /**
  * ============================================================
  *  Semantic Variable: CMT1F/CMT2E (NEFL)
@@ -1015,6 +1521,85 @@ function eic_ps_semantic_roussy_levy(string $normalized_query): array
             "label" => "Roussy-Lévy Syndrome",
             "note" => "archaic classification (content-only)",
             "anchor" => "roussy-levy",
+        ],
+    ];
+}
+
+/**
+ * ============================================================
+ *  Semantic Variable: Aminoacyl-tRNA Synthetase (ARS)
+ * ============================================================
+ */
+function eic_ps_semantic_ars(string $normalized_query): array
+{
+    // Normalize (diacritics, case, and common separators)
+    $q_norm = iconv("UTF-8", "ASCII//TRANSLIT", $normalized_query);
+    $q_norm = strtolower($q_norm);
+    $q_norm = str_replace([" ", "-", "_"], "", $q_norm);
+
+    /**
+     * ------------------------------------------------------------
+     * Canonical semantic keys
+     * ------------------------------------------------------------
+     */
+    $matches = [
+        "ars",
+        "ars1",
+        "ars2",
+        "trna",
+        "trnas",
+        "trnasynthetase",
+        "aminacyltrnasynthetase",     // common misspelling)
+        "aminoacyltrnasynthetase",
+    ];
+
+    $hit = false;
+    foreach ($matches as $m) {
+        if (strpos($q_norm, $m) !== false) {
+            $hit = true;
+            break;
+        }
+    }
+
+    if (!$hit) {
+        return [];
+    }
+
+    /**
+     * ------------------------------------------------------------
+     * Query ALL subtypes with ars_gene = true
+     * ------------------------------------------------------------
+     * ACF true_false can store as '1' (string) but NUMERIC compare
+     * is the most reliable across DBs/environments.
+     */
+    $ars_q = new WP_Query([
+        "post_type"      => "subtype",
+        "post_status"    => "publish",
+        "posts_per_page" => -1,
+        "fields"         => "ids",
+        "no_found_rows"  => true,
+        "meta_query"     => [
+            [
+                "key"     => "ars_gene",   // meta key = field name
+                "value"   => 1,
+                "type"    => "NUMERIC",
+                "compare" => "=",
+            ],
+        ],
+    ]);
+
+    if (empty($ars_q->posts)) {
+        return [];
+    }
+
+    return [
+        "subtypes" => array_values(array_unique($ars_q->posts)),
+        "genes"    => [],
+        "types"    => [],
+        "content"  => [],
+        "meta"     => [
+            "label" => "Aminoacyl-tRNA Synthetase (ARS)",
+            "note"  => "semantic variable",
         ],
     ];
 }

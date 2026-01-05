@@ -213,18 +213,20 @@
 
 /* Individual content result block */
 .ps-group--content .ps-item {
-  margin-bottom: 1.25rem;
+  margin-bottom: 1.5rem;
 }
 
 /* Content title (clickable) */
 .ps-group--content .ps-item__title {
-  font-size: 1.15rem;
+    margin-top: -1.5rem;
+  font-size: 1.10rem;
   line-height: 1.4;
 }
 
 /* Content meta / source label */
 .ps-group--content .ps-item__meta {
   margin-right: 0.25rem;
+  margin-top: 1.5rem;
   font-size: 1.2rem;
   font-weight: 500;
   color: #174777;
@@ -233,7 +235,8 @@
 /* Content excerpt */
 .ps-group--content .ps-item__excerpt {
   margin-top: 0.35rem;
-  font-size: 0.95rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.90rem;
   line-height: 1.55;
   max-width: 65ch;
 }
@@ -281,6 +284,6 @@
 
 @media (min-width: 1600px) {
   .platform-search-results .ps-list {
-    grid-template-columns: repeat(8, minmax(12ch, 1fr));
+    grid-template-columns: repeat(6, minmax(12ch, 1fr));
   }
 }

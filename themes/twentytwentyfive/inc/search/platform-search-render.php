@@ -129,7 +129,7 @@ function eic_render_platform_search_results(array $results = [])
 
 
 
-  <!-- =========================================
+ <!-- =========================================
      GROUP: Content
      ========================================= -->
 <?php if (!empty($results["content"])): ?>
@@ -141,33 +141,39 @@ function eic_render_platform_search_results(array $results = [])
                 <?php
                 $label = $item["label"] ?? "";
                 $url = $item["url"] ?? "";
+
                 if ($label === "" || $url === "") {
                     continue;
                 }
 
                 $type =
                     $item["type"] === "Post"
-                        ? "Dorsal Root"
+                        ? "The Dorsal Root"
                         : $item["type"] ?? "";
                 ?>
                 <li class="ps-item">
-                    <?php
-                    if ($type) {
-                        echo '<span class="ps-item__meta";">' .
-                            esc_html($type) .
-                            ":</span> ";
-                    }
-                    echo '<a href="' .
-                        esc_url($url) .
-                        '" class="ps-item__title">' .
-                        esc_html($label) .
-                        "</a>";
-                    ?>
+                    <?php if ($type): ?>
+                        <div class="ps-item__meta">
+                            <?php echo esc_html($type); ?>
+                        </div>
+                    <?php endif; ?>
+
+                    <a href="<?php echo esc_url($url); ?>"
+                       class="ps-item__title">
+                        <?php echo esc_html($label); ?>
+                    </a>
+
+                    <?php if (!empty($item["excerpt"])): ?>
+                        <div class="ps-item__excerpt">
+                            <?php echo wp_kses_post($item["excerpt"]); ?>
+                        </div>
+                    <?php endif; ?>
                 </li>
             <?php endforeach; ?>
         </ul>
     </div>
 <?php endif; ?>
+
 
 </section>
 

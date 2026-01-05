@@ -29,7 +29,7 @@ require_once get_template_directory() .
 
 function eic_platform_search_normalize_input($raw)
 {
-    $value = strtolower(remove_accents($raw)); // ← THIS LINE
+    $value = strtolower(remove_accents($raw));
 
     $value = preg_replace("/[^\p{L}\p{N}\s\-]/u", " ", $value);
     $value = str_replace(["-", "_"], " ", $value);
@@ -147,6 +147,38 @@ function eic_platform_search_resolve_intent($query_normalized)
         }
     }
 
+    /**
+     * ------------------------------------------------------------
+     * Subtype token extraction (prose queries)
+     * ------------------------------------------------------------
+     * Example: "what is cmt1a" → token "cmt1a"
+     */
+    if (!$resolved_subtype) {
+        $tokens = preg_split("/\s+/", $query_normalized);
+        $tokens = array_values(array_filter($tokens));
+
+        foreach ($tokens as $tok) {
+            $tok = strtolower(trim($tok));
+            if ($tok === "") {
+                continue;
+            }
+
+            // Only attempt plausible subtype-like tokens
+            if (
+                !preg_match('/^(cmt|hsn|hsan|hmsn|dhmn|dsma)[0-9a-z]+$/', $tok)
+            ) {
+                continue;
+            }
+
+            $post = get_page_by_path($tok, OBJECT, "subtype");
+            if ($post) {
+                $resolved_subtype = $post;
+                $resolved_source = "token";
+                break;
+            }
+        }
+    }
+
     if ($resolved_subtype) {
         return [
             "intent" => "subtype",
@@ -166,7 +198,6 @@ function eic_platform_search_resolve_intent($query_normalized)
  */
 function eic_platform_search_build_results($payload, $query_normalized)
 {
-    
     $genes_page = get_page_by_path("cmt-genetics-database", OBJECT, "page");
     $genes_db_url = $genes_page ? get_permalink($genes_page->ID) : "";
 
@@ -227,12 +258,65 @@ function eic_platform_search_build_results($payload, $query_normalized)
         // Gene (CLICKABLE)
         $gene_symbol = get_field("gene_symbol", $subtype_id);
         if ($gene_symbol && $genes_db_url) {
-    $results["genes"][] = [
-        "label" => $gene_symbol,
-        "type"  => "Gene",
-        "url"   => $genes_db_url . "?qs=" . urlencode(strtolower($gene_symbol)) . "#results",
-    ];
-}
+            $results["genes"][] = [
+                "label" => $gene_symbol,
+                "type" => "Gene",
+                "url" =>
+                    $genes_db_url .
+                    "?qs=" .
+                    urlencode(strtolower($gene_symbol)) .
+                    "#results",
+            ];
+        }
+
+        // ------------------------------------------------------------
+        // Content (subtype-anchored — exact intent path)
+        // ------------------------------------------------------------
+        $raw_subtype = get_post_meta($subtype_id, "subtype", true);
+        if (!is_string($raw_subtype) || $raw_subtype === "") {
+            $raw_subtype = get_the_title($subtype_id);
+        }
+
+        $content_ids = get_posts([
+            "post_type" => [
+                "post",
+                "page",
+                "what-is-cmt",
+                "breathing",
+                "glossary",
+            ],
+            "post_status" => "publish",
+            "posts_per_page" => -1,
+            "fields" => "ids",
+            "s" => $raw_subtype,
+        ]);
+
+        if (!empty($content_ids)) {
+            foreach (array_unique($content_ids) as $content_id) {
+                if (!$content_id) {
+                    continue;
+                }
+
+                $pt = get_post_type_object(get_post_type($content_id));
+
+                $highlight_terms = array_filter([
+                    $raw_subtype, // CMT1A
+                    get_the_title($subtype_id), // CMT Type 1A
+                    get_field("gene_symbol", $subtype_id), // PMP22 (if present)
+                ]);
+
+                $results["content"][] = [
+                    "id" => $content_id,
+                    "label" => get_the_title($content_id),
+                    "url" => get_permalink($content_id),
+                    "type" => $pt->labels->singular_name ?? "Content",
+                    "excerpt" => eic_build_search_excerpt(
+                        $content_id,
+                        $highlight_terms
+                    ),
+                ];
+            }
+        }
 
         return $results;
     }
@@ -269,13 +353,17 @@ function eic_platform_search_build_results($payload, $query_normalized)
             ];
 
             $gene_symbol = get_field("gene_symbol", $subtype_id);
-           if ($gene_symbol && $genes_db_url) {
-    $results["genes"][] = [
-        "label" => $gene_symbol,
-        "type"  => "Gene",
-        "url"   => $genes_db_url . "?qs=" . urlencode(strtolower($gene_symbol)) . "#results",
-    ];
-}
+            if ($gene_symbol && $genes_db_url) {
+                $results["genes"][] = [
+                    "label" => $gene_symbol,
+                    "type" => "Gene",
+                    "url" =>
+                        $genes_db_url .
+                        "?qs=" .
+                        urlencode(strtolower($gene_symbol)) .
+                        "#results",
+                ];
+            }
         }
 
         /**
@@ -403,6 +491,10 @@ function eic_platform_search_build_results($payload, $query_normalized)
                     "label" => get_the_title($content_id),
                     "url" => get_permalink($content_id) . $anchor,
                     "type" => $pt->labels->singular_name ?? "Content",
+                    "excerpt" => eic_build_search_excerpt(
+                        $content_id,
+                        [] // no authoritative term → no highlight
+                    ),
                 ];
             }
         }
@@ -429,13 +521,17 @@ function eic_platform_search_build_results($payload, $query_normalized)
             ];
 
             $gene_symbol = get_field("gene_symbol", $subtype_id);
-           if ($gene_symbol && $genes_db_url) {
-    $results["genes"][] = [
-        "label" => $gene_symbol,
-        "type"  => "Gene",
-        "url"   => $genes_db_url . "?qs=" . urlencode(strtolower($gene_symbol)) . "#results",
-    ];
-}
+            if ($gene_symbol && $genes_db_url) {
+                $results["genes"][] = [
+                    "label" => $gene_symbol,
+                    "type" => "Gene",
+                    "url" =>
+                        $genes_db_url .
+                        "?qs=" .
+                        urlencode(strtolower($gene_symbol)) .
+                        "#results",
+                ];
+            }
 
             $type = get_post_meta($subtype_id, "type_classification", true);
             $key = is_string($type) ? strtolower(trim($type)) : "";
@@ -537,54 +633,50 @@ function eic_platform_search_build_results($payload, $query_normalized)
     }
 
     // Content — de-dup + hub pinning
-if (!empty($results["content"])) {
-
-    $content_map = [];
-    foreach ($results["content"] as $c) {
-        if (!empty($c["id"])) {
-            $content_map[$c["id"]] = $c;
+    if (!empty($results["content"])) {
+        $content_map = [];
+        foreach ($results["content"] as $c) {
+            if (!empty($c["id"])) {
+                $content_map[$c["id"]] = $c;
+            }
         }
+
+        $content = array_values($content_map);
+
+        // --------------------------------------------------------
+        // HUB PINNING (Opt B)
+        // --------------------------------------------------------
+        $hub = [];
+        $rest = [];
+
+        foreach ($content as $item) {
+            $post_id = $item["id"];
+            $post = get_post($post_id);
+
+            if (!$post) {
+                $rest[] = $item;
+                continue;
+            }
+
+            $slug = $post->post_name;
+            $pt = $post->post_type;
+
+            // canonical hub conditions
+            $is_hub =
+                $pt === "page" &&
+                ($slug === $query_normalized ||
+                    strpos($slug, $query_normalized) !== false);
+
+            if ($is_hub) {
+                $hub[] = $item;
+            } else {
+                $rest[] = $item;
+            }
+        }
+
+        // hub(s) first, preserve WP order otherwise
+        $results["content"] = array_merge($hub, $rest);
     }
-
-    $content = array_values($content_map);
-
-    // --------------------------------------------------------
-    // HUB PINNING (Opt B)
-    // --------------------------------------------------------
-    $hub = [];
-    $rest = [];
-
-    foreach ($content as $item) {
-        $post_id = $item["id"];
-        $post    = get_post($post_id);
-
-        if (!$post) {
-            $rest[] = $item;
-            continue;
-        }
-
-        $slug = $post->post_name;
-        $pt   = $post->post_type;
-
-        // canonical hub conditions
-        $is_hub =
-            $pt === "page" &&
-            (
-                $slug === $query_normalized ||
-                strpos($slug, $query_normalized) !== false
-            );
-
-        if ($is_hub) {
-            $hub[] = $item;
-        } else {
-            $rest[] = $item;
-        }
-    }
-
-    // hub(s) first, preserve WP order otherwise
-    $results["content"] = array_merge($hub, $rest);
-}
-
 
     // Types — de-dup + canonical order (FINAL)
     if (!empty($results["types"])) {
@@ -673,4 +765,144 @@ function eic_ps_type_display_label(string $type): string
 
     // Title Case (override forced ALL CAPS)
     return ucwords(strtolower($type));
+}
+
+/**
+ * ============================================================
+ *  Content Excerpt + Highlight Helper (Dynamic Window)
+ * ============================================================
+ *
+ * Goal:
+ * - If a highlight term exists in the text, build the excerpt window
+ *   around the FIRST match (subtype intent authority).
+ * - Then highlight matches.
+ * - If no match exists, fall back to the leading excerpt behavior.
+ */
+function eic_build_search_excerpt(
+    $post_id,
+    array $highlight_terms = [],
+    int $length = 260
+): string {
+    $post = get_post($post_id);
+    if (!$post) {
+        return "";
+    }
+
+    // Prefer manual excerpt
+    $text = trim((string) $post->post_excerpt);
+
+    // Fallback to content
+    if ($text === "") {
+        $text = strip_shortcodes((string) $post->post_content);
+    }
+
+    // Normalize
+    $text = wp_strip_all_tags($text);
+    $text = preg_replace("/\s+/", " ", $text);
+    $text = trim((string) $text);
+
+    if ($text === "") {
+        return "";
+    }
+
+    // mbstring-safe helpers
+    $strlen = function_exists("mb_strlen") ? "mb_strlen" : "strlen";
+    $substr = function_exists("mb_substr") ? "mb_substr" : "substr";
+    $stripos = function_exists("mb_stripos") ? "mb_stripos" : "stripos";
+
+    $excerpt = $text;
+
+    // ------------------------------------------------------------
+    // Dynamic windowing: center excerpt around FIRST match
+    // ------------------------------------------------------------
+    $terms = [];
+    foreach ($highlight_terms as $t) {
+        $t = trim((string) $t);
+        if ($t !== "") {
+            $terms[] = $t;
+        }
+    }
+
+    if (!empty($terms)) {
+        $first_pos = null;
+
+        foreach ($terms as $t) {
+            $pos = $stripos($text, $t);
+            if ($pos !== false) {
+                if ($first_pos === null || $pos < $first_pos) {
+                    $first_pos = $pos;
+                }
+            }
+        }
+
+        if ($first_pos !== null && $strlen($text) > $length) {
+            $half = (int) floor($length / 2);
+
+            $start = max(0, $first_pos - $half);
+            $end = $start + $length;
+
+            // Clamp end
+            if ($end > $strlen($text)) {
+                $end = $strlen($text);
+                $start = max(0, $end - $length);
+            }
+
+            $slice = $substr($text, $start, $end - $start);
+            $slice = trim($slice);
+
+            // Ellipses if clipped
+            if ($start > 0) {
+                $slice = "…" . ltrim($slice);
+            }
+            if ($end < $strlen($text)) {
+                $slice = rtrim($slice, " \t\n\r\0\x0B.,;:-") . "…";
+            }
+
+            $excerpt = $slice;
+        }
+    }
+
+    // ------------------------------------------------------------
+    // Fallback: leading trim if still too long
+    // ------------------------------------------------------------
+    if ($strlen($excerpt) > $length) {
+        $excerpt = $substr($excerpt, 0, $length);
+        $excerpt = rtrim($excerpt, ".,;:-") . "…";
+    }
+
+    // Highlight terms (authoritative)
+    if (!empty($terms)) {
+        $excerpt = eic_ps_highlight_terms($excerpt, $terms);
+    }
+
+    return $excerpt;
+}
+
+/**
+ * Highlight matched terms inside excerpt
+ */
+function eic_ps_highlight_terms(string $text, array $terms): string
+{
+    // Longest-first avoids partial-term swallowing (e.g., CMT1 vs CMT1A)
+    usort($terms, function ($a, $b) {
+        $la = function_exists("mb_strlen") ? mb_strlen($a) : strlen($a);
+        $lb = function_exists("mb_strlen") ? mb_strlen($b) : strlen($b);
+        return $lb <=> $la;
+    });
+
+    foreach ($terms as $term) {
+        $term = trim((string) $term);
+        if ($term === "") {
+            continue;
+        }
+
+        $pattern = "/(" . preg_quote($term, "/") . ")/i";
+        $text = preg_replace(
+            $pattern,
+            '<mark class="ps-highlight">$1</mark>',
+            $text
+        );
+    }
+
+    return $text;
 }

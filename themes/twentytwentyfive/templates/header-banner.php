@@ -19,11 +19,18 @@
 // ------------------------------------------------------------
 // Resolve banner context
 // ------------------------------------------------------------
-if (is_search()) {
+if ( is_search() ) {
     // Force banner context to Search page
-    $post_id = 2975;
+    $post_id = 3846;
+
+} elseif ( is_404() ) {
+    // Force banner context to 404 shell page
+    $post_id = 3862;
+
 } else {
-    $post_id = isset($post_id) ? (int) $post_id : (int) get_queried_object_id();
+    $post_id = isset($post_id)
+        ? (int) $post_id
+        : (int) get_queried_object_id();
 }
 
 $img = get_field("banner_image", $post_id) ?: null;
