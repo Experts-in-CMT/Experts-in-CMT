@@ -51,11 +51,42 @@ function eic_ps_type_classification_anchors(): array
  */
 function eic_platform_search_variable_subtypes(string $normalized_query): array
 {
+    /**
+     * ------------------------------------------------------------
+     * Phrase-level semantic hard clamp
+     * Dominant / Recessive Intermediate A
+     * MUST run before subtype token parsing
+     * ------------------------------------------------------------
+     */
+    if (
+        preg_match(
+            "/\b(dominant|recessive)\s+intermediate\s+(?:cmt\s+)?a\b|\b(dominant|recessive)\s+intermediate\s+a\s+cmt\b/i",
+            $normalized_query
+        )
+    ) {
+        return eic_ps_semantic_cmtdia($normalized_query);
+    }
+
+    /**
+     * ------------------------------------------------------------
+     * Phrase-level semantic hard clamp
+     * KIF1B (+ optional CMT noise) MUST resolve to CMT2A legacy
+     * ------------------------------------------------------------
+     */
+    if (
+        preg_match(
+            "/\b(?:kif[\s\-_]*1b)\b.*\b(cmt)\b|\b(cmt)\b.*\b(?:kif[\s\-_]*1b)\b/i",
+            $normalized_query
+        )
+    ) {
+        return eic_ps_semantic_cmt2a_legacy($normalized_query);
+    }
+
     // ------------------------------------------------------------
     // Tokenization (required for ACF + taxonomy resolution)
     // ------------------------------------------------------------
     $tokens = preg_split("/\s+/", $normalized_query);
-    
+
     // ------------------------------------------------------------
     //Semantic variable hit flag
     // ------------------------------------------------------------
@@ -147,6 +178,24 @@ function eic_platform_search_variable_subtypes(string $normalized_query): array
      * This must run BEFORE token-based taxonomy resolution.
      */
 
+    /**
+/**
+ * ------------------------------------------------------------
+ *  Jurisdiction Gate:
+ *  Decline inheritance authority for
+ *  dominant/recessive + intermediate compound constructs
+ * ------------------------------------------------------------
+ */
+    if (
+        strpos($normalized_query, "intermediate") !== false &&
+        (strpos($normalized_query, "dominant") !== false ||
+            strpos($normalized_query, "recessive") !== false)
+    ) {
+        // Decline inheritance authority.
+        // IMPORTANT: do NOT return.
+        // Fall through so semantic variables can run.
+    }
+
     $inheritance_map = [
         "autosomal-dominant" => ["autosomal", "dominant"],
         "autosomal-recessive" => ["autosomal", "recessive"],
@@ -220,89 +269,101 @@ function eic_platform_search_variable_subtypes(string $normalized_query): array
             ],
         ];
     }
-    
+
     /**
- * ============================================================
- *  Neuropathy Semantic Intent (Authoritative Clamp)
- * ============================================================
- *
- * Behavior:
- * ---------
- * - Clamp subtype discovery by neuropathy type
- * - Resolve related content
- * - HARD STOP (return early)
- *
- * Notes:
- * ------
- * - Mirrors inheritance semantic behavior
- * - Uses taxonomy: neuropathy
- * - No widening, no fallthrough
- */
+     * ============================================================
+     *  Neuropathy Semantic Intent (Authoritative Clamp)
+     * ============================================================
+     *
+     * Behavior:
+     * ---------
+     * - Clamp subtype discovery by neuropathy type
+     * - Resolve related content
+     * - HARD STOP (return early)
+     *
+     * Notes:
+     * ------
+     * - Mirrors inheritance semantic behavior
+     * - Uses taxonomy: neuropathy
+     * - No widening, no fallthrough
+     */
 
-$neuropathy_terms = [
-    "demyelinating",
-    "axonal",
-    "intermediate",
-];
-
-foreach ($neuropathy_terms as $term_slug) {
-    if (strpos($normalized_query, $term_slug) === false) {
-        continue;
+    /**
+     * ------------------------------------------------------------
+     *  Jurisdiction Gate:
+     *  Decline neuropathy authority for
+     *  dominant/recessive + intermediate compound constructs
+     * ------------------------------------------------------------
+     */
+    if (
+        strpos($normalized_query, "intermediate") !== false &&
+        (strpos($normalized_query, "dominant") !== false ||
+            strpos($normalized_query, "recessive") !== false)
+    ) {
+        // Decline neuropathy authority.
+        // IMPORTANT: do NOT return.
+        // Allow semantic variables to handle this query.
     }
 
-    $term = get_term_by("slug", $term_slug, "neuropathy");
+    $neuropathy_terms = ["demyelinating", "axonal", "intermediate"];
 
-    if (!$term || is_wp_error($term)) {
-        continue;
-    }
+    foreach ($neuropathy_terms as $term_slug) {
+        if (strpos($normalized_query, $term_slug) === false) {
+            continue;
+        }
 
-    // --------------------------------------------------------
-    // Subtype clamp (authoritative)
-    // --------------------------------------------------------
-    $neuropathy_matches = get_posts([
-        "post_type" => "subtype",
-        "post_status" => "publish",
-        "posts_per_page" => -1,
-        "fields" => "ids",
-        "tax_query" => [
-            [
-                "taxonomy" => "neuropathy",
-                "field" => "term_id",
-                "terms" => [$term->term_id],
+        $term = get_term_by("slug", $term_slug, "neuropathy");
+
+        if (!$term || is_wp_error($term)) {
+            continue;
+        }
+
+        // --------------------------------------------------------
+        // Subtype clamp (authoritative)
+        // --------------------------------------------------------
+        $neuropathy_matches = get_posts([
+            "post_type" => "subtype",
+            "post_status" => "publish",
+            "posts_per_page" => -1,
+            "fields" => "ids",
+            "tax_query" => [
+                [
+                    "taxonomy" => "neuropathy",
+                    "field" => "term_id",
+                    "terms" => [$term->term_id],
+                ],
             ],
-        ],
-    ]);
+        ]);
 
-    // --------------------------------------------------------
-    // Content resolution (search-based, parity with inheritance)
-    // --------------------------------------------------------
-    $content_matches = get_posts([
-        "post_type" => [
-            "post",
-            "page",
-            "what-is-cmt",
-            "breathing",
-            "glossary",
-        ],
-        "post_status" => "publish",
-        "posts_per_page" => -1,
-        "fields" => "ids",
-        "s" => str_replace("-", " ", $term_slug),
-    ]);
+        // --------------------------------------------------------
+        // Content resolution (search-based, parity with inheritance)
+        // --------------------------------------------------------
+        $content_matches = get_posts([
+            "post_type" => [
+                "post",
+                "page",
+                "what-is-cmt",
+                "breathing",
+                "glossary",
+            ],
+            "post_status" => "publish",
+            "posts_per_page" => -1,
+            "fields" => "ids",
+            "s" => str_replace("-", " ", $term_slug),
+        ]);
 
-     // ------------------------------------------------------------
-    // HARD STOP — neuropathy intent is authoritative
-    // ------------------------------------------------------------
-    return [
-        "subtypes" => array_values(array_unique($neuropathy_matches)),
-        "content" => array_values(array_unique($content_matches)),
-        "meta" => [
-            "label" => ucwords($term_slug),
-            "note" => "neuropathy type",
-        ],
-    ];
-}
-
+        // ------------------------------------------------------------
+        // HARD STOP — neuropathy intent is authoritative
+        // ------------------------------------------------------------
+        return [
+            "subtypes" => array_values(array_unique($neuropathy_matches)),
+            "content" => array_values(array_unique($content_matches)),
+            "meta" => [
+                "label" => ucwords($term_slug),
+                "note" => "neuropathy type",
+            ],
+        ];
+    }
 
     /**
      * ============================================================
@@ -666,13 +727,30 @@ foreach ($neuropathy_terms as $term_slug) {
         $semantic_hit = true;
         return $semantic;
     }
-    
+
     $semantic = eic_ps_semantic_ars($normalized_query);
     if (!empty($semantic)) {
         $semantic_hit = true;
-    return $semantic;
+        return $semantic;
     }
 
+    $semantic = eic_ps_semantic_cmt2a_legacy($normalized_query);
+    if (!empty($semantic)) {
+        $semantic_hit = true;
+        return $semantic;
+    }
+
+    $semantic = eic_ps_semantic_med25($normalized_query);
+    if (!empty($semantic)) {
+        $semantic_hit = true;
+        return $semantic;
+    }
+
+    $semantic = eic_ps_semantic_cmtdia($normalized_query);
+    if (!empty($semantic)) {
+        $semantic_hit = true;
+        return $semantic;
+    }
 
     /**
      * ------------------------------------------------------------
@@ -1549,7 +1627,7 @@ function eic_ps_semantic_ars(string $normalized_query): array
         "trna",
         "trnas",
         "trnasynthetase",
-        "aminacyltrnasynthetase",     // common misspelling)
+        "aminacyltrnasynthetase", // common misspelling)
         "aminoacyltrnasynthetase",
     ];
 
@@ -1573,16 +1651,16 @@ function eic_ps_semantic_ars(string $normalized_query): array
      * is the most reliable across DBs/environments.
      */
     $ars_q = new WP_Query([
-        "post_type"      => "subtype",
-        "post_status"    => "publish",
+        "post_type" => "subtype",
+        "post_status" => "publish",
         "posts_per_page" => -1,
-        "fields"         => "ids",
-        "no_found_rows"  => true,
-        "meta_query"     => [
+        "fields" => "ids",
+        "no_found_rows" => true,
+        "meta_query" => [
             [
-                "key"     => "ars_gene",   // meta key = field name
-                "value"   => 1,
-                "type"    => "NUMERIC",
+                "key" => "ars_gene", // meta key = field name
+                "value" => 1,
+                "type" => "NUMERIC",
                 "compare" => "=",
             ],
         ],
@@ -1594,12 +1672,218 @@ function eic_ps_semantic_ars(string $normalized_query): array
 
     return [
         "subtypes" => array_values(array_unique($ars_q->posts)),
-        "genes"    => [],
-        "types"    => [],
-        "content"  => [],
-        "meta"     => [
+        "genes" => [],
+        "types" => [],
+        "content" => [],
+        "meta" => [
             "label" => "Aminoacyl-tRNA Synthetase (ARS)",
-            "note"  => "semantic variable",
+            "note" => "semantic variable",
         ],
     ];
+}
+
+/**
+ * ============================================================
+ *  Semantic Variable: CMT2A (legacy nomenclature resolution)
+ * ============================================================
+ *
+ * Handles historical / superseded labels:
+ * - KIF1B
+ * - CMT2A1
+ * - CMT2A2
+ * - CMT2A2A
+ *
+ * All inputs resolve canonically to CMT2A.
+ */
+function eic_ps_semantic_cmt2a_legacy(string $normalized_query): array
+{
+    /**
+     * ------------------------------------------------------------
+     * Normalize semantic token
+     * ------------------------------------------------------------
+     * Upstream normalization already:
+     * - lowercased
+     * - stripped punctuation
+     * - collapsed whitespace
+     *
+     * We collapse spaces for canonical matching.
+     */
+    $q = iconv("UTF-8", "ASCII//TRANSLIT", $normalized_query);
+    $q = str_replace(" ", "", strtolower($q));
+
+    /**
+     * ------------------------------------------------------------
+     * Canonical semantic keys (normalized form)
+     * ------------------------------------------------------------
+     * Includes gene-based and subtype-based legacy terms.
+     */
+    $matches = ["kif1b", "cmt2a1", "cmt2a2", "cmt2a2a"];
+
+    $hit = false;
+    foreach ($matches as $m) {
+        if (strpos($q, $m) !== false) {
+            $hit = true;
+            break;
+        }
+    }
+
+    if (!$hit) {
+        return [];
+    }
+
+    /**
+     * ------------------------------------------------------------
+     * Canonical resolution: CMT2A
+     * ------------------------------------------------------------
+     */
+    return [
+        "subtypes" => [
+            get_page_by_path("cmt2a", OBJECT, "subtype")->ID ?? null,
+        ],
+
+        // MFN2 is the current causative gene for CMT2A
+        "genes" => [get_page_by_path("mfn2", OBJECT, "subtype")->ID ?? null],
+
+        /**
+         * --------------------------------------------------------
+         * Content
+         * --------------------------------------------------------
+         * Explicitly surface the Dorsal Root confliction article.
+         * IDs ONLY — required by renderer contract.
+         */
+        "content" => [
+            get_page_by_path("2a-confliction", OBJECT, "post")->ID ?? null,
+        ],
+
+        "meta" => [
+            "label" => "CMT2A (legacy nomenclature resolved)",
+            "note" => "semantic variable",
+        ],
+    ];
+}
+
+/**
+ * ============================================================
+ *  Semantic Variable: MED25 (retracted gene → CMT2B2)
+ * ============================================================
+ *
+ * Includes historical full name and HGNC aliases.
+ */
+function eic_ps_semantic_med25(string $normalized_query): array
+{
+    /**
+     * ------------------------------------------------------------
+     * Normalize semantic token
+     * ------------------------------------------------------------
+     * Upstream normalization guarantees:
+     * - lowercase
+     * - punctuation stripped
+     * - whitespace collapsed
+     *
+     * We remove spaces here for canonical matching.
+     */
+    $q = iconv("UTF-8", "ASCII//TRANSLIT", $normalized_query);
+    $q = strtolower($q);
+    $q = str_replace(" ", "", $q);
+
+    /**
+     * ------------------------------------------------------------
+     * Canonical semantic keys (normalized form)
+     * ------------------------------------------------------------
+     * MED25 + historical full name + HGNC aliases.
+     */
+    $matches = [
+        // canonical
+        "med25",
+
+        // full historical name
+        "mediatorcomplexsubunit25",
+        "mediatorofrnapolymeraseiitranscriptionsubunit25homolog",
+        "mediatorofrnapolymeraseiitranscriptionsubunit25",
+
+        // HGNC aliases
+        "arc92",
+        "acid1",
+        "tcbap0758",
+        "dkfzp434k0512",
+    ];
+
+    $hit = false;
+    foreach ($matches as $m) {
+        if (strpos($q, $m) !== false) {
+            $hit = true;
+            break;
+        }
+    }
+
+    if (!$hit) {
+        return [];
+    }
+
+    /**
+     * ------------------------------------------------------------
+     * Canonical resolution: CMT2B2
+     * ------------------------------------------------------------
+     * MED25 is a retracted gene in CMT literature.
+     */
+    return [
+        "subtypes" => [
+            get_page_by_path("cmt2b2", OBJECT, "subtype")->ID ?? null,
+        ],
+
+        // No gene surfaced — retracted association
+        "genes" => [],
+
+        // No content clamped here (by design)
+        "content" => [],
+
+        "meta" => [
+            "label" => "MED25 → CMT2B2",
+            "note" => "retracted gene (alias-aware semantic resolution)",
+        ],
+    ];
+}
+
+/**
+ * ============================================================
+ *  Semantic Variable: Dominant Intermediate A → CMT2GG
+ * ============================================================
+ */
+function eic_ps_semantic_cmtdia(string $normalized_query): array
+{
+    $q = iconv("UTF-8", "ASCII//TRANSLIT", strtolower($normalized_query));
+    $q = str_replace([" ", "-", "_"], "", $q);
+
+    $matches = [
+        "cmtdia",
+        "cmta",
+        "dominantintermediate",
+        "dominantintermediatea",
+        "dominantintermediatecmta",
+    ];
+
+    foreach ($matches as $m) {
+        if (strpos($q, $m) !== false) {
+            return [
+                "subtypes" => [
+                    get_page_by_path("cmt2gg", OBJECT, "subtype")->ID ?? null,
+                ],
+
+                "genes" => [
+                    get_page_by_path("gbf1", OBJECT, "subtype")->ID ?? null,
+                ],
+
+                "types" => ["cmt2"],
+
+                "content" => [],
+
+                "meta" => [
+                    "label" => "Dominant Intermediate CMT A",
+                    "note" => "semantic variable",
+                ],
+            ];
+        }
+    }
+
+    return [];
 }
