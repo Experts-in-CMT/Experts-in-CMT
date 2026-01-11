@@ -41,8 +41,9 @@ $gene_alias = get_field("gene_alias");
 $chromosome = get_field("chromosome");
 $zygosity = get_field("zygosity");
 $clinvar_url = trim((string) get_field("clinvar_url"));
-$genereviews_url = trim((string) get_field('genereviews_url'));
+$genereviews_url = trim((string) get_field("genereviews_url"));
 $mitochondrial_involvement = get_field("mitochondrial_involvement");
+$subtype_alias = get_field("subtype_alias");
 
 /* More Info — CTA buttons */
 $research_url = trim((string) get_field("research_url"));
@@ -50,7 +51,8 @@ $research_label = trim((string) get_field("research_label"));
 $symptoms_url = trim((string) get_field("symptoms_url"));
 $what_is_cmtx_url = trim((string) get_field("what_is_cmtx_url"));
 $what_is_intermediate_url = trim(
-    (string) get_field("what_is_intermediate_url"));
+    (string) get_field("what_is_intermediate_url")
+);
 
 /* Publications — Primary */
 $publication_ttl = get_field("publication_title");
@@ -105,6 +107,13 @@ $pub_heading = $pub_count === 1 ? "Key Publication" : "Key Publications";
         <div class="eic-fact">
           <dt>Classification</dt>
           <dd><?php echo esc_html($acronym); ?></dd>
+        </div>
+      <?php endif; ?>
+     
+      <?php if (!empty($subtype_alias)): ?>
+        <div class="eic-fact">
+          <dt>Subtype Alias</dt>
+          <dd><?php echo esc_html($subtype_alias); ?></dd>
         </div>
       <?php endif; ?>
 

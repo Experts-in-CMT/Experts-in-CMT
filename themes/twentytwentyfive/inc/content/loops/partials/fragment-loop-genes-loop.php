@@ -258,9 +258,9 @@ if ($use_canonical_sort) {
 // Get canonical, filter-aware totals (unpaged)
 $__totals = eic_get_genes_totals_from_filters($args);
 
-$__total   = (int) ($__totals['subtypes'] ?? 0);
-$__uniq    = (int) ($__totals['genes'] ?? 0);
-$__unknown = (int) ($__totals['unknown'] ?? 0);
+$__total = (int) ($__totals["subtypes"] ?? 0);
+$__uniq = (int) ($__totals["genes"] ?? 0);
+$__unknown = (int) ($__totals["unknown"] ?? 0);
 
 // Detect whether filters are active (supports GET or POST during AJAX)
 $filters_active = false;
@@ -337,6 +337,16 @@ if ($q && $q->have_posts()) {
             </h2>
 
             <div class="wp-block-post-excerpt">
+
+                <?php $alias = get_field("subtype_alias"); ?>
+                <p>
+                    <?php if (!empty($alias)): ?>
+                        <strong>Alias:</strong> <?php echo esc_html($alias); ?>
+                    <?php else: ?>
+                        &nbsp;
+                    <?php endif; ?>
+                </p>
+
                 <p><strong>Gene:</strong> <?php echo esc_html(
                     $display_gene
                 ); ?></p>
@@ -362,6 +372,8 @@ if ($q && $q->have_posts()) {
                 <div style="height:20px;" aria-hidden="true" class="wp-block-spacer"></div>
             </div>
         </article>
+
+
         <?php $cards[] = ob_get_clean();
     }
     wp_reset_postdata();

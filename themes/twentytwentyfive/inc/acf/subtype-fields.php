@@ -79,6 +79,13 @@ add_action("acf/init", function () {
             "required" => 1,
         ],
         [
+            "key" => "field_subtype_alias",
+            "label" => "Subtype Alias(es) – Separate Aliases with a Comma",
+            "name" => "subtype_alias",
+            "type" => "text",
+            "required" => 0,
+        ],
+        [
             "key" => "field_gene_symbol",
             "label" => "Associated Gene - HGNC-Approved Gene Symbol",
             "name" => "gene_symbol",
@@ -213,22 +220,22 @@ add_action("acf/init", function () {
             "ui_on_text" => "Yes",
             "ui_off_text" => "No",
             "required" => 0,
-            "wrapper" => [
-            ],
+            "wrapper" => [],
         ],
         [
-           "key" => "field_ars_gene",
-           "label" => "Aminoacyl-tRNA Synthetase (ARS) Gene",
-           "name" => "ars_gene",
-           "type" => "true_false",
-           "instructions" => "Check if this subtype is associated with an aminoacyl-tRNA synthetase (ARS) gene.",
-           "required" => 0,
-           "conditional_logic" => 0,
-           "wrapper" => [
-           "width" => "33",
-           "class" => "",
-           "id" => "",
-           ],
+            "key" => "field_ars_gene",
+            "label" => "Aminoacyl-tRNA Synthetase (ARS) Gene",
+            "name" => "ars_gene",
+            "type" => "true_false",
+            "instructions" =>
+                "Check if this subtype is associated with an aminoacyl-tRNA synthetase (ARS) gene.",
+            "required" => 0,
+            "conditional_logic" => 0,
+            "wrapper" => [
+                "width" => "33",
+                "class" => "",
+                "id" => "",
+            ],
         ],
         [
             "key" => "field_year_of_discovery",
@@ -239,28 +246,28 @@ add_action("acf/init", function () {
             "min" => 1850,
             "step" => 1,
         ],
-[
-    "key" => "field_type_sort_order",
-    "label" => "Type Sort Order",
-    "name" => "type_sort_order",
-    "type" => "number",
-    "required" => 0,
-    "wrapper" => [
-        "width" => "33",
-    ],
-    "default_value" => "",
-    "min" => 0,
-    "step" => 1,
-    "conditional_logic" => [
         [
-            [
-                "field" => "field_type_classification",
-                "operator" => "!=",
-                "value" => "",
+            "key" => "field_type_sort_order",
+            "label" => "Type Sort Order",
+            "name" => "type_sort_order",
+            "type" => "number",
+            "required" => 0,
+            "wrapper" => [
+                "width" => "33",
+            ],
+            "default_value" => "",
+            "min" => 0,
+            "step" => 1,
+            "conditional_logic" => [
+                [
+                    [
+                        "field" => "field_type_classification",
+                        "operator" => "!=",
+                        "value" => "",
+                    ],
+                ],
             ],
         ],
-    ],
-],
 
         [
             "key" => "tab_ctas",
@@ -430,28 +437,26 @@ add_action("acf/init", function () {
             "return_format" => "Y-m-d",
             "first_day" => 0,
         ],
-[
-    "key"   => "field_clinvar_url",
-    "label" => "ClinVar Variants URL",
-    "name"  => "clinvar_url",
-    "type"  => "url",
-    "required" => 0,
-    "wrapper" => [
-        "width" => "33",
-    ],
-    
-],
-[
-    "key"   => "field_genereviews_url",
-    "label" => "GeneReviews URL",
-    "name"  => "genereviews_url",
-    "type"  => "url",
-    "required" => 0,
-    "wrapper" => [
-        "width" => "33",
-    ],
-    
-],
+        [
+            "key" => "field_clinvar_url",
+            "label" => "ClinVar Variants URL",
+            "name" => "clinvar_url",
+            "type" => "url",
+            "required" => 0,
+            "wrapper" => [
+                "width" => "33",
+            ],
+        ],
+        [
+            "key" => "field_genereviews_url",
+            "label" => "GeneReviews URL",
+            "name" => "genereviews_url",
+            "type" => "url",
+            "required" => 0,
+            "wrapper" => [
+                "width" => "33",
+            ],
+        ],
     ];
 
     // Apply 33% width to every field (except tabs)
@@ -484,41 +489,42 @@ add_action("acf/init", function () {
     ]);
 });
 
-add_action("acf/save_post", function ($post_id) {
+add_action(
+    "acf/save_post",
+    function ($post_id) {
+        if (get_post_type($post_id) !== "subtype") {
+            return;
+        }
 
-    if (get_post_type($post_id) !== "subtype") {
-        return;
-    }
+        if (wp_is_post_autosave($post_id) || wp_is_post_revision($post_id)) {
+            return;
+        }
 
-    if (wp_is_post_autosave($post_id) || wp_is_post_revision($post_id)) {
-        return;
-    }
+        $type = get_field("type_classification", $post_id);
+        if (!$type) {
+            return;
+        }
 
-    $type = get_field("type_classification", $post_id);
-    if (!$type) {
-        return;
-    }
+        $map = [
+            "cmt1" => 1,
+            "cmt2" => 2,
+            "cmt4" => 3,
+            "cmtx" => 4,
+            "cmtdi" => 5,
+            "cmtri" => 6,
+            "dhmn" => 7,
+            "dsma" => 8,
+            "gan" => 9,
+            "hmsn" => 10,
+            "hsan" => 11,
+            "hsn" => 12,
+            "smalep" => 13,
+            "unclassified" => 14,
+        ];
 
-    $map = [
-        "cmt1"         => 1,
-        "cmt2"         => 2,
-        "cmt4"         => 3,
-        "cmtx"         => 4,
-        "cmtdi"        => 5,
-        "cmtri"        => 6,
-        "dhmn"         => 7,
-        "dsma"         => 8,
-        "gan"          => 9,
-        "hmsn"         => 10,
-        "hsan"         => 11,
-        "hsn"          => 12,
-        "smalep"       => 13,
-        "unclassified" => 14,
-    ];
-
-    if (isset($map[$type])) {
-        update_field("field_type_sort_order", $map[$type], $post_id);
-    }
-
-}, 20);
-
+        if (isset($map[$type])) {
+            update_field("field_type_sort_order", $map[$type], $post_id);
+        }
+    },
+    20
+);
