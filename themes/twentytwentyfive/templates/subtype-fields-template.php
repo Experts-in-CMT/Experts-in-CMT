@@ -84,7 +84,7 @@ $has_alt_pub = (bool) array_filter([
 ]);
 
 $pub_count = ($has_primary_pub ? 1 : 0) + ($has_alt_pub ? 1 : 0);
-$pub_heading = $pub_count === 1 ? "Key Publication" : "Key Publications";
+$pub_heading = $pub_count === 1 ? "Original Discovery Publication" : "Original Discovery Publications";
 ?>
 
 <main class="eic-subtype-fields" id="subtype-details">

@@ -778,4 +778,36 @@ function eic_topic_updated_line()
 }
 add_shortcode("topic_updated", "eic_topic_updated_line");
 
+// ============================================================
+// Google News RSS Feed Hook
+// ============================================================
+
+add_action('wp_head', function () {
+    if (is_page('dorsal-root')) {
+        echo '<link rel="alternate" type="application/rss+xml" title="The Dorsal Root" href="https://expertsincmt.org/dorsal-root/feed/" />' . "\n";
+    }
+});
+
+// ======================================================================
+// Editor Configuration: CPT Editing - Nuke Block Template Surfacing
+// ======================================================================
+add_filter('block_editor_settings_all', function ($settings, $context) {
+
+    // CPTs that use block templates for rendering but require content-only editing
+    if (
+        isset($context->post) &&
+        $context->post instanceof WP_Post &&
+        $context->post->post_type === 'subtype'  
+
+    ) {
+        // Prevent template preview in the post editor
+        $settings['supportsTemplateMode'] = false;
+
+        // Force a content-only editing canvas
+        $settings['template'] = [];
+        $settings['templateLock'] = false;
+    }
+
+    return $settings;
+}, 10, 2);
 
