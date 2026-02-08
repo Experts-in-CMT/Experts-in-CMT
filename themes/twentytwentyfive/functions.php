@@ -811,3 +811,31 @@ add_filter('block_editor_settings_all', function ($settings, $context) {
     return $settings;
 }, 10, 2);
 
+// Add Gene column to Subtype admin list
+add_filter('manage_edit-subtype_columns', function ($columns) {
+    $new = [];
+
+    foreach ($columns as $key => $label) {
+        $new[$key] = $label;
+
+        if ($key === 'title') {
+            $new['gene_symbol'] = 'Gene';
+        }
+    }
+
+    return $new;
+});
+
+// Populate Gene column
+add_action('manage_subtype_posts_custom_column', function ($column, $post_id) {
+    if ($column === 'gene_symbol') {
+        $gene = get_field('gene_symbol', $post_id);
+
+        if (!$gene) {
+            $gene = get_field('gene', $post_id); // legacy fallback
+        }
+
+        echo esc_html($gene ?: '—');
+    }
+}, 10, 2);
+
