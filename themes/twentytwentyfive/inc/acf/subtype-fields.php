@@ -448,6 +448,16 @@ add_action("acf/init", function () {
             ],
         ],
         [
+            "key" => "field_clingen_url",
+            "label" => "ClinGen URL",
+            "name" => "clingen_url",
+            "type" => "url",
+            "required" => 0,
+            "wrapper" => [
+                "width" => "33",
+            ],
+        ],
+        [
             "key" => "field_genereviews_url",
             "label" => "GeneReviews URL",
             "name" => "genereviews_url",

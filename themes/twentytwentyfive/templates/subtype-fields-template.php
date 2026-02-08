@@ -41,6 +41,7 @@ $gene_alias = get_field("gene_alias");
 $chromosome = get_field("chromosome");
 $zygosity = get_field("zygosity");
 $clinvar_url = trim((string) get_field("clinvar_url"));
+$clingen_url = trim((string) get_field("clingen_url"));
 $genereviews_url = trim((string) get_field("genereviews_url"));
 $mitochondrial_involvement = get_field("mitochondrial_involvement");
 $subtype_alias = get_field("subtype_alias");
@@ -208,10 +209,24 @@ $pub_heading = $pub_count === 1 ? "Original Discovery Publication" : "Original D
          href="<?php echo esc_url($clinvar_url); ?>"
          target="_blank"
          rel="noopener noreferrer">
-        View ClinVar Variants
+        View <?php echo esc_html($subtype); ?> ClinVar Variants
       </a>
     </dd>
   </div>
+<?php endif; ?>
+
+<?php if (!empty($clingen_url)): ?>
+      <div class="eic-fact">
+        <dt>ClinGen Curation</dt>
+        <dd>
+          <a class="dr-more"
+             href="<?php echo esc_url($clingen_url); ?>"
+             target="_blank"
+             rel="noopener noreferrer">
+           View <?php echo esc_html($gene_symbol); ?> ClinGen Curation
+          </a>
+        </dd>
+      </div>
 <?php endif; ?>
 
  <?php if (!empty($genereviews_url)): ?>
