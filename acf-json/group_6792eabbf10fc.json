@@ -136,6 +136,13 @@
                 "operator": "==",
                 "value": "what-is-cmt"
             }
+        ],
+        [
+            {
+                "param": "post_type",
+                "operator": "==",
+                "value": "glossary"
+            }
         ]
     ],
     "menu_order": 999,
@@ -148,5 +155,5 @@
     "description": "",
     "show_in_rest": 0,
     "display_title": "",
-    "modified": 1763510395
+    "modified": 1765080581
 }
