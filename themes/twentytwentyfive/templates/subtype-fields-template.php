@@ -223,11 +223,11 @@ $pub_heading = $pub_count === 1 ? "Original Discovery Publication" : "Original D
              href="<?php echo esc_url($clingen_url); ?>"
              target="_blank"
              rel="noopener noreferrer">
-           View <?php echo esc_html($gene_symbol); ?> ClinGen Curation
+          View <?php echo esc_html($gene_symbol); ?> ClinGen Curation
           </a>
         </dd>
       </div>
-<?php endif; ?>
+<?php endif; ?>  
 
  <?php if (!empty($genereviews_url)): ?>
       <div class="eic-fact">
