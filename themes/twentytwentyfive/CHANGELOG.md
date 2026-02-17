@@ -25,6 +25,63 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.0.0] - 2026-02-16
+
+### Added
+
+- **ClinGen Gene Curation Integration**
+  - Added direct ClinGen gene curation links across the Genetics Database where authoritative curation exists.
+  - Subtype pages now conditionally render ClinGen links alongside existing ClinVar references.
+  - External links resolve to gene-specific ClinGen curation entries.
+  - Rendering logic suppresses the link when no valid curation record is present.
+
+- **Platform Search Production Lock**
+  - Finalized deterministic if/else intent tree.
+  - Implemented full no-results handling with conditional heading replacement.
+  - Added structured two-line no-results messaging with independent styling classes.
+  - Confirmed canonical bucket ordering across Subtypes, Types, Genes, and Content.
+
+- **Semantic Variable Expansion**
+  - Added chromosome-based semantic resolution.
+  - Added inheritance-pattern semantic handling with noise tolerance.
+  - Implemented slash normalization for subtype variables (e.g., 1F/2E).
+  - Anchored subtype-specific semantic URLs at render-time for deterministic routing.
+
+### Changed
+
+- **Subtype More Info Surface**
+  - Expanded subtype external reference layer to include ClinGen alongside ClinVar.
+  - Refined conditional CTA rendering logic for authoritative genetics resources.
+
+- **Search Banner Architecture**
+  - Liberated header banner from native WordPress search context.
+  - Converted Search Results template into a shell-only renderer.
+  - Moved query echo logic into `platform_search_results` layer.
+
+- **Resolver Stability**
+  - Eliminated accidental early returns blocking inheritance queries.
+  - Refined semantic clamp + widening behavior for multi-token input.
+  - Validated stacking logic across noisy or partial inheritance phrases.
+  - Confirmed exact gene symbol resolution (e.g., PMP ≠ PMP22).
+
+- **Branch Governance**
+  - Rebasing and linearization of `dev` prior to merge.
+  - Clean promotion of `main` as first viable production baseline.
+
+### Fixed
+
+- **General Search Fall-Through**
+  - Restored native WordPress fallback for non-intent-based content queries.
+
+- **Semantic Variable Invocation**
+  - Ensured Roussy-Lévy variable is defined and invoked exactly once.
+  - Removed duplicate or competing semantic triggers.
+
+- **Deployment Integrity**
+  - Resolved SSH trust prompt and public key authentication issues.
+  - Eliminated non-fast-forward rejection through controlled rebase workflow.
+
+
 ## [1.8.0] – 2026-01-01
 
 ### Added
