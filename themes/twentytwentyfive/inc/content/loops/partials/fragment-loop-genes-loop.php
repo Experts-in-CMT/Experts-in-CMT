@@ -306,10 +306,27 @@ if ($q && $q->have_posts()) {
 
         $q->the_post();
 
-        $gene_symbol =
-            get_field("gene") ?:
-            get_post_meta(get_the_ID(), "gene_symbol", true);
-        $display_gene = $gene_symbol ?: get_the_title();
+        $unknown_gene = (bool) get_post_meta(
+            get_the_ID(),
+            "unknown_gene",
+            true
+        );
+
+        $gene_symbol = trim(
+            (string) get_post_meta(get_the_ID(), "gene_symbol", true)
+        );
+
+        // Optional legacy fallback if older entries used ACF field "gene"
+        if ($gene_symbol === "") {
+            $legacy = trim((string) get_field("gene"));
+            if ($legacy !== "") {
+                $gene_symbol = $legacy;
+            }
+        }
+
+        $display_gene =
+            $unknown_gene || $gene_symbol === "" ? "Unknown" : $gene_symbol;
+
         $year_discovery = get_field("year_of_discovery") ?: "";
         $inherit_label =
             get_field("inheritance_pattern") ?:

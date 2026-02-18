@@ -32,10 +32,18 @@ $neuropathy = get_the_terms(get_the_ID(), "neuropathy");
 $inheritance = get_the_terms(get_the_ID(), "inheritance");
 
 /* Genetic Context*/
-$gene_symbol = get_field("gene_symbol");
-if ($gene_symbol === "" || $gene_symbol === null) {
-    $gene_symbol = get_field("gene"); // legacy key, if any
+$unknown_gene = (bool) get_field("unknown_gene");
+
+$gene_symbol = trim((string) get_field("gene_symbol"));
+if ($gene_symbol === "") {
+    $gene_symbol = trim((string) get_field("gene")); // legacy key, if any
 }
+
+$gene_symbol =
+    $unknown_gene || $gene_symbol === ""
+        ? "Gene is Unknown at This Time"
+        : $gene_symbol;
+
 $full_gene_name = get_field("full_gene_name");
 $gene_alias = get_field("gene_alias");
 $chromosome = get_field("chromosome");
@@ -85,7 +93,10 @@ $has_alt_pub = (bool) array_filter([
 ]);
 
 $pub_count = ($has_primary_pub ? 1 : 0) + ($has_alt_pub ? 1 : 0);
-$pub_heading = $pub_count === 1 ? "Original Discovery Publication" : "Original Discovery Publications";
+$pub_heading =
+    $pub_count === 1
+        ? "Original Discovery Publication"
+        : "Original Discovery Publications";
 ?>
 
 <main class="eic-subtype-fields" id="subtype-details">

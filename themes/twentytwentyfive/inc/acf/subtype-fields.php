@@ -90,14 +90,14 @@ add_action("acf/init", function () {
             "label" => "Associated Gene - HGNC-Approved Gene Symbol",
             "name" => "gene_symbol",
             "type" => "text",
-            "required" => 1,
+            "required" => 0,
         ],
         [
             "key" => "field_full_gene_name",
             "label" => "Full HGNC-Approved Gene Name",
             "name" => "full_gene_name",
             "type" => "text",
-            "required" => 1,
+            "required" => 0,
         ],
         [
             "key" => "field_gene_alias",
@@ -508,6 +508,15 @@ add_action(
 
         if (wp_is_post_autosave($post_id) || wp_is_post_revision($post_id)) {
             return;
+        }
+
+        // --- Unknown Gene normalization ---
+        $unknown_gene = (bool) get_field("unknown_gene", $post_id);
+
+        if ($unknown_gene) {
+            update_field("field_gene_symbol", "", $post_id);
+            update_field("field_full_gene_name", "", $post_id);
+            update_field("field_gene_alias", "", $post_id);
         }
 
         $type = get_field("type_classification", $post_id);
