@@ -21,6 +21,8 @@ themes/cmtgenes/
 !themes/twentytwentyfive/**
 !mu-plugins/
 !mu-plugins/**
+!.github/
+!.github/**
 
 # Ignore runtime junk inside themes
 themes/*/node_modules/
