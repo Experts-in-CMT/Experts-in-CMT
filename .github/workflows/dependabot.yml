@@ -1,0 +1,12 @@
+version: 2
+
+updates:
+  - package-ecosystem: "npm"
+    directory: "/themes/twentytwentyfive"
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "composer"
+    directory: "/themes/twentytwentyfive"
+    schedule:
+      interval: "weekly"
