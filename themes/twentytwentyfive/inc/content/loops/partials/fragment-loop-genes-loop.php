@@ -286,7 +286,7 @@ foreach ($filter_keys as $key) {
             esc_html(
                 eic_gl_plural(
                     $__unknown,
-                    "Subtype with Unknown Gene",
+                    "Subtype with an Unknown Gene",
                     "Subtypes with Unknown Genes"
                 )
             );
