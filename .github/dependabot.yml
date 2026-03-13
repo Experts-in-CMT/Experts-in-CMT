@@ -1,0 +1,14 @@
+version: 2
+
+updates:
+  # Theme npm deps (your package.json/package-lock.json)
+  - package-ecosystem: "npm"
+    directory: "/themes/twentytwentyfive"
+    schedule:
+      interval: "weekly"
+
+  # Optional: keep GitHub Actions up to date too
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
