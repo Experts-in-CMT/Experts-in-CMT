@@ -25,6 +25,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.0.9] - 2026-03-13
+
+### Fixed
+- Closed CSRF vulnerability in Genes AJAX endpoint by enforcing nonce validation.
+  - themes/twentytwentyfive/inc/ajax/genes-loop-endpoints.php
+
+- Replaced timing-unsafe token comparison in SSO authentication with constant-time verification.
+  - mu-plugins/sso.php
+
+- Sanitized `$bounce` redirect parameter in SSO authentication flow.
+  - mu-plugins/sso.php
+
+- Restored IPv6 rate-limiting by replacing incorrect `REMOTE_ADDR` handling with validated IP detection and hashed transient keys.
+  - mu-plugins/sso.php
+
+### Performance
+- Increased subtype ID transient cache TTL from 60 seconds to `DAY_IN_SECONDS`.
+  - mu-plugins/cmtgenes-helpers.php
+
+### Maintenance
+- Consolidated ACF JSON path registration into MU-plugin loader to prevent conflicting save locations.
+  - mu-plugins/acf-json-loader.php
+  - mu-plugins/acf-admin-stability.php
+
 ## [2.0.0] - 2026-02-16
 
 ### Added
