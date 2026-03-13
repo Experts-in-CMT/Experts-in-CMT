@@ -220,8 +220,8 @@ if (!function_exists("eic_gl_current_post_ids")) {
         // Normalize + de-dupe to avoid JOIN-inflated counts
         $ids = array_values(array_unique(array_map("intval", $ids)));
 
-        // Short TTL during development; extend for production if desired
-        set_transient($key, $ids, 60); // 60 seconds while developing
+        // Cache subtype IDs; invalidated via version bump on subtype updates
+        set_transient($key, $ids, DAY_IN_SECONDS);
         return $ids;
     }
 }

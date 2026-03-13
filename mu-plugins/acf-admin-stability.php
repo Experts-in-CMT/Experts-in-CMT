@@ -29,11 +29,6 @@ if (!defined("ABSPATH")) {
 add_filter("acf/settings/show_admin", "__return_true");
 add_filter("acf/settings/remove_wp_meta_box", "__return_false");
 
-// Load ACF JSON from the active theme
-add_filter("acf/settings/load_json", function ($paths) {
-    $paths[] = get_stylesheet_directory() . "/acf-json";
-    return $paths;
-});
 
 // Safety: if ACF is loaded but Gutenberg hijacked admin_head,
 // ensure meta boxes are still rendered.
