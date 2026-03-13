@@ -53,12 +53,7 @@ add_action("wp_ajax_nopriv_genes_get_loop", "eic_genes_loop_endpoint");
 
 function eic_genes_loop_endpoint()
 {
-    if (
-        isset($_POST["nonce"]) &&
-        !wp_verify_nonce($_POST["nonce"], "genes_ajax_nonce")
-    ) {
-        wp_send_json_error("nonce_fail", 403);
-    }
+  check_ajax_referer( 'genes_ajax_nonce', 'nonce' );
 
     // ============================================================
     // Build Query Args — unified GET/POST intake
