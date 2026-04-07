@@ -2290,6 +2290,11 @@ h2.wp-block-heading {
   color: rgba(29, 42, 51, 0.7);
 }
 
+/* Capitalize inheritance pattern on loop cards */
+.eic-card-inheritance {
+  text-transform: capitalize;
+}
+
 /* =========================================================
    RESULTS-LEVEL SORT TOOLBAR — centered, card-width, matched UI
    - Lives under totals, above grid

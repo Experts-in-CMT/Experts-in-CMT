@@ -171,13 +171,13 @@ add_action("acf/init", function () {
             "type" => "select",
             "required" => 1,
             "choices" => [
-                "Autosomal Dominant" => "Autosomal Dominant",
-                "Autosomal Recessive" => "Autosomal Recessive",
-                "Autosomal Dominant or Autosomal Recessive" =>
-                    "Autosomal Dominant or Autosomal Recessive",
-                "X-Linked Dominant" => "X-Linked Dominant",
-                "X-Linked Recessive" => "X-Linked Recessive",
-                "Mitochondrial Inheritance" => "Mitochondrial Inheritance",
+                "autosomal dominant" => "autosomal dominant",
+                "autosomal recessive" => "autosomal recessive",
+                "autosomal dominant or autosomal recessive" =>
+                    "autosomal dominant or autosomal recessive",
+                "X-linked dominant" => "X-linked dominant",
+                "X-linked recessive" => "X-linked recessive",
+                "mitochondrial inheritance" => "mitochondrial inheritance",
             ],
             "ui" => 1,
             "return_format" => "value",

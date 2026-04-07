@@ -373,7 +373,7 @@ if ($q && $q->have_posts()) {
                     ); ?></p>
                 <?php endif; ?>
                 <?php if ($inherit_label): ?>
-                    <p><strong>Inheritance:</strong> <?php echo esc_html(
+                    <p class="eic-card-inheritance"><strong>Inheritance:</strong> <?php echo esc_html(
                         $inherit_label
                     ); ?></p>
                 <?php endif; ?>

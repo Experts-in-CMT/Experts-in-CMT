@@ -141,7 +141,7 @@ $pub_heading =
       <?php if ($inheritance && !is_wp_error($inheritance)): ?>
         <div class="eic-fact">
           <dt>Inheritance Pattern</dt>
-          <dd><?php echo esc_html(
+          <dd class="eic-card-inheritance"><?php echo esc_html(
               implode(", ", wp_list_pluck($inheritance, "name"))
           ); ?></dd>
         </div>
