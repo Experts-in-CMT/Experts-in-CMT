@@ -788,6 +788,11 @@ add_action('wp_head', function () {
     }
 });
 
+// =========================================================
+// EIC REST API — GENE SYMBOLS ENDPOINT
+// =========================================================
+require_once get_template_directory() . '/inc/rest/gene-symbols-endpoint.php';
+
 // ======================================================================
 // Editor Configuration: CPT Editing - Nuke Block Template Surfacing
 // ======================================================================
