@@ -793,6 +793,11 @@ add_action('wp_head', function () {
 // =========================================================
 require_once get_template_directory() . '/inc/rest/gene-symbols-endpoint.php';
 
+// =========================================================
+// EIC REST API — AUTHORITY LINKS ENDPOINT
+// =========================================================
+require_once get_template_directory() . '/inc/rest/authority-links-endpoint.php';
+
 // ======================================================================
 // Editor Configuration: CPT Editing - Nuke Block Template Surfacing
 // ======================================================================
