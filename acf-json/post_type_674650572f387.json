@@ -56,7 +56,7 @@
     "rest_base": "",
     "rest_namespace": "wp\/v2",
     "rest_controller_class": "WP_REST_Posts_Controller",
-    "menu_position": "",
+    "menu_position": 5,
     "menu_icon": {
         "type": "dashicons",
         "value": "dashicons-database-add"
@@ -88,5 +88,5 @@
     "delete_with_user": false,
     "register_meta_box_cb": "",
     "enter_title_here": "",
-    "modified": 1766240975
+    "modified": 1777417322
 }
