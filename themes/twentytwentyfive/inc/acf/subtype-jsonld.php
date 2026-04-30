@@ -48,12 +48,22 @@ add_action(
         $zygosity = trim((string) get_field("zygosity", $post_id));
         $type_class = trim((string) get_field("type_classification", $post_id));
         $year_of_discovery = get_field("year_of_discovery", $post_id);
-        $mitochondrial = (bool) get_field("mitochondrial_involvement", $post_id);
+        $mitochondrial = (bool) get_field(
+            "mitochondrial_involvement",
+            $post_id
+        );
         $ars_gene = (bool) get_field("ars_gene", $post_id);
         $audience = get_field("medical_audience", $post_id);
-        $last_reviewed = trim((string) get_field("last_reviewed_date", $post_id));
-        $reviewed_by_name = trim((string) get_field("reviewed_by_name", $post_id));
-        $reviewed_by_type = trim((string) get_field("reviewed_by_type", $post_id));
+        $specialties = get_field("medical_specialty", $post_id);
+        $last_reviewed = trim(
+            (string) get_field("last_reviewed_date", $post_id)
+        );
+        $reviewed_by_name = trim(
+            (string) get_field("reviewed_by_name", $post_id)
+        );
+        $reviewed_by_type = trim(
+            (string) get_field("reviewed_by_type", $post_id)
+        );
         $date_published = get_the_date("Y-m-d", $post_id);
         $date_modified = get_the_modified_date("Y-m-d", $post_id);
         $alternate_names = [];
@@ -64,8 +74,13 @@ add_action(
             $alternate_names[] = $acronym;
         }
         if ($subtype_alias !== "") {
-            $aliases = array_filter(array_map("trim", explode(",", $subtype_alias)));
-            $alternate_names = array_merge($alternate_names, array_values($aliases));
+            $aliases = array_filter(
+                array_map("trim", explode(",", $subtype_alias))
+            );
+            $alternate_names = array_merge(
+                $alternate_names,
+                array_values($aliases)
+            );
         }
         $desc_parts = [];
         $desc_parts[] = sprintf(
@@ -73,10 +88,16 @@ add_action(
             $subtype_name,
             $gene_symbol !== "" && !$unknown_gene
                 ? sprintf(" caused by mutations in the %s gene", $gene_symbol)
-                : ($unknown_gene ? " whose causative gene is currently unknown" : "")
+                : ($unknown_gene
+                    ? " whose causative gene is currently unknown"
+                    : "")
         );
         if (!$unknown_gene && $full_gene_name !== "") {
-            $desc_parts[] = sprintf("The %s gene encodes %s.", $gene_symbol, $full_gene_name);
+            $desc_parts[] = sprintf(
+                "The %s gene encodes %s.",
+                $gene_symbol,
+                $full_gene_name
+            );
         }
         if ($chromosome !== "") {
             $desc_parts[] = sprintf(
@@ -86,16 +107,24 @@ add_action(
             );
         }
         if ($inheritance !== "") {
-            $desc_parts[] = sprintf("%s follows %s inheritance.", $subtype_name, $inheritance);
+            $desc_parts[] = sprintf(
+                "%s follows %s inheritance.",
+                $subtype_name,
+                $inheritance
+            );
         }
         if ($neuropathy !== "") {
-            $desc_parts[] = sprintf("It presents as a %s neuropathy.", $neuropathy);
+            $desc_parts[] = sprintf(
+                "It presents as a %s neuropathy.",
+                $neuropathy
+            );
         }
         if ($zygosity !== "") {
             $desc_parts[] = sprintf("Causative mutations are %s.", $zygosity);
         }
         if ($mitochondrial) {
-            $desc_parts[] = "Mitochondrial involvement has been associated with this subtype.";
+            $desc_parts[] =
+                "Mitochondrial involvement has been associated with this subtype.";
         }
         if ($ars_gene) {
             $desc_parts[] = sprintf(
@@ -104,7 +133,11 @@ add_action(
             );
         }
         if ($year_of_discovery) {
-            $desc_parts[] = sprintf("%s was first described in %s.", $subtype_name, $year_of_discovery);
+            $desc_parts[] = sprintf(
+                "%s was first described in %s.",
+                $subtype_name,
+                $year_of_discovery
+            );
         }
         // BLOCK 1: MedicalCondition
         $condition_schema = [
@@ -123,9 +156,10 @@ add_action(
             ],
         ];
         if (!empty($alternate_names)) {
-            $condition_schema["alternateName"] = count($alternate_names) === 1
-                ? $alternate_names[0]
-                : $alternate_names;
+            $condition_schema["alternateName"] =
+                count($alternate_names) === 1
+                    ? $alternate_names[0]
+                    : $alternate_names;
         }
         $additional = [];
         if (!$unknown_gene && $gene_symbol !== "") {
@@ -218,10 +252,17 @@ add_action(
             "inLanguage" => "en-US",
             "datePublished" => $date_published,
             "dateModified" => $date_modified,
-            "specialty" => [
-                "@type" => "MedicalSpecialty",
-                "name" => "Neurology",
-            ],
+            "specialty" => !empty($specialties)
+                ? array_map(
+                    function ($s) {
+                        return [
+                            "@type" => "MedicalSpecialty",
+                            "name" => $s,
+                        ];
+                    },
+                    is_array($specialties) ? $specialties : [$specialties]
+                )
+                : [["@type" => "MedicalSpecialty", "name" => "Neurologic"]],
             "about" => [
                 "@type" => "MedicalCondition",
                 "name" => "Charcot-Marie-Tooth disease",
@@ -263,7 +304,14 @@ add_action(
         $mentions = [];
         if ($content !== "") {
             $site_url = home_url();
-            preg_match_all('/<a\s[^>]*href=["\'](' . preg_quote($site_url, '/') . '[^"\']*)["\'][^>]*>(.*?)<\/a>/i', $content, $matches, PREG_SET_ORDER);
+            preg_match_all(
+                '/<a\s[^>]*href=["\'](' .
+                    preg_quote($site_url, "/") .
+                    '[^"\']*)["\'][^>]*>(.*?)<\/a>/i',
+                $content,
+                $matches,
+                PREG_SET_ORDER
+            );
             $seen_urls = [];
             foreach ($matches as $match) {
                 $href = trim($match[1]);
@@ -273,13 +321,13 @@ add_action(
                 }
                 $seen_urls[] = $href;
                 $path = str_replace($site_url, "", $href);
-                if (preg_match('#^/subtype/#', $path)) {
+                if (preg_match("#^/subtype/#", $path)) {
                     $mention_type = "MedicalCondition";
-                } elseif (preg_match('#^/glossary/#', $path)) {
+                } elseif (preg_match("#^/glossary/#", $path)) {
                     $mention_type = "MedicalEntity";
-                } elseif (preg_match('#^/what-is-cmt/#', $path)) {
+                } elseif (preg_match("#^/what-is-cmt/#", $path)) {
                     $mention_type = "MedicalWebPage";
-                } elseif (preg_match('#^/cmt-and-breathing/#', $path)) {
+                } elseif (preg_match("#^/cmt-and-breathing/#", $path)) {
                     $mention_type = "MedicalWebPage";
                 } else {
                     continue;
@@ -295,10 +343,16 @@ add_action(
             $page_schema["mentions"] = $mentions;
         }
         echo "\n" . '<script type="application/ld+json">' . "\n";
-        echo wp_json_encode($condition_schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+        echo wp_json_encode(
+            $condition_schema,
+            JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT
+        );
         echo "\n" . "</script>" . "\n";
         echo "\n" . '<script type="application/ld+json">' . "\n";
-        echo wp_json_encode($page_schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+        echo wp_json_encode(
+            $page_schema,
+            JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT
+        );
         echo "\n" . "</script>" . "\n";
     },
     10

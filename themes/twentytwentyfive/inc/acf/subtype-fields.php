@@ -18,12 +18,15 @@
  *   - Discovery tab (year, discoverer, original paper)
  *   - Alt Publication block
  *   - Advanced / Debug fields (e.g., EIC Test Ping)
+ *   - Schema Markup fields (specialty, audience, reviewer)
  *
  * Implementation notes:
  *   - Registered via acf/include_field_groups
  *   - JSON sync disabled intentionally for stability
  *   - Field map matches the Subtype ACF Group Builder thread
- *   - Used by the “Single Item: Subtype” TT25 custom template
+ *   - Used by the "Single Item: Subtype" TT25 custom template
+ *   - _keep_wrapper flag exempts a field from the global 33%
+ *     width normalization loop; ACF ignores unknown keys.
  *
  * Location:
  *   /inc/acf/subtype-fields.php
@@ -106,7 +109,6 @@ add_action("acf/init", function () {
             "type" => "text",
             "required" => 0,
         ],
-
         [
             "key" => "field_chromosome",
             "label" => "Chromosome",
@@ -114,7 +116,6 @@ add_action("acf/init", function () {
             "type" => "text",
             "required" => 1,
         ],
-
         [
             "key" => "field_neuropathy",
             "label" => "Neuropathy",
@@ -467,70 +468,100 @@ add_action("acf/init", function () {
                 "width" => "33",
             ],
         ],
+
         [
-    "key" => "tab_schema_markup",
-    "label" => "Schema Markup",
-    "type" => "tab",
-    "placement" => "top",
-],
-[
-    "key" => "field_subtype_medical_audience",
-    "label" => "Medical Audience",
-    "name" => "medical_audience",
-    "type" => "checkbox",
-    "instructions" => "Primary intended audience for this page.",
-    "required" => 0,
-    "choices" => [
-        "Patient" => "Patient",
-        "Caregiver" => "Caregiver",
-        "Clinician" => "Clinician",
-        "MedicalResearcher" => "Medical Researcher",
-    ],
-    "layout" => "horizontal",
-    "wrapper" => ["width" => "33"],
-],
-[
-    "key" => "field_subtype_last_reviewed",
-    "label" => "Last Reviewed Date",
-    "name" => "last_reviewed_date",
-    "type" => "date_picker",
-    "instructions" => "Date this content was last reviewed for accuracy.",
-    "required" => 0,
-    "display_format" => "F j, Y",
-    "return_format" => "Y-m-d",
-    "wrapper" => ["width" => "33"],
-],
-[
-    "key" => "field_subtype_reviewed_by_name",
-    "label" => "Reviewed By",
-    "name" => "reviewed_by_name",
-    "type" => "text",
-    "instructions" => "Full name of the reviewing person or organization.",
-    "required" => 0,
-    "default_value" => "Experts in CMT",
-    "wrapper" => ["width" => "33"],
-],
-[
-    "key" => "field_subtype_reviewed_by_type",
-    "label" => "Reviewer Type",
-    "name" => "reviewed_by_type",
-    "type" => "select",
-    "instructions" => "Is the reviewer a person or an organization?",
-    "required" => 0,
-    "choices" => [
-        "Person" => "Person",
-        "Organization" => "Organization",
-    ],
-    "ui" => 1,
-    "allow_null" => 1,
-    "multiple" => 0,
-    "wrapper" => ["width" => "33"],
-],
+            "key" => "tab_schema_markup",
+            "label" => "Schema Markup",
+            "type" => "tab",
+            "placement" => "top",
+        ],
+        [
+            "key" => "field_subtype_specialty",
+            "label" => "Medical Specialty",
+            "name" => "medical_specialty",
+            "type" => "checkbox",
+            "instructions" =>
+                "Select all schema.org MedicalSpecialty values applicable to this page.",
+            "required" => 0,
+            "choices" => [
+                "Genetic" => "Genetic",
+                "Neurologic" => "Neurologic",
+                "LaboratoryScience" => "Laboratory Science",
+                "Musculoskeletal" => "Musculoskeletal",
+                "Pathology" => "Pathology",
+                "Pediatric" => "Pediatric",
+                "Physiotherapy" => "Physiotherapy",
+                "Podiatric" => "Podiatric",
+                "PublicHealth" => "Public Health",
+                "Pulmonary" => "Pulmonary",
+                "RespiratoryTherapy" => "Respiratory Therapy",
+                "SpeechPathology" => "Speech Pathology",
+                "Surgical" => "Surgical",
+            ],
+            "layout" => "horizontal",
+            "wrapper" => ["width" => "100"],
+            "_keep_wrapper" => true,
+        ],
+        [
+            "key" => "field_subtype_medical_audience",
+            "label" => "Medical Audience",
+            "name" => "medical_audience",
+            "type" => "checkbox",
+            "instructions" => "Primary intended audience for this page.",
+            "required" => 0,
+            "choices" => [
+                "Patient" => "Patient",
+                "Caregiver" => "Caregiver",
+                "Clinician" => "Clinician",
+                "MedicalResearcher" => "Medical Researcher",
+            ],
+            "layout" => "horizontal",
+            "wrapper" => ["width" => "33"],
+        ],
+        [
+            "key" => "field_subtype_last_reviewed",
+            "label" => "Last Reviewed Date",
+            "name" => "last_reviewed_date",
+            "type" => "date_picker",
+            "instructions" =>
+                "Date this content was last reviewed for accuracy.",
+            "required" => 0,
+            "display_format" => "F j, Y",
+            "return_format" => "Y-m-d",
+            "wrapper" => ["width" => "33"],
+        ],
+        [
+            "key" => "field_subtype_reviewed_by_name",
+            "label" => "Reviewed By",
+            "name" => "reviewed_by_name",
+            "type" => "text",
+            "instructions" =>
+                "Full name of the reviewing person or organization.",
+            "required" => 0,
+            "default_value" => "Experts in CMT",
+            "wrapper" => ["width" => "33"],
+        ],
+        [
+            "key" => "field_subtype_reviewed_by_type",
+            "label" => "Reviewer Type",
+            "name" => "reviewed_by_type",
+            "type" => "select",
+            "instructions" => "Is the reviewer a person or an organization?",
+            "required" => 0,
+            "choices" => [
+                "Person" => "Person",
+                "Organization" => "Organization",
+            ],
+            "ui" => 1,
+            "allow_null" => 1,
+            "multiple" => 0,
+            "wrapper" => ["width" => "33"],
+        ],
     ];
 
-    // Apply 33% width to every field (except tabs)
+    // Apply 33% width to every field (except tabs and fields flagged with _keep_wrapper).
     foreach ($fields as &$field) {
-        if ($field["type"] !== "tab") {
+        if ($field["type"] !== "tab" && empty($field["_keep_wrapper"])) {
             $field["wrapper"] = ["width" => "33"];
         }
     }

@@ -4,75 +4,34 @@
  * Part of the Experts in CMT WordPress theme.
  * Do not copy, modify, or redistribute without permission.
  *
- * File: ACF — What Is CMT Topic Fields
- * Purpose: Registers fields for the What Is CMT Topics CPT.
- * Includes Core content fields and Schema Markup fields.
+ * File: ACF — Pages Schema Markup Fields
+ * Purpose: Registers a Schema Markup field group for WordPress
+ *          Pages, providing structured data fields for specialty,
+ *          audience, reviewer, and content aspect signals.
  *
  * Location:
- *   /inc/acf/what-is-cmt-fields.php
+ *   /inc/acf/pages-fields.php
  */
 
 if (!defined("ABSPATH")) {
     exit();
 }
 
-add_action("init", "eic_acf_what_is_cmt_fields");
-function eic_acf_what_is_cmt_fields()
+add_action("init", "eic_acf_pages_fields");
+function eic_acf_pages_fields()
 {
     acf_add_local_field_group([
-        "key" => "group_eic_what_is_cmt",
-        "title" => "What Is CMT Topic Fields",
+        "key" => "group_eic_pages_schema",
+        "title" => "Page Schema Markup",
         "fields" => [
             [
-                "key" => "field_eic_wic_tab_core",
-                "label" => "Core",
-                "type" => "tab",
-                "placement" => "top",
-            ],
-            [
-                "key" => "field_eic_wic_title",
-                "label" => "Topic Title",
-                "name" => "topic_title",
-                "type" => "text",
-                "instructions" =>
-                    "Enter the title exactly as it should appear on the page.",
-                "required" => 1,
-                "maxlength" => 120,
-                "wrapper" => ["width" => "33"],
-            ],
-            [
-                "key" => "field_eic_wic_summary",
-                "label" => "Short Summary",
-                "name" => "summary",
-                "type" => "textarea",
-                "instructions" => "2-4 sentences. Maximum 600 characters.",
-                "required" => 1,
-                "maxlength" => 600,
-                "rows" => 3,
-                "new_lines" => "",
-                "wrapper" => ["width" => "33"],
-            ],
-            [
-                "key" => "field_eic_wic_topic_order",
-                "label" => "Topic Order",
-                "name" => "topic_order",
-                "type" => "number",
-                "instructions" =>
-                    "Set the topic sequence number (1, 2, 3...). Lower numbers appear earlier.",
-                "required" => 1,
-                "wrapper" => ["width" => "33"],
-                "min" => "",
-                "max" => "",
-                "step" => 1,
-            ],
-            [
-                "key" => "field_eic_wic_tab_schema",
+                "key" => "field_eic_pages_tab_schema",
                 "label" => "Schema Markup",
                 "type" => "tab",
                 "placement" => "top",
             ],
             [
-                "key" => "field_eic_wic_specialty",
+                "key" => "field_eic_pages_specialty",
                 "label" => "Medical Specialty",
                 "name" => "medical_specialty",
                 "type" => "checkbox",
@@ -98,7 +57,7 @@ function eic_acf_what_is_cmt_fields()
                 "wrapper" => ["width" => "100"],
             ],
             [
-                "key" => "field_eic_wic_aspect",
+                "key" => "field_eic_pages_aspect",
                 "label" => "Page Aspect",
                 "name" => "aspect",
                 "type" => "select",
@@ -118,7 +77,7 @@ function eic_acf_what_is_cmt_fields()
                 "wrapper" => ["width" => "33"],
             ],
             [
-                "key" => "field_eic_wic_audience",
+                "key" => "field_eic_pages_audience",
                 "label" => "Medical Audience",
                 "name" => "medical_audience",
                 "type" => "checkbox",
@@ -134,7 +93,7 @@ function eic_acf_what_is_cmt_fields()
                 "wrapper" => ["width" => "33"],
             ],
             [
-                "key" => "field_eic_wic_last_reviewed",
+                "key" => "field_eic_pages_last_reviewed",
                 "label" => "Last Reviewed Date",
                 "name" => "last_reviewed_date",
                 "type" => "date_picker",
@@ -146,7 +105,7 @@ function eic_acf_what_is_cmt_fields()
                 "wrapper" => ["width" => "33"],
             ],
             [
-                "key" => "field_eic_wic_reviewed_by_name",
+                "key" => "field_eic_pages_reviewed_by_name",
                 "label" => "Reviewed By",
                 "name" => "reviewed_by_name",
                 "type" => "text",
@@ -157,7 +116,7 @@ function eic_acf_what_is_cmt_fields()
                 "wrapper" => ["width" => "50"],
             ],
             [
-                "key" => "field_eic_wic_reviewed_by_type",
+                "key" => "field_eic_pages_reviewed_by_type",
                 "label" => "Reviewer Type",
                 "name" => "reviewed_by_type",
                 "type" => "select",
@@ -179,7 +138,7 @@ function eic_acf_what_is_cmt_fields()
                 [
                     "param" => "post_type",
                     "operator" => "==",
-                    "value" => "what-is-cmt",
+                    "value" => "page",
                 ],
             ],
         ],
