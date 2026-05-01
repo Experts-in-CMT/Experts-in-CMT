@@ -4,22 +4,25 @@
  * Part of the Experts in CMT WordPress theme.
  * Do not copy, modify, or redistribute without permission.
  *
- * Pages — MedicalWebPage JSON-LD Schema Injection
+ * Pages — MedicalCondition + MedicalWebPage JSON-LD Schema
  * ------------------------------------------------------------
- * Outputs a MedicalWebPage JSON-LD block in <head> for
- * WordPress Pages that have schema markup fields populated.
- * Pulls from ACF fields registered in pages-fields.php to
- * provide structured medical content signals for Google and
- * answer engines.
+ * Outputs two additive JSON-LD blocks in <head> for WordPress
+ * Pages that have schema markup fields populated:
+ *
+ *   BLOCK 1 — MedicalCondition
+ *   Declares Charcot-Marie-Tooth disease as the subject entity.
+ *   Canonical URL always points to /what-is-cmt/ as the disease
+ *   entity anchor, consistent with all other JSON-LD files.
+ *
+ *   BLOCK 2 — MedicalWebPage
+ *   Pulls from ACF fields registered in pages-fields.php to
+ *   provide structured medical content signals for Google and
+ *   answer engines.
  *
  * Only fires when at least one Medical Specialty is selected.
  * Pages with no specialty selection are skipped entirely,
  * which excludes non-medical pages (About, Privacy, etc.)
- * from receiving a MedicalWebPage schema block.
- *
- * The `about` node is gated on specialty presence, treating
- * a populated specialty field as the signal that the page
- * is medical in nature and pertains to CMT.
+ * from receiving schema injection.
  *
  * Mentions are derived programmatically from internal links
  * in post_content, typed by URL pattern. Only links matching
@@ -176,6 +179,23 @@ add_action(
             $schema["mentions"] = $mentions;
         }
 
+        // BLOCK 1: MedicalCondition
+        $condition_schema = [
+            "@context" => "https://schema.org",
+            "@type" => "MedicalCondition",
+            "name" => "Charcot-Marie-Tooth disease",
+            "alternateName" => "CMT",
+            "url" => "https://expertsincmt.org/what-is-cmt/",
+        ];
+
+        echo "\n" . '<script type="application/ld+json">' . "\n";
+        echo wp_json_encode(
+            $condition_schema,
+            JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT
+        );
+        echo "\n" . "</script>" . "\n";
+
+        // BLOCK 2: MedicalWebPage
         echo "\n" . '<script type="application/ld+json">' . "\n";
         echo wp_json_encode(
             $schema,

@@ -182,6 +182,12 @@ add_action(
                     "value" => $gene_alias,
                 ];
             }
+        } elseif ($unknown_gene) {
+            $additional[] = [
+                "@type" => "PropertyValue",
+                "name"  => "Associated Gene Symbol",
+                "value" => "Gene unknown at this time",
+            ];
         }
         if ($chromosome !== "") {
             $additional[] = [
