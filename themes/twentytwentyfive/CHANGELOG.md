@@ -25,6 +25,55 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.1.0] - 2026-05-04
+
+### Added
+
+- **Pages JSON-LD Schema (`pages-jsonld.php`)**
+  - New file: injects `MedicalCondition` and `MedicalWebPage` JSON-LD blocks in `<head>` for WordPress Pages.
+  - Fires only when at least one Medical Specialty is selected, excluding non-medical pages from schema injection entirely.
+  - Specialty output is always an array of `MedicalSpecialty` nodes, supporting multi-select.
+  - `about` node points to Charcot-Marie-Tooth disease as the `MedicalCondition`.
+  - Supports audience, aspect, lastReviewed, reviewedBy, publisher, isPartOf, and mentions.
+  - Mentions whitelist consistent with existing CPT JSON-LD files: `/subtype/`, `/glossary/`, `/what-is-cmt/`, `/cmt-and-breathing/`.
+  - Added `code` (`MedicalCode` / OMIM) and `associatedAnatomy` (`AnatomicalStructure` / Peripheral nervous system) to the `MedicalCondition` block for consistency with the subtype schema.
+  - inc/acf/pages-jsonld.php
+
+- **Medical Specialty Checkbox Field — Subtype, What Is CMT, CMT and Breathing**
+  - Added `medical_specialty` checkbox field to the Schema Markup tab in `subtype-fields.php`, `what-is-cmt-fields.php`, and `cmt-and-breathing-fields.php`.
+  - Field renders full width above all other Schema Markup fields on all three CPTs.
+  - Choices match the `pages-fields.php` specialty set for consistency across all content types.
+  - `subtype-fields.php`: field exempted from the global 33% width normalization loop via `_keep_wrapper` flag; ACF ignores unknown keys.
+  - inc/acf/subtype-fields.php
+  - inc/acf/what-is-cmt-fields.php
+  - inc/acf/cmt-and-breathing-fields.php
+
+- **Standalone `MedicalCondition` Block — Educational CPTs (`educational-jsonld.php`)**
+  - Added Block 1 `MedicalCondition` output before the existing `MedicalWebPage` block for What Is CMT and CMT and Breathing CPT posts.
+  - Canonical URL always points to `/what-is-cmt/` as the disease entity anchor, regardless of which CPT the post belongs to.
+  - Added `is_page()` guard to prevent the file from firing on WordPress pages.
+  - Replaced hardcoded `"Neurology"` specialty with dynamic read from `medical_specialty` ACF field; falls back to `Neurologic` when unpopulated.
+  - Normalized `about` URL to `/what-is-cmt/` — removed post-type conditional that previously pointed breathing posts to `/cmt-and-breathing/`.
+  - Added `code` (`MedicalCode` / OMIM) and `associatedAnatomy` (`AnatomicalStructure` / Peripheral nervous system) to the `MedicalCondition` block for consistency with the subtype schema.
+  - inc/acf/educational-jsonld.php
+
+### Changed
+
+- **Subtype JSON-LD — Dynamic Specialty + Unknown Gene Node (`subtype-jsonld.php`)**
+  - Replaced hardcoded `"Neurology"` specialty node in the `MedicalWebPage` block with a dynamic read from the `medical_specialty` ACF field.
+  - Output is always an array of `MedicalSpecialty` nodes, consistent with all other JSON-LD files.
+  - Falls back to `Neurologic` for subtypes with no specialty selection saved.
+  - Added `elseif ($unknown_gene)` branch to the `additionalProperty` block: outputs `"Gene unknown at this time"` as the `Associated Gene Symbol` `PropertyValue` node when the Unknown Gene flag is checked; gene symbol, full name, and alias nodes are suppressed in that state.
+  - inc/acf/subtype-jsonld.php
+
+### Fixed
+
+- **CMT and Breathing Fields — Key Typo (`cmt-and-breathing-fields.php`)**
+  - Corrected mismatched ACF field key on `reviewed_by_name`: was `field_eic_wic_reviewed_by_name` (copied from What Is CMT), now correctly `field_eic_breathing_reviewed_by_name`.
+  - inc/acf/cmt-and-breathing-fields.php
+
+---
+
 ## [2.0.9] - 2026-03-13
 
 ### Fixed
