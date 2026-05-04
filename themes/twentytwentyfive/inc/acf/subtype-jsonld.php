@@ -185,7 +185,7 @@ add_action(
         } elseif ($unknown_gene) {
             $additional[] = [
                 "@type" => "PropertyValue",
-                "name"  => "Associated Gene Symbol",
+                "name" => "Associated Gene Symbol",
                 "value" => "Gene unknown at this time",
             ];
         }

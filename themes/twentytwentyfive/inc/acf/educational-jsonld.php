@@ -68,6 +68,14 @@ add_action(
             "name" => "Charcot-Marie-Tooth disease",
             "alternateName" => "CMT",
             "url" => "https://expertsincmt.org/what-is-cmt/",
+            "code" => [
+                "@type" => "MedicalCode",
+                "codingSystem" => "OMIM",
+            ],
+            "associatedAnatomy" => [
+                "@type" => "AnatomicalStructure",
+                "name" => "Peripheral nervous system",
+            ],
         ];
 
         echo "\n" . '<script type="application/ld+json">' . "\n";
