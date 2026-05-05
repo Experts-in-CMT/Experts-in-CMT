@@ -163,12 +163,13 @@ add_action("init", function () {
                     "new_item_name" => "New" . $L["singular"],
                     "not_found" => "No" . strtolower($L["plural"]) . " found",
                 ],
-                "public" => true,
-                "hierarchical" => true, // checkbox UI (no typing)
-                "show_ui" => true,
-                "show_admin_column" => true,
-                "show_in_rest" => true,
-                "rewrite" => ["slug" => $L["slug"]],
+                "public"             => false,
+                "publicly_queryable" => false,
+                "hierarchical"       => true, // checkbox UI (no typing)
+                "show_ui"            => true,
+                "show_admin_column"  => true,
+                "show_in_rest"       => true,
+                "rewrite"            => false,
             ]
         );
     }

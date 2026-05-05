@@ -23,8 +23,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - (placeholder)
 
----
+### Maintenance
 
+- **Database Cleanup — Legacy Domain Migration Artifacts**
+  - Removed stale `staging_config` option from `kvu1_options` and `6CV_options`,
+    left over from Installatron migration records.
+  - Updated 39 rows in `kvu1_yoast_indexable` where `permalink` contained the
+    legacy staging domain (`expertsincmt-wu8cfkwyb0.live-website.com`), replacing
+    all instances with `https://expertsincmt.org`.
+  - Corrected `kvu1_yoast_indexable` row 18 (`post-type-archive` / `subtype`),
+    which was storing the legacy `cmtgenes.com` domain as the subtype archive
+    permalink. Updated to `https://expertsincmt.org/subtype/`.
+  - Root cause: database search-replace during migration to Ionos did not target
+    `kvu1_yoast_indexable` and operated against the wrong table prefix (`6CV_`
+    instead of `kvu1_`), leaving all Yoast indexable records on legacy domains.
+  - Resolved downstream effects: malformed breadcrumb `@id` values in Yoast
+    WebPage schema on subtype pages, legacy domain appearing in social URL
+    previews on mobile, and bot-crawl 404s sourced from stale permalink records.
+
+---
 ## [2.1.0] - 2026-05-04
 
 ### Added
