@@ -17,7 +17,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- (placeholder)
+- **Subtype Taxonomy Registration — Disable Public Archives (`register-subtype-taxes.php`)**
+  - Set `"public" => false`, `"publicly_queryable" => false`, and `"rewrite" => false`
+    on all four subtype taxonomies (`cmt_type`, `inheritance`, `neuropathy`, `chromosome`).
+  - Eliminates public-facing taxonomy archive routes that were generating bot-crawl
+    404s and driving malformed Yoast breadcrumb ancestry on subtype pages.
+  - Admin UI, ACF integration, and filter loop functionality are unaffected.
+  - themes/twentytwentyfive/inc/taxonomies/register-subtype-taxes.php
 
 ### Fixed
 
