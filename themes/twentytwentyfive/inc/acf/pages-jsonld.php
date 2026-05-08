@@ -28,6 +28,10 @@
  * in post_content, typed by URL pattern. Only links matching
  * known medical path prefixes are included.
  *
+ * Speakable is gated by the enable_speakable ACF toggle field.
+ * Enable only on pages with substantive prose content suitable
+ * for voice and AI surface extraction.
+ *
  * Additive: does not replace or modify Yoast WebPage schema.
  *
  * Location:
@@ -66,6 +70,7 @@ add_action(
         $reviewed_by_type = trim(
             (string) get_field("reviewed_by_type", $post_id)
         );
+        $enable_speakable = (bool) get_field("enable_speakable", $post_id);
         $date_published = get_the_date("Y-m-d", $post_id);
         $date_modified = get_the_modified_date("Y-m-d", $post_id);
 
@@ -179,6 +184,17 @@ add_action(
             $schema["mentions"] = $mentions;
         }
 
+        // Speakable: only output when enable_speakable ACF toggle is on.
+        // Enable on pages with substantive prose content suitable for
+        // voice and AI surface extraction. Leave off on hub pages,
+        // filter-heavy pages, and non-prose pages.
+        if ($enable_speakable) {
+            $schema["speakable"] = [
+                "@type" => "SpeakableSpecification",
+                "cssSelector" => [".wp-block-post-content"],
+            ];
+        }
+
         // BLOCK 1: MedicalCondition
         $condition_schema = [
             "@context" => "https://schema.org",
@@ -186,6 +202,14 @@ add_action(
             "name" => "Charcot-Marie-Tooth disease",
             "alternateName" => "CMT",
             "url" => "https://expertsincmt.org/what-is-cmt/",
+            "mainEntityOfPage" => "https://expertsincmt.org/what-is-cmt/",
+            "epidemiology" =>
+                "CMT is a rare disease and the most common inheritable peripheral neuropathy, affecting approximately 1 in 2,500 people worldwide.",
+            "sameAs" => [
+                "https://omim.org/phenotypicSeries/PS118220",
+                "https://www.orpha.net/en/disease/detail/166",
+                "https://meshb.nlm.nih.gov/record/ui?ui=D002607",
+            ],
             "code" => [
                 "@type" => "MedicalCode",
                 "codingSystem" => "OMIM",

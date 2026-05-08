@@ -68,6 +68,14 @@ add_action(
             "name" => "Charcot-Marie-Tooth disease",
             "alternateName" => "CMT",
             "url" => "https://expertsincmt.org/what-is-cmt/",
+            "mainEntityOfPage" => "https://expertsincmt.org/what-is-cmt/",
+            "epidemiology" =>
+                "CMT is a rare disease and the most common inheritable peripheral neuropathy, affecting approximately 1 in 2,500 people worldwide.",
+            "sameAs" => [
+                "https://omim.org/phenotypicSeries/PS118220",
+                "https://www.orpha.net/en/disease/detail/166",
+                "https://meshb.nlm.nih.gov/record/ui?ui=D002607",
+            ],
             "code" => [
                 "@type" => "MedicalCode",
                 "codingSystem" => "OMIM",
@@ -197,6 +205,12 @@ add_action(
         if (!empty($mentions)) {
             $schema["mentions"] = $mentions;
         }
+
+        // Speakable: targets block editor prose rendered by wp:post-content
+        $schema["speakable"] = [
+            "@type" => "SpeakableSpecification",
+            "cssSelector" => [".wp-block-post-content"],
+        ];
 
         echo "\n" . '<script type="application/ld+json">' . "\n";
         echo wp_json_encode(

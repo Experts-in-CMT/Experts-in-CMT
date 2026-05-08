@@ -64,6 +64,11 @@ add_action(
         $reviewed_by_type = trim(
             (string) get_field("reviewed_by_type", $post_id)
         );
+        $clinvar_url = trim((string) get_field("clinvar_url", $post_id));
+        $clingen_url = trim((string) get_field("clingen_url", $post_id));
+        $genereviews_url = trim(
+            (string) get_field("genereviews_url", $post_id)
+        );
         $date_published = get_the_date("Y-m-d", $post_id);
         $date_modified = get_the_modified_date("Y-m-d", $post_id);
         $alternate_names = [];
@@ -146,6 +151,7 @@ add_action(
             "name" => $subtype_name,
             "url" => $subtype_url,
             "description" => implode(" ", $desc_parts),
+            "mainEntityOfPage" => $subtype_url,
             "code" => [
                 "@type" => "MedicalCode",
                 "codingSystem" => "OMIM",
@@ -348,6 +354,24 @@ add_action(
         if (!empty($mentions)) {
             $page_schema["mentions"] = $mentions;
         }
+
+        // significantLink: authoritative external references from ACF fields.
+        // Only populated fields are included.
+        $significant_links = array_filter([
+            $clinvar_url,
+            $clingen_url,
+            $genereviews_url,
+        ]);
+        if (!empty($significant_links)) {
+            $page_schema["significantLink"] = array_values($significant_links);
+        }
+
+        // Speakable: targets block editor prose rendered by wp:post-content
+        $page_schema["speakable"] = [
+            "@type" => "SpeakableSpecification",
+            "cssSelector" => [".wp-block-post-content"],
+        ];
+
         echo "\n" . '<script type="application/ld+json">' . "\n";
         echo wp_json_encode(
             $condition_schema,

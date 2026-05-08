@@ -132,6 +132,18 @@ function eic_acf_pages_fields()
                 "multiple" => 0,
                 "wrapper" => ["width" => "50"],
             ],
+            [
+                "key" => "field_eic_pages_enable_speakable",
+                "label" => "Enable Speakable",
+                "name" => "enable_speakable",
+                "type" => "true_false",
+                "instructions" =>
+                    "Enable speakable schema on this page. Use only when the page contains substantive prose content suitable for voice and AI surface extraction. Leave off on hub pages, filter-heavy pages, and pages without significant prose.",
+                "required" => 0,
+                "default_value" => 0,
+                "ui" => 1,
+                "wrapper" => ["width" => "100"],
+            ],
         ],
         "location" => [
             [
