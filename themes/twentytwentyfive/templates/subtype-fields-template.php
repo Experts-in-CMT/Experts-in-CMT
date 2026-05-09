@@ -53,10 +53,16 @@ $clingen_url = trim((string) get_field("clingen_url"));
 $genereviews_url = trim((string) get_field("genereviews_url"));
 $mitochondrial_involvement = get_field("mitochondrial_involvement");
 $subtype_alias = get_field("subtype_alias");
+$omim_subtype = trim((string) get_field("omim_subtype"));
+$omim_gene = trim((string) get_field("omim_gene"));
 
 /* More Info — CTA buttons */
 $research_url = trim((string) get_field("research_url"));
 $research_label = trim((string) get_field("research_label"));
+$research_url_2 = trim((string) get_field("research_url_2"));
+$research_label_2 = trim((string) get_field("research_label_2"));
+$research_url_3 = trim((string) get_field("research_url_3"));
+$research_label_3 = trim((string) get_field("research_label_3"));
 $symptoms_url = trim((string) get_field("symptoms_url"));
 $what_is_cmtx_url = trim((string) get_field("what_is_cmtx_url"));
 $what_is_intermediate_url = trim(
@@ -253,6 +259,65 @@ $pub_heading =
         </dd>
       </div>
 <?php endif; ?>
+
+<?php if (!empty($genereviews_url)): ?>
+      <div class="eic-fact">
+        <dt>GeneReviews®</dt>
+        <dd>
+          <a class="dr-more"
+             href="<?php echo esc_url($genereviews_url); ?>"
+             target="_blank"
+             rel="noopener noreferrer">
+            <?php echo esc_html($subtype); ?> GeneReviews®
+          </a>
+        </dd>
+      </div>
+    <?php endif; ?>
+
+  <?php if (!empty($omim_subtype)): ?>
+  <?php $omim_subtype_no_entry =
+      (bool) preg_match('/^\s*no[\s\-]?entry\s*$/i', $omim_subtype) ||
+      (bool) preg_match('/^\s*none\s*$/i', $omim_subtype); ?>
+  <div class="eic-fact">
+    <dt><?php echo esc_html($subtype); ?> OMIM Entry</dt>
+    <dd>
+      <?php if ($omim_subtype_no_entry): ?>
+        <a class="dr-more">No Entry</a>
+      <?php else: ?>
+        <a class="dr-more"
+           href="https://omim.org/entry/<?php echo esc_attr($omim_subtype); ?>"
+           target="_blank"
+           rel="noopener noreferrer">
+          <?php echo esc_html($subtype); ?> OMIM
+        </a>
+      <?php endif; ?>
+    </dd>
+  </div>
+<?php endif; ?>
+
+<?php if (!empty($omim_gene)): ?>
+  <?php $omim_gene_no_entry =
+      (bool) preg_match('/^\s*no[\s\-]?entry\s*$/i', $omim_gene) ||
+      (bool) preg_match('/^\s*none\s*$/i', $omim_gene); ?>
+  <div class="eic-fact">
+    <dt><?php echo esc_html($gene_symbol); ?> OMIM Entry</dt>
+    <dd>
+      <?php if ($omim_gene_no_entry): ?>
+        <a class="dr-more">No Entry</a>
+      <?php else: ?>
+        <a class="dr-more"
+           href="https://omim.org/entry/<?php echo esc_attr($omim_gene); ?>"
+           target="_blank"
+           rel="noopener noreferrer">
+          <?php echo esc_html($gene_symbol); ?> OMIM
+        </a>
+      <?php endif; ?>
+    </dd>
+  </div>
+<?php endif; ?>
+
+    </dl>
+  </section>
     </dl>
   </section>
 
@@ -260,47 +325,115 @@ $pub_heading =
 /* ============================================================
    Box 3: "More Info"
    ============================================================ */
-
 // Gate the section if at least one CTA is available
 $has_cta =
     !empty($symptoms_url) ||
     !empty($research_url) ||
+    !empty($research_url_2) ||
+    !empty($research_url_3) ||
     !empty($what_is_cmtx_url) ||
     !empty($what_is_intermediate_url);
 
 if ($has_cta): ?>
 <section class="eic-block eic-block--cta">
   <h2 class="eic-block-title">More Info</h2>
-
   <dl class="eic-facts">
 
-    <?php if (!empty($research_url)):
-        // Label fallback if custom label is empty
+<?php
+$research_count =
+    (int) !empty($research_url) +
+    (int) !empty($research_url_2) +
+    (int) !empty($research_url_3);
+$research_first = true;
+if ($research_count > 0):
+    $research_dt =
+        esc_html($subtype) .
+        " Research Opportunit" .
+        ($research_count === 1 ? "y" : "ies"); ?>
+      <?php if (!empty($research_url)):
 
+          $btn_text =
+              $research_label !== ""
+                  ? $research_label
+                  : "View Research Opportunity";
+          $btn_text = trim(
+              wp_strip_all_tags(preg_replace("/<br\s*\/?>/i", "", $btn_text))
+          );
+          ?>
+        <div class="eic-fact">
+          <dt><?php echo $research_dt; ?></dt>
+          <dd>
+            <a class="dr-more"
+               href="<?php echo esc_url($research_url); ?>"
+               target="_blank"
+               rel="noopener noreferrer">
+              <?php echo esc_html($btn_text); ?>
+            </a>
+          </dd>
+        </div>
+        <?php $research_first = false; ?>
+      <?php
+      endif; ?>
 
-        $btn_text =
-            $research_label !== ""
-                ? $research_label
-                : "View Research Opportunity";
-        // Sanitize and strip rogue <br> or HTML
-        $btn_text = trim(
-            wp_strip_all_tags(preg_replace("/<br\s*\/?>/i", "", $btn_text))
-        );
-        ?>
-      <div class="eic-fact">
-        <dt>Research Opportunity</dt>
-        <dd>
-          <a class="dr-more"
-             href="<?php echo esc_url($research_url); ?>"
-             target="_blank"
-             rel="noopener noreferrer">
-            <?php echo esc_html($btn_text); ?>
-          </a>
-        </dd>
-      </div>
+      <?php if (!empty($research_url_2)):
+
+          $btn_text_2 =
+              $research_label_2 !== ""
+                  ? $research_label_2
+                  : "View Research Opportunity";
+          $btn_text_2 = trim(
+              wp_strip_all_tags(preg_replace("/<br\s*\/?>/i", "", $btn_text_2))
+          );
+          ?>
+        <div class="<?php echo $research_first
+            ? "eic-fact"
+            : "eic-fact eic-fact--no-label"; ?>">
+          <?php if (
+              $research_first
+          ): ?><dt><?php echo $research_dt; ?></dt><?php $research_first = false;endif; ?>
+          <dd>
+            <a class="dr-more"
+               href="<?php echo esc_url($research_url_2); ?>"
+               target="_blank"
+               rel="noopener noreferrer">
+              <?php echo esc_html($btn_text_2); ?>
+            </a>
+          </dd>
+        </div>
+      <?php
+      endif; ?>
+
+      <?php if (!empty($research_url_3)):
+
+          $btn_text_3 =
+              $research_label_3 !== ""
+                  ? $research_label_3
+                  : "View Research Opportunity";
+          $btn_text_3 = trim(
+              wp_strip_all_tags(preg_replace("/<br\s*\/?>/i", "", $btn_text_3))
+          );
+          ?>
+        <div class="<?php echo $research_first
+            ? "eic-fact"
+            : "eic-fact eic-fact--no-label"; ?>">
+          <?php if (
+              $research_first
+          ): ?><dt><?php echo $research_dt; ?></dt><?php $research_first = false;endif; ?>
+          <dd>
+            <a class="dr-more"
+               href="<?php echo esc_url($research_url_3); ?>"
+               target="_blank"
+               rel="noopener noreferrer">
+              <?php echo esc_html($btn_text_3); ?>
+            </a>
+          </dd>
+        </div>
+      <?php
+      endif; ?>
+
     <?php
-    endif; ?>
-
+endif;
+?>
     <?php if (!empty($what_is_cmtx_url)): ?>
       <div class="eic-fact">
         <dt>CMTX</dt>

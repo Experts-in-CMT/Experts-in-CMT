@@ -299,18 +299,49 @@ add_action("acf/init", function () {
         ],
         [
             "key" => "field_research_label",
-            "label" => "Research Button Label",
+            "label" => "Research Button 1 Label",
             "name" => "research_label",
             "type" => "text",
             "required" => 0,
         ],
         [
             "key" => "field_research_url",
-            "label" => "Current Research Opportunity",
+            "label" => "Current Research Opportunity 1",
             "name" => "research_url",
             "type" => "url",
             "required" => 0,
         ],
+
+        [
+            "key" => "field_research_label_2",
+            "label" => "Research Button 2 Label",
+            "name" => "research_label_2",
+            "type" => "text",
+            "required" => 0,
+        ],
+        [
+            "key" => "field_research_url_2",
+            "label" => "Current Research Opportunity 2",
+            "name" => "research_url_2",
+            "type" => "url",
+            "required" => 0,
+        ],
+
+        [
+            "key" => "field_research_label_3",
+            "label" => "Research Button 3 Label",
+            "name" => "research_label_3",
+            "type" => "text",
+            "required" => 0,
+        ],
+        [
+            "key" => "field_research_url_3",
+            "label" => "Current Research Opportunity 3",
+            "name" => "research_url_3",
+            "type" => "url",
+            "required" => 0,
+        ],
+
         [
             "key" => "tab_discovery",
             "label" => "Discovery",
@@ -467,6 +498,26 @@ add_action("acf/init", function () {
             "wrapper" => [
                 "width" => "33",
             ],
+        ],
+        [
+            "key" => "field_omim_subtype",
+            "label" => "OMIM Subtype Number",
+            "name" => "omim_subtype",
+            "type" => "text",
+            "instructions" =>
+                "OMIM entry number for this subtype (digits only).",
+            "required" => 0,
+            "wrapper" => ["width" => "33"],
+        ],
+        [
+            "key" => "field_omim_gene",
+            "label" => "OMIM Gene Number",
+            "name" => "omim_gene",
+            "type" => "text",
+            "instructions" =>
+                "OMIM entry number for the associated gene (digits only).",
+            "required" => 0,
+            "wrapper" => ["width" => "33"],
         ],
 
         [

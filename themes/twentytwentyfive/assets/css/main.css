@@ -2182,6 +2182,13 @@ h2.wp-block-heading {
   margin: 0;
 }
 
+.eic-fact--no-label dt {
+  display: none;
+}
+.eic-fact--no-label {
+  align-self: end;
+}
+
 /* Value (dd) */
 .eic-fact dd {
   margin: 0;
@@ -2865,6 +2872,18 @@ a.dr-more,
 a.dr-more:hover,
 a.dr-more:focus {
   text-decoration: none !important;
+}
+
+/* ============================================================
+   OMIM NO ENTRY — DISABLE HOVER FILL ON STATIC BUTTONS
+   Applies to: a.dr-more without an href (No Entry state)
+   ============================================================ */
+a.dr-more:not([href]):hover,
+a.dr-more:not([href]):focus {
+  background: none;
+  color: var(--primary);
+  transform: none;
+  cursor: default;
 }
 
 /* ------------------------------------------------------------------

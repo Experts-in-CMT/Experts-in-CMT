@@ -69,6 +69,22 @@ add_action(
         $genereviews_url = trim(
             (string) get_field("genereviews_url", $post_id)
         );
+        $omim_subtype = trim((string) get_field("omim_subtype", $post_id));
+        $omim_gene = trim((string) get_field("omim_gene", $post_id));
+
+        $omim_no_entry_pattern = '/^\s*no[\s\-]?entry\s*$/i';
+        $omim_none_pattern = '/^\s*none\s*$/i';
+
+        $omim_subtype_valid =
+            $omim_subtype !== "" &&
+            !preg_match($omim_no_entry_pattern, $omim_subtype) &&
+            !preg_match($omim_none_pattern, $omim_subtype);
+
+        $omim_gene_valid =
+            $omim_gene !== "" &&
+            !preg_match($omim_no_entry_pattern, $omim_gene) &&
+            !preg_match($omim_none_pattern, $omim_gene);
+
         $date_published = get_the_date("Y-m-d", $post_id);
         $date_modified = get_the_modified_date("Y-m-d", $post_id);
         $alternate_names = [];
@@ -152,10 +168,28 @@ add_action(
             "url" => $subtype_url,
             "description" => implode(" ", $desc_parts),
             "mainEntityOfPage" => $subtype_url,
-            "code" => [
-                "@type" => "MedicalCode",
-                "codingSystem" => "OMIM",
-            ],
+            "code" => array_values(
+                array_filter([
+                    array_filter([
+                        "@type" => "MedicalCode",
+                        "codingSystem" => "OMIM",
+                        "codeValue" => $omim_subtype_valid
+                            ? $omim_subtype
+                            : null,
+                        "url" => $omim_subtype_valid
+                            ? "https://omim.org/entry/" . $omim_subtype
+                            : null,
+                    ]),
+                    $omim_gene_valid
+                        ? [
+                            "@type" => "MedicalCode",
+                            "codingSystem" => "OMIM",
+                            "codeValue" => $omim_gene,
+                            "url" => "https://omim.org/entry/" . $omim_gene,
+                        ]
+                        : null,
+                ])
+            ),
             "associatedAnatomy" => [
                 "@type" => "AnatomicalStructure",
                 "name" => "Peripheral nervous system",
@@ -171,13 +205,13 @@ add_action(
         if (!$unknown_gene && $gene_symbol !== "") {
             $additional[] = [
                 "@type" => "PropertyValue",
-                "name" => "Associated Gene Symbol",
+                "name" => "Gene Symbol",
                 "value" => $gene_symbol,
             ];
             if ($full_gene_name !== "") {
                 $additional[] = [
                     "@type" => "PropertyValue",
-                    "name" => "Full Gene Name",
+                    "name" => "Gene Name",
                     "value" => $full_gene_name,
                 ];
             }
