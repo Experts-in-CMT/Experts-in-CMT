@@ -28,6 +28,10 @@
  *      Single-clause entries are normalized in place. Multi-clause entries
  *      are split: canonical primary keyphrase + full-phrase synonyms merged
  *      (de-duplicated) into _yoast_wpseo_keywordsynonyms.
+ *   6. internal_links  internal cross-link markup normalized: CMS artifact
+ *      attributes (type, id) stripped from anchors pointing inside the site,
+ *      preserving href, anchor text, and any valid attribute. External links
+ *      untouched.
  *
  * Safety:
  *   - Read-only scan is the default view. Nothing writes without an
@@ -151,6 +155,11 @@ function eic_maint_checks()
         "focuskw" => [
             "label" => "5. Yoast focus keyword normalization",
             "scan" => "eic_maint_scan_focuskw",
+        ],
+        "internal_links" => [
+            "label" =>
+                "6. Internal cross-link markup (strip CMS artifact attributes)",
+            "scan" => "eic_maint_scan_internal_links",
         ],
     ];
 }
@@ -779,6 +788,136 @@ function eic_maint_apply_focuskw($findings)
             );
         }
         $n++;
+    }
+    return $n;
+}
+
+/* ============================================================
+ * Check 6 — internal cross-link markup normalization
+ * ============================================================ */
+
+/**
+ * CMS artifact attributes to strip from internal anchors. `type` holds a
+ * non-standard value ("glossary"/"subtype") that is invalid on <a>, and
+ * `id` carries stale post-ID references that duplicate across a document
+ * (an HTML validity error). Extend as future artifacts are identified.
+ * The href, the anchor text, and any genuinely valid attribute (title,
+ * class, rel, aria-*) are preserved. External links are never touched.
+ */
+function eic_maint_internal_anchor_strip_attrs()
+{
+    return ["type", "id"];
+}
+
+/**
+ * True when an href points inside the site (absolute expertsincmt.org URL
+ * or a root-relative path).
+ */
+function eic_maint_href_is_internal($href)
+{
+    $href = trim((string) $href);
+    if ($href === "") {
+        return false;
+    }
+    if ($href[0] === "/" && substr($href, 0, 2) !== "//") {
+        return true;
+    }
+    $host = strtolower((string) wp_parse_url($href, PHP_URL_HOST));
+    return $host === "expertsincmt.org" ||
+        $host === "www.expertsincmt.org";
+}
+
+/**
+ * Rewrite post_content, stripping artifact attributes from internal anchors.
+ * Returns [new_content, links_changed_count].
+ */
+function eic_maint_strip_internal_anchor_attrs($content)
+{
+    $strip = eic_maint_internal_anchor_strip_attrs();
+    $changed = 0;
+
+    $new = preg_replace_callback(
+        '/<a\s+([^>]*?)>/is',
+        function ($m) use ($strip, &$changed) {
+            $attrs = $m[1];
+
+            // Determine the href to classify internal vs external.
+            if (
+                !preg_match(
+                    '/href\s*=\s*("[^"]*"|\'[^\']*\')/i',
+                    $attrs,
+                    $hm
+                )
+            ) {
+                return $m[0]; // no href; leave anchor untouched
+            }
+            $href = trim($hm[1], "\"'");
+            if (!eic_maint_href_is_internal($href)) {
+                return $m[0]; // external; never touch
+            }
+
+            $original = $attrs;
+            foreach ($strip as $name) {
+                $attrs = preg_replace(
+                    '/\s+' .
+                        preg_quote($name, "/") .
+                        '\s*=\s*("[^"]*"|\'[^\']*\')/i',
+                    "",
+                    $attrs
+                );
+            }
+            if ($attrs === $original) {
+                return $m[0];
+            }
+            $changed++;
+            return "<a " . trim($attrs) . ">";
+        },
+        $content
+    );
+
+    return [$new, $changed];
+}
+
+function eic_maint_scan_internal_links()
+{
+    $out = [];
+    foreach (eic_maint_ids() as $pid) {
+        $content = get_post_field("post_content", $pid);
+        list($new, $changed) = eic_maint_strip_internal_anchor_attrs(
+            $content
+        );
+        if ($changed > 0) {
+            $out[] = [
+                "id" => $pid,
+                "title" => get_the_title($pid),
+                "current" =>
+                    $changed .
+                    " internal link(s) with artifact attributes",
+                "proposed" => "stripped to canonical <a href> markup",
+            ];
+        }
+    }
+    return $out;
+}
+
+function eic_maint_apply_internal_links($findings)
+{
+    global $wpdb;
+    $n = 0;
+    foreach ($findings as $f) {
+        $content = get_post_field("post_content", $f["id"]);
+        list($new, $changed) = eic_maint_strip_internal_anchor_attrs(
+            $content
+        );
+        if ($changed > 0 && $new !== $content) {
+            $wpdb->update(
+                $wpdb->posts,
+                ["post_content" => $new],
+                ["ID" => $f["id"]]
+            );
+            clean_post_cache($f["id"]);
+            $n++;
+        }
     }
     return $n;
 }
