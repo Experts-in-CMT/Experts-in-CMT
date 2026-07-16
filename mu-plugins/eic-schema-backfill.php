@@ -77,7 +77,7 @@ final class EIC_Schema_Backfill
         if (!current_user_can(self::CAP)) {
             wp_die("Insufficient permissions.");
         }
-        echo '<div class="wrap"><h1>Schema Backfill</h1>';
+        eic_admin_tool_open("Schema Backfill");
         echo "<p>Sets the standard Schema Markup defaults on subtypes " .
             "(specialty, audience, reviewer, reviewer type).</p>";
 
@@ -102,14 +102,14 @@ final class EIC_Schema_Backfill
         echo '<hr><form method="post" style="margin:1em 0">';
         wp_nonce_field(self::NONCE);
         echo '<input type="hidden" name="eic_action" value="dryrun">' . $scope_sel;
-        echo '<button class="button button-primary">Run dry run (no writes)</button></form>';
+        echo '<button class="button button-primary">Dry run (no writes)</button></form>';
 
         echo '<form method="post" style="margin:1em 0">';
         wp_nonce_field(self::NONCE);
         echo '<input type="hidden" name="eic_action" value="commit">' . $scope_sel;
         echo '<p><label><input type="checkbox" name="confirm" value="1"> I have reviewed the dry run and want to write.</label></p>';
         echo '<button class="button button-primary">Commit</button></form>';
-        echo "</div>";
+        eic_admin_tool_close();
     }
 
     private static function process(bool $commit, string $scope): void

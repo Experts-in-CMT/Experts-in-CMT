@@ -173,8 +173,7 @@ function eic_maint_render_page()
     $applied = isset($_GET["applied"]) ? sanitize_key($_GET["applied"]) : "";
     $count = isset($_GET["n"]) ? (int) $_GET["n"] : 0;
     ?>
-    <div class="wrap">
-        <h1>Subtype Maintenance</h1>
+    <?php eic_admin_tool_open('Subtype Maintenance'); ?>
         <p>Scans every <code>subtype</code> record for known inconsistencies.
         Nothing is changed until you apply a specific check.
         <strong>Take a database backup before applying.</strong> Every fix is
@@ -201,7 +200,7 @@ function eic_maint_render_page()
             eic_maint_render_check($id, $check["label"], $findings);
         }
         ?>
-    </div>
+    <?php eic_admin_tool_close(); ?>
     <?php
 }
 
@@ -255,7 +254,7 @@ function eic_maint_render_check($id, $label, $findings)
             esc_attr($id) .
             '">';
         wp_nonce_field("eic_maint_apply_" . $id, "eic_maint_nonce");
-        echo '<button type="submit" class="button button-primary" onclick="return confirm(\'Apply ' .
+        echo '<button type="submit" class="button button-primary eic-danger" onclick="return confirm(\'Apply ' .
             count($auto) .
             ' fix(es) to live records? Ensure you have a backup.\');">Apply ' .
             count($auto) .

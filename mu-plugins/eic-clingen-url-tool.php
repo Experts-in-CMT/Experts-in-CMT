@@ -316,7 +316,7 @@ final class EIC_ClinGen_URL_Tool
         }
 
         $c = self::curations();
-        echo '<div class="wrap"><h1>ClinGen URL Builder</h1>';
+        eic_admin_tool_open("ClinGen URL Builder");
         echo "<p>Sets <code>clingen_url</code> to the exact ClinGen CMT GCEP " .
             "gene-disease validity curation for each gene. Lookup carries " .
             count($c) . " curated genes.</p>";
@@ -337,7 +337,7 @@ final class EIC_ClinGen_URL_Tool
         echo '<input type="hidden" name="eic_action" value="dryrun">';
         echo '<p><label><input type="checkbox" name="hgnc" value="1"> ' .
             "Normalize symbols to HGNC-approved first (slower)</label></p>";
-        echo '<button class="button button-primary">Run dry run (no writes)</button>';
+        echo '<button class="button button-primary">Dry run (no writes)</button>';
         echo "</form>";
 
         echo '<form method="post" style="margin:1em 0">';
@@ -360,7 +360,7 @@ final class EIC_ClinGen_URL_Tool
             "(CMT1E stays blank). Any other multi-curation gene would still be " .
             "flagged for manual choice.</em></p>";
 
-        echo "</div>";
+        eic_admin_tool_close();
     }
 
     private static function do_dryrun(bool $hgnc): void

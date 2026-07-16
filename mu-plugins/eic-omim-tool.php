@@ -466,7 +466,7 @@ JS;
         if (!current_user_can(self::CAP)) {
             wp_die("Insufficient permissions.");
         }
-        echo '<div class="wrap"><h1>OMIM Backfill</h1>';
+        eic_admin_tool_open("OMIM Backfill");
         echo "<p>Subtype numbers from the curated dataset; gene numbers from a " .
             "live HGNC lookup. Subtypes with no OMIM entry stay blank.</p>";
 
@@ -491,7 +491,7 @@ JS;
         echo '<hr><form method="post" style="margin:1em 0">';
         wp_nonce_field(self::NONCE_TOOL);
         echo '<input type="hidden" name="eic_action" value="dryrun">' . $opts;
-        echo '<button class="button button-primary">Run dry run (no writes)</button></form>';
+        echo '<button class="button button-primary">Dry run (no writes)</button></form>';
 
         echo '<form method="post" style="margin:1em 0">';
         wp_nonce_field(self::NONCE_TOOL);
@@ -503,7 +503,7 @@ JS;
         echo '<p><label><input type="checkbox" name="confirm" value="1" required> I have reviewed the dry run and want to write.</label></p>';
         echo '<button class="button button-primary">Commit</button></form>';
 
-        echo "</div>";
+        eic_admin_tool_close();
     }
 
     private static function do_dryrun(bool $do_sub, bool $do_gene): void

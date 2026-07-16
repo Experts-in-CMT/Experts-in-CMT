@@ -202,7 +202,7 @@ final class EIC_Gene_Name_Tool
         $scope = isset($_POST["scope"]) ? sanitize_key($_POST["scope"]) : "empty";
         $action = $_POST["eic_action"] ?? "";
 
-        echo '<div class="wrap"><h1>Gene Name Backfill</h1>';
+        eic_admin_tool_open("Gene Name Backfill");
         echo "<p>Fills <code>full_gene_name</code> on subtypes from the " .
             "HGNC-approved name (resolved live by gene symbol), written in " .
             "Title Case. Unknown-gene records are skipped. " .
@@ -223,10 +223,11 @@ final class EIC_Gene_Name_Tool
             '<option value="differs"' . selected($scope, "differs", false) . '>Only records that differ or are empty</option>' .
             '<option value="all"' . selected($scope, "all", false) . '>All records with a gene</option>' .
             '</select></p>';
-        echo '<p><button class="button button-primary" name="eic_action" value="dryrun">Run dry run (no writes)</button></p>';
+        echo '<p><button class="button button-primary" name="eic_action" value="dryrun">Dry run (no writes)</button></p>';
         echo '<p><label><input type="checkbox" name="confirm" value="1"> Backed up and reviewed the dry run.</label></p>';
         echo '<button class="button button-primary" name="eic_action" value="commit">Commit</button>';
-        echo "</form></div>";
+        echo "</form>";
+        eic_admin_tool_close();
     }
 
     private static function run(string $scope, bool $commit): void

@@ -153,7 +153,7 @@ JS;
         $scope = isset($_POST["scope"]) ? sanitize_key($_POST["scope"]) : "differs";
         $action = $_POST["eic_action"] ?? "";
 
-        echo '<div class="wrap"><h1>Header Banner Image</h1>';
+        eic_admin_tool_open("Header Banner Image");
         echo "<p>Bulk-set the header banner image across all posts of one type. " .
             "Pick the image from this site's media library so it stays correct per environment.</p>";
 
@@ -191,10 +191,11 @@ JS;
             '<option value="empty"' . selected($scope, "empty", false) . '>Only posts with no banner image</option>' .
             '<option value="all"' . selected($scope, "all", false) . '>All posts of this type</option>' .
             '</select></p>';
-        echo '<p><button class="button button-primary" name="eic_action" value="dryrun">Run dry run (no writes)</button></p>';
+        echo '<p><button class="button button-primary" name="eic_action" value="dryrun">Dry run (no writes)</button></p>';
         echo '<p><label><input type="checkbox" name="confirm" value="1"> I have reviewed the dry run and want to write.</label></p>';
         echo '<button class="button button-primary" name="eic_action" value="commit">Commit</button>';
-        echo '</form></div>';
+        echo '</form>';
+        eic_admin_tool_close();
     }
 
     private static function do_dryrun(string $type, int $img): void

@@ -246,7 +246,7 @@ final class EIC_Body_Maintenance
         }
         $action = $_POST["eic_action"] ?? "";
 
-        echo '<div class="wrap"><h1>Body Maintenance</h1>';
+        eic_admin_tool_open("Body Maintenance");
         echo "<p>Scan-first body-text hygiene. Auto-fix checks write on apply " .
             "(shown in context first). Flag-only checks report for manual fix. " .
             "<strong>Back up before applying.</strong></p>";
@@ -271,7 +271,8 @@ final class EIC_Body_Maintenance
         }
         echo '</select></label> ';
         echo '<button class="button button-primary" name="eic_action" value="scan">Scan</button></p>';
-        echo "</form></div>";
+        echo "</form>";
+        eic_admin_tool_close();
     }
 
     /* Render an auto-fix section: per-record checkboxes (checked by default),
@@ -307,7 +308,7 @@ final class EIC_Body_Maintenance
         }
         echo "</tbody></table>";
         echo '<p><label><input type="checkbox" name="confirm" value="1"> Backed up.</label> ';
-        echo '<button class="button button-primary" name="eic_action" value="' . esc_attr($action) . '">' .
+        echo '<button class="button button-primary eic-danger" name="eic_action" value="' . esc_attr($action) . '">' .
             esc_html($btn_label) . '</button></p>';
         echo "</form>";
     }

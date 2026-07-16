@@ -184,7 +184,7 @@ final class EIC_ClinVar_URL_Tool
             wp_die("Insufficient permissions.");
         }
 
-        echo '<div class="wrap"><h1>ClinVar URL Builder</h1>';
+        eic_admin_tool_open("ClinVar URL Builder");
         echo "<p>Builds <code>clinvar_url</code> on every subtype from the " .
             "verified Pathogenic + Likely Pathogenic gene template.</p>";
 
@@ -205,7 +205,7 @@ final class EIC_ClinVar_URL_Tool
         echo '<p><label><input type="checkbox" name="hgnc" value="1"> ' .
             "Normalize each symbol to the HGNC-approved symbol first " .
             "(slower, hits HGNC; self-corrects outdated symbols)</label></p>";
-        echo '<button class="button button-primary">Run dry run (no writes)</button>';
+        echo '<button class="button button-primary">Dry run (no writes)</button>';
         echo "</form>";
 
         echo '<form method="post" style="margin:1em 0">';
@@ -225,7 +225,7 @@ final class EIC_ClinVar_URL_Tool
         echo '<button class="button button-primary">Commit</button>';
         echo "</form>";
 
-        echo "</div>";
+        eic_admin_tool_close();
     }
 
     private static function do_dryrun(bool $hgnc): void

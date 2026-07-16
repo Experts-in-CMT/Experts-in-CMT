@@ -290,7 +290,7 @@ final class EIC_Subtype_Importer
             wp_die("Insufficient permissions.");
         }
 
-        echo '<div class="wrap"><h1>Subtype Importer</h1>';
+        eic_admin_tool_open("Subtype Importer");
         echo "<p>Paste authored subtype JSON (single record, array, or " .
             "<code>{\"subtypes\":[...]}</code>). Run-once tool: dry-run, then " .
             "commit. <strong>Take a database backup before committing.</strong> " .
@@ -301,6 +301,21 @@ final class EIC_Subtype_Importer
         $raw = isset($_POST["json"]) ? (string) wp_unslash($_POST["json"]) : "";
 
         if ($action && check_admin_referer(self::NONCE)) {
+            // An uploaded .json file takes precedence over the textarea when
+            // present; the textarea then re-populates from it so the commit
+            // step works without re-uploading.
+            if (
+                !empty($_FILES["json_file"]["tmp_name"]) &&
+                is_uploaded_file($_FILES["json_file"]["tmp_name"])
+            ) {
+                $uploaded = file_get_contents(
+                    $_FILES["json_file"]["tmp_name"]
+                );
+                if ($uploaded !== false && trim($uploaded) !== "") {
+                    $raw = $uploaded;
+                }
+            }
+
             $json = json_decode($raw, true);
             if (json_last_error() !== JSON_ERROR_NONE) {
                 echo '<div class="notice notice-error"><p>JSON parse error: ' .
@@ -317,14 +332,18 @@ final class EIC_Subtype_Importer
             }
         }
 
-        echo '<hr><form method="post">';
+        echo '<hr><form method="post" enctype="multipart/form-data">';
         wp_nonce_field(self::NONCE);
-        echo '<p><textarea name="json" rows="16" style="width:100%;font-family:monospace" placeholder="Paste subtype JSON here">' .
+        echo '<p><textarea name="json" rows="16" style="width:100%;font-family:monospace" placeholder="Paste subtype JSON here, or upload a .json file below">' .
             esc_textarea($raw) . "</textarea></p>";
-        echo '<p><button class="button button-primary" name="eic_action" value="dryrun">Run dry run (no writes)</button></p>';
+        echo '<p><label>Or upload a <code>.json</code> file: ' .
+            '<input type="file" name="json_file" accept=".json,application/json">' .
+            "</label> <em>(an uploaded file overrides the box above)</em></p>";
+        echo '<p><button class="button button-primary" name="eic_action" value="dryrun">Dry run (no writes)</button></p>';
         echo '<p><label><input type="checkbox" name="confirm" value="1"> I have taken a backup and reviewed the dry run.</label></p>';
-        echo '<button class="button button-primary" name="eic_action" value="commit">Commit (create records)</button>';
-        echo "</form></div>";
+        echo '<button class="button button-primary eic-danger" name="eic_action" value="commit">Commit (create records)</button>';
+        echo "</form>";
+        eic_admin_tool_close();
     }
 
     private static function do_dryrun(array $records): void
