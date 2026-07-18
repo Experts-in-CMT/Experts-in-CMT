@@ -177,7 +177,15 @@ final class EIC_ClinGen_URL_Tool
             return null;
         }
         $cache = get_option(self::HGNC_OPTION, []);
-        if (isset($cache[$symbol]) && is_array($cache[$symbol])) {
+        // Only short-circuit on a cache entry that this tool wrote (has
+        // the "approved" key). Other EIC tools share HGNC_OPTION and may
+        // have stored a different shape; those must fall through to a
+        // live fetch instead of no-op'ing.
+        if (
+            isset($cache[$symbol]) &&
+            is_array($cache[$symbol]) &&
+            array_key_exists("approved", $cache[$symbol])
+        ) {
             return $cache[$symbol]["approved"] ?? null;
         }
         $resp = wp_remote_get(

@@ -477,7 +477,7 @@ JS;
 
         if ($action && check_admin_referer(self::NONCE_TOOL)) {
             if ($action === "dryrun") {
-                self::do_dryrun($do_sub, $do_gene);
+                self::do_dryrun($do_sub, $do_gene, $scope);
             } elseif ($action === "commit") {
                 self::do_commit($do_sub, $do_gene, $scope);
             }
@@ -506,7 +506,7 @@ JS;
         eic_admin_tool_close();
     }
 
-    private static function do_dryrun(bool $do_sub, bool $do_gene): void
+    private static function do_dryrun(bool $do_sub, bool $do_gene, string $scope): void
     {
         $rows = self::collect($do_sub, $do_gene);
         $set_sub = 0;
@@ -516,8 +516,10 @@ JS;
             "<th>Subtype</th><th>Gene</th><th>OMIM subtype</th><th>OMIM gene</th>" .
             "</tr></thead><tbody>";
         foreach ($rows as $r) {
-            $sub_change = $do_sub && $r["prop_sub"] !== "" && $r["cur_sub"] !== $r["prop_sub"];
-            $gene_change = $do_gene && $r["prop_gene"] !== "" && $r["cur_gene"] !== $r["prop_gene"];
+            // Mirror do_commit(): gate on the same want()/scope logic
+            // the commit uses, or the preview counts will not match.
+            $sub_change = $do_sub && self::want($scope, $r["cur_sub"], $r["prop_sub"]);
+            $gene_change = $do_gene && self::want($scope, $r["cur_gene"], $r["prop_gene"]);
             if ($sub_change) { $set_sub++; }
             if ($gene_change) { $set_gene++; }
             $hi = ($sub_change || $gene_change) ? ' style="background:#fff3cd"' : "";

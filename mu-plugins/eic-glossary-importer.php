@@ -19,6 +19,12 @@
  * Accepts authored glossary JSON: a single record, an array of
  * records, or an object of the form {"glossary":[ ... ]}.
  *
+ * NOTE (round-trip): this importer expects the AUTHORED shape below,
+ * NOT the lossless backup produced by eic-glossary-exporter.php. An
+ * export file will NOT import (it yields "No records found"); exports
+ * restore via the database, not through this tool. The two formats
+ * are intentionally different.
+ *
  * Per-record schema (all text; images are handled by their own
  * tools and are NOT part of this import):
  *   {

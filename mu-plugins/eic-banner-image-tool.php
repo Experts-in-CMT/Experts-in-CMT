@@ -161,7 +161,7 @@ JS;
             if ($img < 1 || !wp_attachment_is_image($img)) {
                 echo '<div class="notice notice-error"><p>Select a valid image first.</p></div>';
             } elseif ($action === "dryrun") {
-                self::do_dryrun($type, $img);
+                self::do_dryrun($type, $img, $scope);
             } elseif ($action === "commit") {
                 self::do_commit($type, $img, $scope);
             }
@@ -198,7 +198,7 @@ JS;
         eic_admin_tool_close();
     }
 
-    private static function do_dryrun(string $type, int $img): void
+    private static function do_dryrun(string $type, int $img, string $scope): void
     {
         $rows = self::collect($type);
         $change = 0;
@@ -208,7 +208,9 @@ JS;
         echo "<p>Proposed image: <code>ID " . $img . " &middot; " . $fname . "</code></p>";
         echo '<table class="widefat striped"><thead><tr><th>Post</th><th>Current image</th><th>Change?</th></tr></thead><tbody>';
         foreach ($rows as $r) {
-            $will = $r["cur"] !== $img;
+            // Mirror do_commit(): the preview must gate on the same
+            // scope logic the commit uses, or counts will not match.
+            $will = self::want($scope, $r["cur"], $img);
             if ($will) {
                 $change++;
             }

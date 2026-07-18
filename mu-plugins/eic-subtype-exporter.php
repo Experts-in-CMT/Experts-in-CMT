@@ -24,6 +24,13 @@
  *     plus post_tag and any other registered taxonomy), with term meta
  *   - The Yoast `yoast_indexable` table row for the post
  *
+ * NOTE (round-trip): this is a LOSSLESS BACKUP shape (post columns +
+ * raw meta + taxonomies + Yoast row), NOT the authored shape the
+ * Subtype Importer ingests. Export files are for archival / DB
+ * restore, not for feeding back into eic-subtype-importer.php (which
+ * expects the authored surface, e.g. {"subtype","type_classification",
+ * ...}). The two are intentionally different formats.
+ *
  * Location:
  *   /wp-content/mu-plugins/eic-subtype-exporter.php
  *

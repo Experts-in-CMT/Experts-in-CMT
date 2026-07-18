@@ -14,7 +14,14 @@
  *
  * Ingests authored subtype records as JSON and creates them. The JSON
  * carries the authored surface (per subtype-import.schema.json) plus the
- * pre-assembled body (post_content, post_excerpt). The importer performs
+ * pre-assembled body (post_content, post_excerpt).
+ *
+ * NOTE (round-trip): this importer expects the AUTHORED shape, NOT the
+ * lossless backup produced by eic-subtype-exporter.php. An export file
+ * will NOT import; exports restore via the database, not through this
+ * tool. The two formats are intentionally different.
+ *
+ * The importer performs
  * the DETERMINISTIC derivations in one place: identity expansion,
  * taxonomies (dual-written from the controlled fields), the Yoast layer,
  * and schema defaults.

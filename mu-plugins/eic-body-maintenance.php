@@ -136,29 +136,66 @@ final class EIC_Body_Maintenance
 
     private static function term_scan(string $content): array
     {
+        // Scan only the text between HTML tags so the preview matches
+        // exactly what term_fix() will actually rewrite.
         $hits = [];
-        foreach (self::term_rules() as $from => $to) {
-            if (preg_match_all('/\b(' . preg_quote($from, "/") . ')\b/i', $content, $m, PREG_OFFSET_CAPTURE)) {
-                foreach ($m[1] as $one) {
-                    $hits[] = ["from" => $one[0], "to" => self::apply_case($one[0], $to)];
+        self::apply_outside_tags($content, function (string $text) use (
+            &$hits
+        ) {
+            foreach (self::term_rules() as $from => $to) {
+                if (preg_match_all('/\b(' . preg_quote($from, "/") . ')\b/i', $text, $m, PREG_OFFSET_CAPTURE)) {
+                    foreach ($m[1] as $one) {
+                        $hits[] = ["from" => $one[0], "to" => self::apply_case($one[0], $to)];
+                    }
                 }
             }
-        }
+            return $text;
+        });
         return $hits;
+    }
+
+    /**
+     * Run a transform over only the text BETWEEN HTML tags, leaving
+     * tags themselves (hrefs, alt text, attributes, shortcode-free
+     * markup) untouched. Keeps terminology rewrites from corrupting
+     * URLs or attribute values that happen to contain a rule token.
+     */
+    private static function apply_outside_tags(
+        string $content,
+        callable $fn
+    ): string {
+        $parts = preg_split(
+            "/(<[^>]*>)/",
+            $content,
+            -1,
+            PREG_SPLIT_DELIM_CAPTURE
+        );
+        if ($parts === false) {
+            return $fn($content);
+        }
+        foreach ($parts as $i => $part) {
+            if ($part === "" || $part[0] === "<") {
+                continue;
+            }
+            $parts[$i] = $fn($part);
+        }
+        return implode("", $parts);
     }
 
     private static function term_fix(string $content): string
     {
-        foreach (self::term_rules() as $from => $to) {
-            $content = preg_replace_callback(
-                '/\b(' . preg_quote($from, "/") . ')\b/i',
-                function ($m) use ($to) {
-                    return self::apply_case($m[1], $to);
-                },
-                $content
-            );
-        }
-        return $content;
+        return self::apply_outside_tags($content, function (string $text) {
+            foreach (self::term_rules() as $from => $to) {
+                $text = preg_replace_callback(
+                    '/\b(' . preg_quote($from, "/") . ')\b/i',
+                    function ($m) use ($to) {
+                        return self::apply_case($m[1], $to);
+                    },
+                    $text
+                );
+            }
+            return $text;
+        });
     }
 
     private static function link_scan(string $content): array
@@ -224,7 +261,6 @@ final class EIC_Body_Maintenance
             foreach ($m[0] as $sent) {
                 $plain = trim(wp_strip_all_tags($sent));
                 if (stripos($plain, "form of CMT") === false
-                    && stripos($plain, "process") === false
                     && stripos($plain, "NCS") === false
                     && stripos($plain, "diagnosis") === false) {
                     $out[] = $plain;
