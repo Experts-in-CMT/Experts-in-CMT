@@ -44,3 +44,6 @@ ai1wm-backups/
 # Whitelist ACF local JSON groups
 !acf-json/
 !acf-json/*.json
+/themes/twentytwentyfive/_to_delete/_sync_to_delete
+/themes/twentytwentyfive/_to_delete/_sync_to_delete
+/themes/twentytwentyfive/_to_delete
