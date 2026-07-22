@@ -1,0 +1,1122 @@
+> **© 2025-2026 Kenneth Raymond — All rights reserved.**  
+> Part of the Experts in CMT WordPress theme.  
+> Do not copy, modify, or redistribute without permission.
+
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+### Changed
+
+- **Theme Migrated to a Safe Slug (`twentytwentyfive` : `expertsincmt`)**
+  - The customized theme had been living in the bundled-default `twentytwentyfive` folder. Ionos/WordPress default-theme maintenance kept overwriting that folder and wiping the live customizations: the recurring "ghost" that broke the site, which even day-back restores could not reliably undo, because the folder name is what updaters key on. The theme is now forked to its own unique slug, `expertsincmt`, that no default-theme updater touches.
+  - The Site Editor templates, template parts, and global styles were baked into theme files with Create Block Theme so the new slug is fully self-contained, and the six custom PHP template files the clone skipped (do-not-sell-modal, glossary-fields-template, header-banner, single-subtype, subtype-fields-template, and the section-dorsal-root part) were staged in by hand. style.css now carries a clean "Experts in CMT" header at Version 3.0.0; functions.php already resolves the version through `wp_get_theme()->get("Version")`, so nothing hardcodes it. Deploying to production is now a plain file upload with no database surgery, and the eic-shadow spare is a real working copy.
+  - style.css
+  - themes/twentytwentyfive : themes/expertsincmt (folder rename)
+
+### Fixed
+
+- **Genes Cards — Mobile "Rogue E" on the INHERITANCE Label (`genes-loop.css`)**
+  - In the stacked mobile card layout each attribute label is a flex item in its row. The uppercase INHERITANCE label carries letter-spacing, and with nothing forbidding a wrap its final "E" stranded onto its own line in the narrow column. The label now holds its width and stays on one line (`white-space: nowrap`, `flex-shrink: 0`), so the value column absorbs the space instead; DISCOVERED is covered by the same rule. Scoped to `<=600px`, so the desktop three-column strip is untouched.
+  - assets/css/genes-loop.css
+
+- **Mobile Header — Rebuilt Without Magic-Number Lifts (`main.css`)**
+  - Reported from the wild on a ~360px Android device: the header search box overlapped the "Charcot-Marie-Tooth Disease" tagline, and menu taps sometimes landed on the wrong page. Root cause was a mobile header held together by fixed offsets: the search was pulled up `margin-top: -175px` and the hamburger `translateY(-75px)`, both assuming one exact header height, so on a shorter/narrower device they overlapped visually and as tap targets. These never showed on the builder's own wider phone (iPhone 14 Pro Max, 430px), which is why it shipped as "good enough."
+  - Replaced with a layout that cannot overlap at any height: logo top-left, hamburger absolutely pinned to the top-right corner and vertically centered against the logo band, and a full-width search on its own line. Empty Stackable spacer columns are hidden on mobile, the desktop-only 58px search baseline spacer is zeroed, and the top spacer is halved so the logo sits in line with the hamburger. Desktop layout is untouched.
+  - assets/css/main.css
+
+- **Mobile — Long URL Wrapping, Content Spacer Reduction (`main.css`)**
+  - Raw lab-catalog URLs in body copy (e.g. Invitae/LabCorp test links) had no break points and ran off the content column on narrow screens, clipping and forcing horizontal scroll. Content links now wrap (`overflow-wrap: anywhere`) at all widths.
+  - Fixed 50px / 100px content spacers around the related-section buttons and the Dorsal Root feature read as large empty voids on a phone; shrunk to 24px / 36px at `<=600px` only, leaving the small paragraph spacers and desktop spacing alone.
+  - assets/css/main.css
+
+- **Dorsal Root Feature — Mobile Reorder, Shorter Button, Tablet Centering (`section-dorsal-root.css`, `section-dorsal-root.php`)**
+  - On mobile the section header put "The Dorsal Root" title and the "More" button in one row, crushing the title into three stacked words. The header wrapper is now collapsed (`display: contents`) and the pieces reordered to title, then cards, then button, so it reads as a proper feed. The button label was shortened to "More Dorsal Root" (global; it reads fine on desktop too).
+  - In the two-column tablet range (680-1023px), a lone third card was orphaned in the left slot with dead space beside it. When the card count is odd, the last card now spans both columns and re-centers at single-column width, sitting centered under the pair above.
+  - The mobile title carries `!important` so it escapes the global `body * { font-size: 18px !important }` mobile floor; without it the "The Dorsal Root" heading was being flattened to body size on phones.
+  - assets/css/section-dorsal-root.css
+  - templates/parts/section-dorsal-root.php
+
+### Added
+
+- **Admin Tool — Yoast Title Space Fix (`eic-yoast-title-tool.php`)**
+  - New Tools page that removes a stray space before the question mark in the Yoast SEO title template stored per record. The subtype templates had been saved as `What Is %%title%% ? | Charcot-Marie-Tooth Disease | %%sitename%%`, rendering "What Is dHMN-2B ?" with a space before the mark; the tool collapses that to `%%title%%?`.
+  - Operates on the raw `_yoast_wpseo_title` meta, collapsing any run of whitespace (including doubled spaces and non-breaking spaces) immediately before a `?` while leaving `%%title%%` and the other Yoast variables intact, so it edits the template safely rather than a rendered string. Records using Yoast's default (empty meta) are skipped.
+  - Follows the shared EIC tool pattern: `manage_options`, nonce, per-type selector (default Subtype), a before/after dry run that highlights only the records that actually change, and a confirm-gated commit that writes just those records. Initial run cleaned 126 subtype records.
+  - mu-plugins/eic-yoast-title-tool.php
+
+- **Header Banner — Independent Mobile Fade Mask (`header-banner-fields.php`, `header-banner.php`, `header-banner.css`)**
+  - The banner mask is now adjustable per breakpoint. Two new ACF Range fields, `banner_fade_start_mobile` / `banner_fade_end_mobile` (defaults 55/100), drive a mobile-only gradient, separate from the existing desktop `banner_fade_start` / `banner_fade_end` (33/66). The desktop fields were relabeled "(Desktop)" and the new ones "(Mobile)" for clarity; field names and keys are unchanged, so existing banner data needs no migration.
+  - The `<=600px` `::after` mask previously carried hard-coded `55% / 100%` stops that deliberately ignored the ACF fade vars because the desktop numbers were tuned for the wider layout. It now reads `--banner-fade-start-mobile` / `--banner-fade-end-mobile`, output inline by the template alongside the desktop vars. The CSS fallbacks match the old hard-coded values, so no page's banner shifts until a mobile slider is actually moved.
+  - inc/acf/header-banner-fields.php
+  - templates/header-banner.php
+  - assets/css/header-banner.css
+
+- **Header Banner — Editor Mask Preview (`eic-banner-mask-preview.php`)**
+  - New editor-only mu-plugin that renders the banner fade live on the ACF image thumbnail in the meta box, so the mask can be dialed in without a save-and-check loop. The overlay mirrors the front-end `::after` gradient (solid background from `0%` to Fade Start, fading to transparent by Fade End), with edge markers and percentage tags on the start and end stops.
+  - Renders two stacked previews once the mobile fields exist: Desktop overlaid on ACF's real thumbnail, and Mobile as a tile pinned directly beneath it. The mobile tile measures the thumbnail's real left offset and width and shows the full image at natural aspect (not a cropped strip), so both previews present the same image at the same size and the mask is the only difference. Each tracks its own slider pair and updates live via an `input` listener, with a MutationObserver re-rendering on image change. Editor-only; emits no front-end output.
+  - mu-plugins/eic-banner-mask-preview.php
+
+- **Genes Database — Gene Group Checkbox Filters (Mitochondrial Involvement, ARS Genes, Unknown Gene)**
+  - Added three checkbox facets to the Genes & Subtypes Database filter UI, driven by the existing ACF true/false fields `mitochondrial_involvement`, `ars_gene`, and `unknown_gene`. No new data model: the same flags already feed `subtype-jsonld.php`, the semantic ARS branch of platform search, and the totals line's "Unknown Gene" tally.
+  - Emits `mito`, `ars`, and `unknown` GET params alongside the four taxonomy selectors, applied to both the page-load and AJAX query paths. State is carried to the shared fragment as a `genes_flags` query var, mirroring how `qs` already travels, so page load and AJAX resolve identically.
+  - Flags are applied at the end of the fragment, after the search branch, because that branch reassigns `meta_query` wholesale. When a search is also active the search OR block is nested inside an AND with the flag block rather than replaced.
+  - The flags AND against each other and against the selectors, for parity with the four dropdowns, which already AND. Checking Mito and ARS narrows to the intersection (currently CMT-DARS2, the sole mitochondrial ARS gene) rather than widening the set.
+  - Exclusivity guard: `unknown_gene` is definitionally incompatible with `mitochondrial_involvement` and `ars_gene`, since a subtype with no identified causative gene cannot carry a mito or ARS gene, so any combination returns zero. The UI disables the opposing boxes rather than silently unchecking them (the constraint stays visible), and the query drops the conflicting flags independently so hand-edited URLs and no-JS loads are covered too.
+  - Clean URLs required no change: `cleanParams()` passes unrecognized keys through, so `?mito=1&ars=1` survives sharing and reload.
+  - inc/content/filters/genes-filter.php
+  - inc/content/loops/genes-loop.php
+  - inc/ajax/genes-loop-endpoints.php
+  - inc/content/loops/partials/fragment-loop-genes-loop.php
+  - assets/js/genes-ajax.js
+  - assets/css/genes-filters.css
+
+- **Genes & Dorsal Root — Filter-Aware Facet Counts**
+  - Every filter control now shows how many results it would return under the rest of the current state: each Genes selector option and all three checkboxes, and each Dorsal Root category. Zero-count options are disabled (the current selection is never disabled, so it stays possible to leave it), extending the visible-dead-end pattern from the checkbox exclusivity guard to the whole filter set.
+  - A facet's own selection is excluded when counting its own options, the standard faceted-search contract. Counting a dimension against itself would report the selected term's total and zero for every other option, stranding the user in their first pick; each dimension is therefore counted against all others.
+  - Genes counting is a dedicated engine: one ID-only base query, one relationship query per taxonomy, one primed meta cache, then all set math in PHP, which at this catalog size beats a query per option. Dorsal Root, being a single-taxonomy filter, keeps its ~40-line counter inline in the filter file.
+  - Counts render server-side on first paint and then ride along in the AJAX payload, so labels update in place without re-rendering the controls (which would drop focus). During an active search the selectors stop constraining the loop, and the counts mirror that rather than pretending the dropdowns still apply.
+  - inc/content/filters/genes-facet-counts.php
+  - inc/content/filters/genes-filter.php
+  - inc/content/filters/dr-filter.php
+  - inc/ajax/genes-loop-endpoints.php
+  - inc/ajax/loop-endpoints.php
+  - assets/js/genes-ajax.js
+  - assets/js/dr-ajax.js
+
+- **Interpost Return — Persisted Listing State (all five post types)**
+  - The `[context_nav]` Return button now brings the user back to where they actually left the listing, not a reset archive view. Genes and Dorsal Root restore filter selection and pagination; Glossary restores its search term and pagination; What Is CMT and Breathing (no filters) restore scroll position so Return lands roughly where the user was.
+  - A small session-scoped module records each listing page's current URL and scroll position in `sessionStorage`, keyed by post type. Because the AJAX clean-URL work already encodes filters, sort, pagination and search in the listing URL, restoring that URL restores all of it server-side; a one-shot flag restores scroll on arrival.
+  - Deliberate scoping: state is per-tab and clears with the tab (nothing leaks between visits or visitors), expires after 30 minutes (a Return click from a tab left open overnight falls back to the default archive), and prev/next between single posts never overwrites the saved listing state (only listing pages record it), so walking through several entries still returns to the original entry point.
+  - assets/js/return-state.js
+  - inc/shortcodes/context-nav-shortcode.php
+  - functions.php
+
+- **Loop AJAX — Back/Forward History (Genes, Dorsal Root, Glossary)**
+  - All three loop stacks now push a history entry on discrete filter actions (selector change, checkbox toggle, sort, pagination, submit, reset), so the browser Back and Forward buttons step through filter states instead of leaving the page entirely. Debounced typing still replaces rather than pushes, so a search term doesn't leave one history entry per keystroke, and a no-op change (re-selecting the same value) never stacks a duplicate.
+  - Each stack gained a `popstate` handler that re-syncs the visible controls to the restored URL and refetches without writing a new entry. For Genes this also restores the three gene-group checkboxes and re-runs the exclusivity logic. Hydration was tightened so an absent param returns a selector to its "All" state, which is what makes Back actually clear a filter rather than strand it.
+  - assets/js/genes-ajax.js
+  - assets/js/dr-ajax.js
+  - assets/js/glossary-ajax.js
+
+- **About the Author shortcode (`[about_author]`)**
+  - Moved the standing author block out of Code Snippets and into the theme as a version-controlled file, auto-loaded by the existing `inc/shortcodes/*.php` glob. Registered via an anonymous closure so it cannot collide with the database-stored snippet during changeover.
+  - The block is now opt-in, placed per post as a Shortcode block rather than injected from the post template, so co-authored pieces that supply their own author section simply omit it.
+  - inc/shortcodes/about-author-shortcode.php
+
+- **Glossary Importer (`eic-glossary-importer.php`)**
+  - New Tools page that imports authored glossary terms from JSON (single record, array, or `{"glossary":[...]}`), mirroring the Subtype Importer: dry-run then commit, paste box plus `.json` upload, cap-gated (`manage_options`) and nonce-protected, on the shared EIC admin shell with a red commit behind a backup checkbox.
+  - Upserts by normalized `canonical_term`, reusing the glossary uniqueness guard's normalizer and also matching on title, so stale canonicals (e.g. a leftover "Auto Draft") can never cause a duplicate. Found terms update, new terms are created; safe to re-run.
+  - Writes the term (title), definition (body), excerpt, and the ACF text fields (`canonical_term`, `short_definition`, `source_url`, `source_label`, `aka_synonyms`, `common_misspellings`, `banner_title`, `banner_intro`, `notes_admin`). Deliberately does not write `term_image` or `banner_image` (owned by their tools) and leaves the auto-synced `glossary_letter` taxonomy alone. An update payload that omits `definition`/`excerpt` never blanks live body content.
+  - mu-plugins/eic-glossary-importer.php
+
+- **Glossary Exporter (`eic-glossary-exporter.php`)**
+  - New Tools page that exports every `glossary` term as a single lossless JSON file (core columns, full body and excerpt, all ACF and Yoast postmeta, taxonomies with term meta, and the Yoast indexable row), mirroring the Subtype Exporter. Cap-gated and nonce-protected, on the shared EIC admin shell.
+  - mu-plugins/eic-glossary-exporter.php
+
+- **CMT Glossary — Full Term Set + Voice Pass**
+  - Expanded and standardized the CMT glossary to 75 terms (48 new, 27 existing revised) via the Glossary Importer. Each term carries a CMT-forward teaser `short_definition`, an inline plain-language pronunciation where warranted, a witty `banner_intro` tagline, curated synonyms and common misspellings, cross-links to related terms, and a source standardized onto durable institutional references (NHGRI genome.gov, MedlinePlus, NINDS, NCI, Merriam-Webster Medical) in place of rot-prone consumer links. EIC voice rules enforced throughout: CMT is only ever a "disease," never a "condition" or "disorder."
+  - Fixed a factual error in the live Chromosome definition (a set of chromosomes had been described as "an allele").
+
+- **Header Banner — Overlay Redesign (`header-banner.php`, `header-banner.css`)**
+  - Site-wide header banner rebuilt from a two-column split-grid layout to an overlay pattern matching the Genes DB App Hero: image rendered as a CSS custom property (`--banner-img`) sitting behind the text as a background layer, rather than in its own `<img>`/grid column.
+  - Live left-side fade implemented via `::after` gradient overlay, driven by two new ACF Range fields (`banner_fade_start`, `banner_fade_end`; defaults 33/66), admin-adjustable per page without re-editing the source image.
+  - Radius applied to all four corners (`28px`), independent of the Genes DB App Hero's top-only radius, since the header banner isn't docked against another element.
+  - Vertical centering achieved via `align-items: center` on the row-direction flex container (`.header-banner`) rather than a percentage-height chain, for reliable cross-browser behavior regardless of title/intro content length.
+  - Intro copy (WYSIWYG field) intentionally left unclamped, flows naturally rather than truncating at a fixed line count, appropriate given the single-editor workflow on this site.
+  - New dedicated stylesheet `assets/css/header-banner.css`, replacing five/six stacked, partially-conflicting `.header-banner` blocks previously spread across `main.css`.
+  - inc/acf/header-banner-fields.php
+  - templates/header-banner.php
+  - assets/css/header-banner.css
+  - functions.php (enqueue block, priority 1000, depends on `experts-main`)
+
+- **Header Banner Fields — Migrated to PHP (`header-banner-fields.php`)**
+  - Field group `group_6792eabbf10fc` migrated from ACF-UI/JSON registration to code-registered PHP, following the same pattern as `genes-hero-fields.php`.
+  - All three original field keys (`banner_title`, `banner_image`, `banner_intro`) and the group key preserved exactly; existing content on Pages, Posts, subtypes, breathing, what-is-cmt, and glossary posts required no migration.
+  - Two new Range fields added: `banner_fade_start` / `banner_fade_end` (defaults 33/66).
+  - Legacy ACF-UI group and its `wp-content/acf-json` export removed to eliminate duplicate-key registration conflict.
+  - inc/acf/header-banner-fields.php
+
+- **Topic-Specific Hero Imagery**
+  - Replaced the generic DNA/neuron header banner image on CMT and Breathing, The Dorsal Root, and the homepage with topic-specific imagery: diaphragm/phrenic nerve for CMT and Breathing, a nerve signal/impulse visualization for The Dorsal Root.
+  - All hero images (homepage, general-purpose, CMT and Breathing, The Dorsal Root) unified under a shared light, clinical color palette (Photoshop Photo Filter: Cooling Filter 82, Soft Light blend, ~25–28% opacity) for visual consistency across pages previously running a darker, cooler palette.
+
+- **Genes DB App Hero (`[genes_hero]`)**
+  - New shortcode rendering an app-style hero above the Genes & Subtypes Database filter bar: background image, title, intro copy, and a three-item stats line.
+  - Title renders as a plain `<h2>` with no custom styling override, inheriting the global heading rule. Avoids a duplicate `<h1>` on the page (the page's own `<h1>` continues to render via `header-banner.php`).
+  - Live left-side fade implemented as a `::after` gradient overlay (background color fading to transparent), not a CSS `mask-image`. Driven by two new ACF Range fields (`genes_hero_fade_start`, `genes_hero_fade_end`) so the fade is admin-adjustable without re-editing the source image.
+  - Stats line: `genes_hero_subtypes_count` and `genes_hero_genes_count` (ACF Number fields, each stat skipped entirely if left empty) plus a static third stat ("Affects 1 in 2,500 people") matching the epidemiology copy in `educational-jsonld.php` / `pages-jsonld.php` verbatim.
+  - Filter bar overlaps the hero's bottom edge via a negative `margin-top`, anchored to true viewport center (`left: 50%` + `width: 100vw` + `translateX(-50%)`) rather than relying on parent container width, so it stays aligned regardless of the containing block's layout mode.
+  - inc/acf/genes-hero-fields.php
+  - inc/shortcodes/genes-hero-shortcode.php
+  - assets/css/genes-hero.css
+  - functions.php (enqueue block, self-contained, checks own shortcode/page context)
+
+- **Genes Filter — Author Search**
+  - Documented an existing fuzzy-match capability against the subtype's publication-author bibliography field: search now explicitly supports author name lookup (e.g. "Zuchner", "Shy") in addition to subtype, gene, and year of discovery.
+  - Search label and placeholder text updated to reflect the added capability.
+  - inc/content/filters/genes-filter.php
+
+- **Dorsal Root Filter — Dedicated Stylesheet (`dr-filter.css`)**
+  - New dedicated stylesheet bringing the Dorsal Root filter/search bar (`[dr_filter]`) visually in line with the Genes DB filter: bordered card, order-based flex row split (search + actions on row one, category select forced to row two via `order`), visually-hidden labels, matching input/button styling and `:focus` states.
+  - Scoped entirely to `form.site-search[data-loop="dr"]` (and `.site-searchwrap:has(...)` for the outer wrapper) since `.site-searchwrap` / `.site-search__*` classes are shared with Glossary search and general Search; no changes made to `dr-filter.php` markup, no impact to the other two components.
+  - No PHP changes required, existing `.site-search__field`, `.site-search__field--select`, `.site-search__field--input`, and `.site-search__actions` class hooks in `dr-filter.php` were already sufficient.
+  - assets/css/dr-filter.css
+  - functions.php (enqueue block, priority 1003, gated on `has_shortcode(..., "dr_filter")`)
+
+- **Glossary Filter — Dedicated Stylesheet (`glossary-filter.css`)**
+  - New dedicated stylesheet bringing the Glossary search bar (`[glossary_search_filter]`) visually in line with the Genes DB filter: bordered card, visually-hidden label, matching input/button styling and `:focus` states.
+  - Scoped to `form.site-search[data-loop="gl"]`; no changes made to `glossary-search-filter.php` markup.
+  - assets/css/glossary-filter.css
+  - functions.php (enqueue block, priority 1004, gated on `has_shortcode(..., "glossary_search_filter")`)
+
+- **Clean, Slug-Based AJAX URL Architecture (Genes, Dorsal Root, Glossary)**
+  - New shared front-end helper `assets/js/loop-url-utils.js` (global `EICLoop`) that builds clean query strings: strips `per_page`, drops unselected/zero filters, removes a default `*_paged` value of `1` and a default/empty sort, and translates a select's `term_id` value into its taxonomy slug via a localized map. Enqueued before each `*-ajax.js` stack as a dependency, so all three stacks share one implementation.
+  - New shared server resolver `inc/ajax/loop-tax-resolver.php`: `eic_resolve_tax_field()` resolves a filter value by slug when a matching term exists (correctly handling numeric slugs such as chromosome `10`) and falls back to `term_id` for legacy numeric links; `eic_build_tax_slug_map()` builds the `term_id` to `slug` map localized per loop, keyed by URL param name (so `dr_cat` can map to the `dorsal-root` taxonomy).
+  - Filter URLs now read as, e.g., `?cmt_type=cmt1&inheritance=autosomal-dominant&neuropathy=demyelinating&chromosome=1` (previously `?cmt_type=6&inheritance=145&...&per_page=12`, with zeroed filters and `per_page` always present). POST payloads to the endpoints still carry raw `term_id` + `per_page`, so query logic is unchanged; only the visible URL is slugified.
+  - Page-load hydration: each stack reads the URL on load, sets its select(s) from the slug/id, and normalizes a legacy numeric URL into the clean slug form. Endpoints and page-load resolvers accept slug-or-id, so a shared slug link filters correctly server-side with no unfiltered flash. Back-compat for existing numeric links is preserved.
+  - Glossary receives the URL-cleanup pass only (its `alpha` value is already clean and it has no taxonomy `term_id`).
+  - assets/js/loop-url-utils.js
+  - inc/ajax/loop-tax-resolver.php
+  - functions.php (shared-helper enqueue + per-loop `taxSlugs` localize)
+  - assets/js/genes-ajax.js, inc/ajax/genes-loop-endpoints.php, inc/content/loops/genes-loop.php
+  - assets/js/dr-ajax.js, inc/ajax/loop-endpoints.php, inc/content/loops/dr-posts.php
+  - assets/js/glossary-ajax.js
+
+- **Genes Loop - Subtype Card Redesign (`fragment-loop-genes-loop.php`, `genes-loop.css`)**
+  - Card rebuilt into a structured reference layout: a type dot plus the subtype title, an optional `aka:` line (from `subtype_alias`), a Gene / Discovered / Inheritance attribute strip with hairline dividers (gene emphasized), and an Updated plus arrow footer. Replaces the prior gene-meta line and prose summary; the block-parsing first-sentence extractor was removed.
+  - Type dot color: a 14-step brand-blue ramp derived from `--primary` (`#174777`) to `--primary-light` (`#5ea0c9`), mapped to the canonical `type_classification` order and keyed via a `data-cmt-type` attribute (title color unchanged), naming the dot's meaning without a legend.
+  - Neuropathy pill (upper-right): the term's neuropathy type (`Axonal` / `Demyelinating` / `Intermediate`) as a filled pill on a light navy tint; the head wraps so the pill drops to its own right-aligned line on long `CMT-`gene titles instead of colliding.
+  - Empty `year_of_discovery` / inheritance values render as "Unknown".
+  - inc/content/loops/partials/fragment-loop-genes-loop.php
+  - assets/css/genes-loop.css
+
+- **Genes Totals Inline - Updated Date (`genes-totals-inline.php`)**
+  - `[genes_totals_inline]` now emits a subordinate "Updated: {date}" line driven by the most recent published-subtype `post_modified` (self-maintaining), and absorbs the "Currently Indexed" caption into the shortcode so the whole stack renders in one place with a guaranteed order.
+  - inc/shortcodes/genes-totals-inline.php
+  - assets/css/main.css (inline-totals sizing + `.genes-totals-updated` subordinate treatment)
+
+- **Glossary - Term Card Restyled to Match Genes (`glossary-loop.php`)**
+  - Glossary term cards rebuilt on the shared `eic-subtype-card` visual language: a dot plus the term title, an `aka:` line (from `aka_synonyms`), the `short_definition` as the card body, and an Updated plus arrow footer, as a single full-card link. Drops the prior featured-image header, "Definition" read-more, and centered date.
+  - `genes-loop.css` now also loads on the Glossary page (`cmt-words`) so the reused card classes are styled; its enqueue dependency relaxed to `experts-main` only.
+  - inc/content/loops/glossary-loop.php
+  - functions.php (genes-loop.css enqueue gating + dependency)
+
+- **Dorsal Root - Editorial List Redesign (`dr-loop.css`, `dr-list-item.php`, `dr-category-color.php`)**
+  - The `[dr_posts]` blog listing on `/dorsal-root` rebuilt from a 3-up grid into a single-column editorial list (image-left / text-right) in the canon type and color language: a category dot, a category pill, an uppercase date, a clamped excerpt, and a "READ" affordance with a hover arrow slide.
+  - Row markup lives in one shared renderer (`eic_dr_render_list_item()`) used by both the page-load shortcode and the AJAX endpoint, so the two paths never drift.
+  - Dynamic category color: each `dorsal-root` category is assigned a color from a curated pool by term order (`eic_dr_category_color()`), so a new category auto-assigns a distinct, on-brand color with no config. Each row outputs one `--dr-cat` custom property and the CSS derives the dot, pill tint, and pill text from it.
+  - inc/content/loops/dr-category-color.php
+  - inc/content/loops/dr-list-item.php
+  - assets/css/dr-loop.css
+  - inc/content/loops/dr-posts.php, inc/ajax/loop-endpoints.php (both render paths)
+
+- **Component Stylesheet Glob Loader (`functions.php`)**
+  - Every stylesheet in `assets/css` now auto-enqueues on the front end via a single glob loader (depending on `experts-main`), replacing the eight-plus individual per-file enqueue blocks. Dropping a new component sheet into `assets/css` needs no functions.php edit. Excludes `main.css` (loaded separately as `experts-main`) and `editor-style.css` (editor only); `platform-search.css` (outside `assets/css`) keeps its own enqueue.
+  - functions.php
+
+- **Dorsal Root Feature Section - Dedicated Stylesheet (`section-dorsal-root.css`)**
+  - New stylesheet for the `[dorsal_root_section]` teaser (deployed above the footer across the platform), on its own `dr-feature` namespace so it is fully decoupled from the shared loop/card `.dr-*` classes. Includes a cohesive hover: a gentle image zoom paired with the card's bg/shadow lift, the image scaling within a fixed 16:9 `overflow:hidden` frame.
+  - assets/css/section-dorsal-root.css
+
+- **Dorsal Root Pagination - Shared Renderer (`dr-pagination.php`)**
+  - New shared pager renderer `eic_dr_render_pagination()` producing the canonical `.wp-block-query-pagination` markup (Prev / numbered pages / current / Next). Both the page-load shortcode (`dr-posts.php`) and the AJAX endpoint (`loop-endpoints.php`) now call it, so the two paths emit identical pager markup and can no longer drift. Auto-loads via the loops glob; AJAX links preserve the active search, category, and sort.
+  - inc/content/loops/dr-pagination.php
+  - inc/content/loops/dr-posts.php, inc/ajax/loop-endpoints.php (both render paths)
+
+- **EIC Admin Tools - Shared Branding + Header Shell (`eic-admin-tools.php`, `eic-admin-tools.css`)**
+  - New shared admin layer for the custom utility tools under Tools. One loader (`eic-admin-tools.php`) enqueues a single stylesheet on any admin screen whose `page` slug starts with `eic-`, so every current tool is covered and any future `eic-` tool is picked up automatically, with no per-tool list and no effect on core wp-admin.
+  - Shared header-shell helpers `eic_admin_tool_open()` / `eic_admin_tool_close()` give every tool the same branded opener: a navy "Experts in CMT / Site Tools" bar, a navy (`--primary` #174777) title, and a bordered card body. Replaces each tool's ad-hoc `<div class="wrap"><h1>` opener.
+  - Branding brings the admin buttons off default WordPress admin-blue onto brand navy for primary actions, with red reserved for destructive actions (Commit/Apply in the Subtype Importer, Body Maintenance, and Subtype Maintenance). URL/backfill Commits and the read-only Subtype Export stay navy. All rules scoped under `.eic-tool` so nothing leaks outside a tool page. Albert Sans, navy code chips, and consistent inputs/notices/spacing round it out.
+  - Applied across all 11 tools: Header Banner Image, Featured Image, ClinGen URL Builder, ClinVar URL Builder, Gene Name Backfill, OMIM Backfill, Schema Backfill, Body Maintenance, Subtype Importer, Subtype Maintenance, Subtype Export.
+  - Dry-run button label shortened from "Run dry run (no writes)" to "Dry run (no writes)" across all eight tools that expose a dry run.
+  - Subtype Importer now accepts a `.json` file upload alongside the paste box (form set to `multipart/form-data`). An uploaded file takes precedence over the textarea and is read only inside the existing nonce/capability check; because the textarea re-populates from it, the dry-run then commit flow still works without re-uploading.
+  - mu-plugins/eic-admin-tools.php
+  - mu-plugins/eic-admin-tools.css
+  - mu-plugins/eic-banner-image-tool.php, eic-featured-image-tool.php, eic-clingen-url-tool.php, eic-clinvar-url-tool.php, eic-gene-name-tool.php, eic-omim-tool.php, eic-schema-backfill.php, eic-body-maintenance.php, eic-subtype-importer.php, eic-subtype-maintenance.php, eic-subtype-exporter.php
+
+### Changed
+
+- **Header Banner Fields: Location Rules Scoped to All Pages, Posts, and CPTs (`header-banner-fields.php`)**
+  - The field group's location rules included standalone `post_template == default` and `page_template == default` OR groups, which match any post of any type on the default template, surfacing the banner fields on unintended CPTs and making the enumerated post-type rules redundant. Removed the front-page, posts-page, and default-template groups; the fields now show intentionally on all Pages, all Posts, and the `subtype`, `glossary`, `what-is-cmt`, and `breathing` CPTs.
+  - inc/acf/header-banner-fields.php
+
+- **Genes Filter: "Mitochondrial Involvement" Label Capitalization (`genes-filter.php`)**
+  - Capitalized the gene-group checkbox label to "Mitochondrial Involvement", matching the title case of "ARS Genes" and "Unknown Gene". Applied to both the visible text and the `data-facet-label` the AJAX layer reads, so the capitalization survives a facet-count refresh.
+  - inc/content/filters/genes-filter.php
+
+- **Subtype Cards — Inheritance Title Case**
+  - Inheritance values on the subtype cards now display in title case (e.g. "Autosomal Dominant", "X-Linked Recessive", "Mitochondrial Inheritance"). Presentation-only via CSS `text-transform: capitalize` scoped to a new `eic-subtype-card__inheritance` hook, so the stored lowercase taxonomy term and search are untouched. Capitalize also handles the hyphenated X-linked terms.
+  - inc/content/loops/partials/fragment-loop-genes-loop.php
+  - assets/css/genes-loop.css
+
+- **The Dorsal Root — Landing Copy**
+  - Subtitle updated to "Nerves talk. We listen." Body paragraph's closing descriptor changed from "always available" to "connecting with you," tying the copy to the dorsal root ganglion's function as a convergence point for sensory signal, and better matching the page's "we listen" framing than an access/uptime-flavored close.
+
+- **Genes Filter — Layout Reorder (`genes-filter.php`)**
+  - Search field and Browse/Reset actions moved above the four taxonomy selects (previously selects rendered first).
+  - Dropdown placeholder option text standardized to "By All [Taxonomy]" across all four selects.
+  - Search label/placeholder reordered subtype-first, matching the hierarchy used in the hero, totals line, and cards.
+  - inc/content/filters/genes-filter.php
+
+- **Genes Filter — Styling (`genes-filters.css`)**
+  - Filter bar split into two explicit rows (search + actions, then four selects), forced via an `order`-based flex line-break rather than relying on natural wrap.
+  - Four taxonomy selects changed from fixed-width to equal flex-grow, filling the row.
+  - Filter wrapper and hero both anchored to true viewport center to resolve a parent-container width mismatch that had thrown off right-edge alignment between the two.
+  - Top-right corner of the filter pill squared off (`border-radius: 28px 0 28px 28px`) as a deliberate aesthetic choice.
+  - assets/css/genes-filters.css
+
+- **Genes Loop — Card Typography (`genes-loop.css`)**
+  - Subtype card title `font-weight` reduced from `700` to `400`.
+  - Gene symbol (`.eic-subtype-card__gene`) `font-weight` adjusted to `500`.
+  - assets/css/genes-loop.css
+
+- **Genes Totals — State-Aware Label (`fragment-loop-genes-loop.php`, `main.css`)**
+  - Totals line now prefixes with "Currently Curated:" when no filters or search are active, and "Results:" when a filter or search term has been applied.
+  - Separator changed from bullet (`•`) to pipe (`|`) for visual consistency with the card meta line and hero stats line.
+  - `.genes-totals` `font-weight` reduced from `600` to `400`; `font-size` clamp upper bound adjusted to accommodate the longer prefixed string on one line.
+  - inc/content/loops/fragment-loop-genes-loop.php
+  - assets/css/main.css
+
+- **Subtype Taxonomy Registration — Disable Public Archives (`register-subtype-taxes.php`)**
+  - Set `"public" => false`, `"publicly_queryable" => false`, and `"rewrite" => false`
+    on all four subtype taxonomies (`cmt_type`, `inheritance`, `neuropathy`, `chromosome`).
+  - Eliminates public-facing taxonomy archive routes that were generating bot-crawl
+    404s and driving malformed Yoast breadcrumb ancestry on subtype pages.
+  - Admin UI, ACF integration, and filter loop functionality are unaffected.
+  - themes/twentytwentyfive/inc/taxonomies/register-subtype-taxes.php
+
+- **Header Banner - Right-Aligned Title and Subtitle (`header-banner.php`, `header-banner.css`)**
+  - The banner `<h1>` and its WYSIWYG intro now right-align to a shared right edge: the content box shrinks to the title's width so the title holds its original left position, while the intro's right edge lands under the end of the title (extending left as a single line). Multi-line titles right-align their own lines to that same edge.
+  - Manual line breaks supported in `banner_title` via `<br>` (rendered through `wp_kses($title, ['br' => []])`), letting a long title split at a chosen point (e.g. `CMT Subtype and<br>Gene Database`); titles without the tag remain plain text and unaffected.
+  - Mobile (`≤600px`) reverts to normal left-aligned stacked flow.
+  - templates/header-banner.php
+  - assets/css/header-banner.css
+
+- **Genes Totals - Unknown-Gene Label Wording (`fragment-loop-genes-loop.php`)**
+  - Trailing totals segment reworded to "{n} Subtype(s) with an Unknown Gene" (singular "an Unknown Gene" retained in the plural form), describing subtype records that lack a single causative gene rather than implying a count of distinct unknown genes.
+  - inc/content/loops/partials/fragment-loop-genes-loop.php
+
+- **Dorsal Root Feature Section - Namespaced + Title Weight (`section-dorsal-root.php`, `section-dorsal-root.css`)**
+  - The teaser section's markup and CSS moved off the generic `.dr-wrap` / `.dr-card` / `.dr-grid` / `.dr-media` classes onto a self-contained `dr-feature` namespace (`.dr-feature__card`, `.dr-feature__media`, etc.), resolving a cascade collision where the section's `.dr-card` was being overridden by the loop's `.dr-card`.
+  - Card title set to navy (`--primary`) at weight 500, matching the genes/glossary card voice instead of the previous dark bold.
+  - templates/parts/section-dorsal-root.php
+  - assets/css/section-dorsal-root.css
+
+- **main.css - Dorsal Root Rule Cleanup (`main.css`)**
+  - Removed the section-only `.dr-*` rules now owned by `section-dorsal-root.css` (`.dr-wrap`, `.dr-head`, `.dr-title`, `.dr-media`, `.dr-body`, `.dr-h`, `.dr-excerpt`, `.dr-grid.three-wide`). Kept the shared `.dr-grid` / `.dr-card` base still used by the genes and glossary grids.
+  - assets/css/main.css
+
+- **Loop AJAX Scripts - filemtime Cache-Busting (`functions.php`)**
+  - The shared loop-URL utility and each loop's AJAX script now enqueue with a `filemtime()`-based version instead of a static `"1.0"`, so edits to the AJAX JS bust the browser cache automatically and no longer require a hard refresh.
+  - functions.php
+
+### Fixed
+
+- **Genes Database: Mobile Card Attribute Strip Overflow (`genes-loop.css`)**
+  - On phones the Gene / Discovered / Inheritance strip only stacked below 360px, so at typical widths (~390 to 430px) the three columns stayed in a row where the single-word labels ("DISCOVERED", "INHERITANCE") and long values ("Autosomal Dominant") collided and clipped past the card edge, which also visually clipped the neuropathy pill. Stacking now applies across the full mobile range (≤600px) as full-width label/value rows, so nothing overflows.
+  - assets/css/genes-loop.css
+
+- **Genes Database: Inheritance Value Title Case on Cards (`genes-loop.css`)**
+  - The subtype card's inheritance value rendered the raw stored value, which is mixed-case across records ("autosomal dominant" vs "Autosomal Dominant"), so adjacent cards disagreed. Normalized the last-attribute value to Title Case via CSS, matching the documented inheritance-title-case intent; gene symbols and years are untouched so casings like PMP22 are preserved.
+  - assets/css/genes-loop.css
+
+- **Genes Totals: Mobile Size and Spacing (`main.css`)**
+  - The totals line was pinned to `16px !important` while the mobile body copy is 18px, so it read as "tiny" against everything around it; it also sat cramped under the sort toolbar. Bumped it to 22px with slightly more weight, and opened the gap below it by increasing the line's relative lift so the spacing above and below balances.
+  - assets/css/main.css
+
+- **Site Header: Mobile Search Input and Button Alignment (`main.css`)**
+  - In the stacked mobile header the Site Search input and the SEARCH button sized differently (the submit button is styled by the global button rule), so their right edges did not line up inside the 150px search block. Pinned both to `width: 100%` and `box-sizing: border-box` so their left and right edges align.
+  - assets/css/main.css
+
+- **Back-to-Top Button: Mobile Footprint (`main.css`)**
+  - The floating button covered more content than necessary while scrolling on phones. Shrunk it and tucked it tighter into the corner on mobile, keeping the spacing that clears the browser's bottom toolbar.
+  - assets/css/main.css
+
+- **Dorsal Root Filter: Mobile Hollow Gap (`dr-filter.css`)**
+  - The field wrappers use `flex: 1 1 320px`/`1 1 0`; when the row flips to a column on mobile, that basis applied to HEIGHT, inflating each field and leaving a large hollow gap in the filter card. Reset the field flex to size-to-content on mobile, so SEARCH/RESET sit right below the input.
+  - assets/css/dr-filter.css
+
+- **Dorsal Root Blog: Featured Image Frame Fill (`dr-loop.css`)**
+  - The media frame uses a fixed `16/10` aspect ratio, but WordPress's width/height thumbnail attributes plus its global `img { height: auto }` left the image shorter than the frame on iOS, showing a light strip below it. Absolutely-pinned the image (and placeholder) to the frame's edges so it always fills the box. Corrects desktop as well.
+  - assets/css/dr-loop.css
+
+- **Header Banner: Mobile Text Readability (`header-banner.css`)**
+  - On mobile the text container had been opened to full width (the desktop layout caps it to the left ~55% readable zone), so the intro ran across the banner and over the DNA image on the right, where the fade had gone transparent, leaving it unreadable. Capped the text to the left readable zone and widened the fade's solid backdrop (solid through the text, then a gentle reveal across the right half), so the copy reads on flat colour while the image still shows.
+  - assets/css/header-banner.css
+
+- **Genes Database: Canonical Sort Overridden by Debug Clauses (`fragment-loop-genes-loop.php`, `genes-loop.php`)**
+  - The fragment attached a second `posts_clauses` callback (`eic_genes_custom_sort_clauses`, self-labeled "debug", empties-first) on the same query the canonical sorter (`eic_genes_type_ordering_clauses`, empties-last) already ordered. Both overwrote `orderby` at priority 10, and the fragment's was added later, so it won: subtypes with an empty `type_classification` sorted to the top of the database instead of the bottom, plus a redundant JOIN was emitted.
+  - Removed the debug add/remove block from the fragment; setting the `eic_genes_custom_sort` query var now triggers only the globally-registered canonical sorter in `genes-type-order.php`, the single source of truth for Genes ordering. The orphaned debug function was removed from `genes-loop.php`.
+  - inc/content/loops/partials/fragment-loop-genes-loop.php
+  - inc/content/loops/genes-loop.php
+
+- **Dorsal Root Filter: Category Revert + Slug-URL Highlight (`dr-filter.php`)**
+  - The hidden-input preservation loop excluded only `qs`/`dr_paged`/`dr_sort`, so when the URL already carried `dr_cat` a stale hidden `dr_cat` was emitted alongside the live select. On a native (no-JS) submit PHP kept the last duplicate, so changing category and pressing Search silently reverted to the old category; under AJAX the stale value could leak into the history URL. `dr_cat` is now excluded from the preserved inputs.
+  - The select's active-option highlight cast `dr_cat` with `(int)`, which turned any slug-form URL (what dr-ajax.js writes) into `0`, so a shared clean URL rendered "All Categories" until JS rehydrated. `dr_cat` is now resolved via `eic_resolve_tax_field()` to a term_id (slug or legacy numeric) before driving the select, so the right category shows on first paint, including for no-JS visitors.
+  - inc/content/filters/dr-filter.php
+
+- **Glossary Loop: AJAX Pagination + Alpha-Change Search Loss (`glossary-ajax.js`, `glossary-loop.php`)**
+  - Pagination bound clicks on `.genes-pagination`, but the glossary pager renders as `.wp-block-query-pagination`, so every page click fell back to a full navigation; the handler also used `{once: true}`, so a click on a non-link part of the pager consumed the listener. Pagination is now delegated off the results root (surviving result swaps without rebinding) and matched to `.wp-block-query-pagination`, with the `{once}` removed.
+  - Changing the alpha letter built params from the sort form only, silently discarding an active `qs` search (the input still showed it); the no-JS fallback had the same hole. A shared `overlayControls()` helper now mirrors the live search text and alpha letter into every glossary action (live controls win over stale source params), and the sort form emits a hidden `qs` input when a search is active for no-JS parity.
+  - assets/js/glossary-ajax.js
+  - inc/content/loops/glossary-loop.php
+
+- **Dorsal Root Loop: AJAX State Loss + Search Parity (`dr-ajax.js`, `loop-endpoints.php`, `dr-posts.php`)**
+  - `paramsFromForm()` read only the search form, which carries neither `dr_sort` (separate toolbar) nor `dr_paged` (address bar only), so a shared/bookmarked URL was rewritten without them on load, popstate refetched page 1 at default sort, and submitting dropped an active sort. It now folds in `dr_sort` from the sort select and the current `dr_paged`, while callers that intend to reset paging still delete it explicitly.
+  - The AJAX endpoint used native `s` with an AND `tax_query` while the page-load shortcode used a union of text and term-name matches intersected with category, so the first AJAX interaction could change the result set for the same URL, and the union-based facet counts could contradict the AND-based list. The union/intersection logic is now extracted into a shared `eic_dr_apply_search_filters()` that both paths call, so results and facet counts stay in sync. The endpoint also gained `post_status => publish` (private posts no longer surfaced to logged-in users) and a `per_page` clamp (`min(48, ...)`).
+  - assets/js/dr-ajax.js
+  - inc/ajax/loop-endpoints.php
+  - inc/content/loops/dr-posts.php
+
+- **Context Nav: Inverted Prev/Next Order on Dorsal Root Posts (`context-nav-shortcode.php`)**
+  - The Dorsal Root prev/next query passed `"order" => "DSC"`, an invalid value WordPress silently coerces to DESC, contradicting the documented "publish date ASC (oldest to newest)" intent and inverting the walk order. Corrected to `"ASC"`.
+  - inc/shortcodes/context-nav-shortcode.php
+
+- **Genes Loop AJAX Endpoint: Dead Search `meta_query` (`genes-loop-endpoints.php`)**
+  - The endpoint built an `$args['meta_query']` for the search term, but the fragment reassigns `meta_query` wholesale whenever a search is present (the same condition), so the endpoint's block was always overwritten and its field list had drifted from the fragment's real search fields. Removed the dead block; the fragment is the single source of truth for search fields, with `$search` still passed through via the `qs` query var.
+  - inc/ajax/genes-loop-endpoints.php
+
+- **Genes Filter: Fallback Page Slug (`genes-filter.php`)**
+  - When `get_permalink()` returned false, the form action and RESET link fell back to the slug `genes` / `home_url("/genes/")`, but the real page slug is `cmt-genetics-database`, so the fallback pointed at a non-existent page. Corrected the fallback to `cmt-genetics-database`.
+  - inc/content/filters/genes-filter.php
+
+- **Genes Loop: Pagination Filter Loss During AJAX (`fragment-loop-genes-loop.php`)**
+  - Pagination links were built from `$_GET`, which is empty during an AJAX POST, so injected page links dropped the active filters (harmless in-session, since the JS rebuilds params from form state, but a link copied out of the injected DOM lost its filters). Links now build from the effective request (`$_GET` on page load, `$_POST` during AJAX), stripping the AJAX plumbing (`action`, `nonce`, `per_page`, paged keys).
+  - inc/content/loops/partials/fragment-loop-genes-loop.php
+
+- **Featured Admin Column: Sort Dropped Unfeatured Posts (`functions.php`)**
+  - Sorting the post list by the Featured column used a `meta_key` orderby, whose INNER JOIN on `postmeta` silently excluded every post lacking `_is_featured`. Replaced with an OR `meta_query` (`EXISTS` / `NOT EXISTS`) so the sort LEFT JOINs and keeps all posts, featured first with a date tiebreak.
+  - functions.php
+
+- **Loop Empty-State: Duplicate and Inconsistent IDs (`dr-posts.php`, `loop-endpoints.php`, `glossary-loop.php`)**
+  - The DR empty-state ID differed between the server render (`genes-no-results`) and the AJAX render (`dr-no-results`), and the glossary reused `genes-no-results` too (duplicate-ID risk on a page, and anything targeting the ID behaving differently after a swap). Standardized: DR uses `dr-no-results` on both paths; glossary uses its own `glossary-no-results`.
+  - inc/content/loops/dr-posts.php
+  - inc/ajax/loop-endpoints.php
+  - inc/content/loops/glossary-loop.php
+
+- **Section Dorsal Root: Missing `ABSPATH` Guard (`section-dorsal-root.php`)**
+  - The homepage feature partial was the only file in the set without a direct-access guard. Added the standard `if (!defined("ABSPATH")) exit;`.
+  - templates/parts/section-dorsal-root.php
+
+- **main.css: Invalid Values and Dead Duplicates**
+  - Closed an unterminated comment that was swallowing the entire mobile font-size `@media` block (it had never applied since the comment broke, and was only accidentally terminated by the next section's close).
+  - `padding-top: -10px !important` (invalid negative padding, silently dropped) corrected to `0`; a duplicate `background` declaration on the mobile hamburger resolved (keeping the gradient that draws the center bar); both deprecated `word-break: break-word` uses replaced (`overflow-wrap`); and a byte-for-byte duplicate of the Stackable CTA block removed.
+  - The misleading global-link-style comment was corrected to describe the intended site-wide behavior (underline plus hover scale on every anchor).
+  - assets/css/main.css
+
+- **Admin Image + OMIM Tools: Dry-Run Ignored Selected Scope (`eic-banner-image-tool.php`, `eic-featured-image-tool.php`, `eic-omim-tool.php`)**
+  - Each tool's `do_dryrun()` previewed "differs" logic unconditionally, ignoring the chosen scope, so a dry run under scope `all` or `empty` reported a count that did not match what Commit would write, defeating the preview. `do_dryrun()` now takes the scope and gates preview rows through the same `want()` logic the commit uses.
+  - mu-plugins/eic-banner-image-tool.php
+  - mu-plugins/eic-featured-image-tool.php
+  - mu-plugins/eic-omim-tool.php
+
+- **Body Maintenance: NCV Exemption + HTML-Aware Term Rewrite (`eic-body-maintenance.php`)**
+  - The NCV-frame flag-only check exempted any sentence containing "process", yet the tool's stated purpose is to catch invented phrasings "like 'an axonal process'", so the one example it documents was the one it silently ignored. Removed the "process" exemption.
+  - `term_fix()` (and its matching `term_scan()` preview) ran over raw `post_content` with no HTML awareness, so a rule token inside an href, alt text, or attribute would be rewritten. Both now operate only on text between HTML tags, leaving tags and URLs untouched.
+  - mu-plugins/eic-body-maintenance.php
+
+- **ClinVar + ClinGen Tools: HGNC Cache Short-Circuit (`eic-clinvar-url-tool.php`, `eic-clingen-url-tool.php`)**
+  - `hgnc_symbol()` short-circuited on any existing cache entry, even one written by another tool without an `approved` key (the tools share `HGNC_OPTION`), so symbol normalization could silently no-op depending on tool run order. Both now short-circuit only when the entry carries the `approved` key, otherwise falling through to the live fetch.
+  - mu-plugins/eic-clinvar-url-tool.php
+  - mu-plugins/eic-clingen-url-tool.php
+
+- **Subtype Template — Gene OMIM "Word Salad" on Unknown-Gene Subtypes (`subtype-fields-template.php`)**
+  - On a subtype whose gene is unknown, the gene OMIM block read its label from `$gene_symbol`, which is reassigned to the placeholder "Gene is Unknown at This Time", producing "Gene is Unknown at This Time OMIM Entry" with a redundant "No Entry" button. The block is now suppressed entirely when `unknown_gene` is set, since a gene OMIM entry is meaningless without a gene; the subtype OMIM entry still renders. (ClinGen already self-suppressed via an empty `clingen_url`, so it needed no change.)
+  - templates/subtype-fields-template.php
+
+- **Subtype Taxonomies — Chromosome Seeder Version Gate (`register-subtype-taxes.php`)**
+  - The term seeder was gated behind a one-time `subtype_taxonomies_seeded_v4` option, so terms added to the arrays after the initial seed (notably the mitochondrial `MT` chromosome) were never created. Removed the version gate; the seeder now runs every load, staying idempotent via `term_exists()`, so any term added to the arrays appears on the next reload and receives its numeric `sort` meta. `MT` added to the chromosome `terms` and `order` arrays. (Fix predated this cycle but had not been migrated to production; deployed now.)
+  - inc/taxonomies/register-subtype-taxes.php
+
+- **Dorsal Root Pagination - AJAX Swap + Scroll to `#blog` (`dr-ajax.js`)**
+  - Page-number clicks now AJAX-swap the results in place (delegated on the results root, so they survive result swaps without rebinding) and update the URL to a clean `?dr_paged=N`, instead of full-navigating. After the swap the view scrolls to the on-page `#blog` anchor. With JS off, clicks still full-navigate to `#blog` via the link hrefs.
+  - `focusResults()` gained a `focus` option; pagination passes `{ scroll: false, focus: false }` so it no longer moves focus/scroll to `#results` and overshoots the `#blog` target.
+  - assets/js/dr-ajax.js
+
+- **Dorsal Root Pagination - Unstyled Pager After AJAX Swap (`loop-endpoints.php`, `dr-posts.php`)**
+  - AJAX-loaded pages had lost their pager styling: the endpoint rendered `paginate_links()` inside a `.dr-pagination` div the CSS did not target, while the initial page render used `.wp-block-query-pagination`. Both paths now share `eic_dr_render_pagination()`, emitting identical markup so the pager keeps its styling on every page.
+  - inc/ajax/loop-endpoints.php
+  - inc/content/loops/dr-posts.php
+
+- **Dorsal Root Filter — Focus Ring Specificity Conflict (`main.css`)**
+  - Removed a legacy DR-specific override block (`.site-searchwrap form.site-search[data-loop="dr"] .site-search__select { ... }`) that predated the dedicated stylesheet migration. Its class-based selector carried higher specificity than the new `dr-filter.css` rules, silently pinning the category select's border to grey and suppressing the `:focus` blue ring regardless of state.
+  - All properties from the removed block (height, padding, border, radius, background, custom arrow) are now sourced from `dr-filter.css`, using genes-filter's exact values rather than the old block's DR-specific ones (height changed `46px` → `48px`; border `1.5px` → `1px`; padding widened for arrow clearance).
+  - assets/css/main.css
+
+- **Genes Loop — SMA-LEP Sort Key (`genes-loop.php`, `genes-type-order.php`)**
+  - Corrected the sort key for the SMA-LEP subtype (`SMA-LEP` → `smalep`), fixing incorrect placement in type-ordered listings. Also corrected CMT4/CMTX ordering. Deferred from the bulk subtype importer prototyping work; both files carried the same stale key.
+  - inc/content/loops/genes-loop.php
+  - inc/content/sort/genes-type-order.php
+
+- **Genes Loop — Card Summary First-Sentence Extraction (`fragment-loop-genes-loop.php`)**
+  - Card summary extractor now skips the leading "What Is…?" heading present in imported subtype bodies, pulling the actual answer sentence instead of the heading text. Also deferred from the bulk importer prototyping work.
+  - Gene name emphasis corrected to stay roman (non-italic) inside hyphenated subtype names, rather than italicizing the full hyphenated string.
+  - inc/content/loops/partials/fragment-loop-genes-loop.php
+
+- **Loop Filters - Numeric-Slug Resolution (`loop-tax-resolver.php`)**
+  - Chromosome, and any taxonomy whose slugs are numeric (e.g. `10`), previously risked being misread as a `term_id` on a cold load of a shared slug URL. The resolver now prefers an actual slug match first and only falls back to `term_id` when no slug exists, fixing chromosome slug URLs while preserving legacy numeric back-compat.
+  - inc/ajax/loop-tax-resolver.php
+
+- **Genes Loop - Card Overflow on Very Narrow Viewports (`genes-loop.css`)**
+  - At `≤360px` the Gene / Discovered / Inheritance attribute strip stacks into full-width rows with horizontal hairlines instead of three columns, eliminating the horizontal overflow and clipping that occurred below roughly `320px`. Viewports `375px` and up are unchanged.
+  - assets/css/genes-loop.css
+
+- **Dorsal Root Feature Section - Shared `.dr-more` CTA (`main.css`, `section-dorsal-root.css`)**
+  - `.dr-more` turned out to be a shared CTA button (glossary source links, OMIM "no entry" buttons, fact boxes, form buttons), not section-only, so its base rule was restored in `main.css` after the section cleanup. The section's own button was renamed to `.dr-feature__more`, which re-adds the global underline-on-hover exemption that had been keyed to `.dr-more`.
+  - assets/css/main.css
+  - assets/css/section-dorsal-root.css
+
+### Removed
+
+- **Context Nav: Retired `resource` CPT Handling (`context-nav-shortcode.php`)**
+  - Removed the `resource` post type from the supported-types list, its label set, and its back-URL branch. The `resource` CPT no longer exists, so the handling was dead. (The corresponding `return-state.js` archive map already had no `resource` entry, so it needed no change.)
+  - inc/shortcodes/context-nav-shortcode.php
+
+- **Glossary Loop: Unused Fallback-Image Closure (`glossary-loop.php`)**
+  - Removed the `$get_fallback_img` closure, defined but never invoked, so glossary cards rendered no image. There is no image to render on the card any longer, so it was dead code.
+  - inc/content/loops/glossary-loop.php
+
+- **Genes Filters Stylesheet: Dead `.genesdb-filter-wrap .genes-sort*` Block (`genes-filters.css`)**
+  - Removed a scoped sort-UI block that never matched: the sort toolbar (`.genes-sort--results`) is emitted by the separate `[genes_loop]` shortcode outside `.genesdb-filter-wrap`, and is styled by the unscoped `.genes-sort--results` rules in `main.css`. A note was left in place of the block.
+  - assets/css/genes-filters.css
+
+- **SSO Auto-Login mu-plugin (`sso.php`)**
+  - Removed the stock Newfold/Bluehost `sso.php` mu-plugin, an unauthenticated `admin-ajax` endpoint (`sso-check`) that logged a user in (defaulting to the first administrator) whenever a request's `nonce`+`salt` hashed to a host-set `sso_token` option. Vestigial on Ionos, which does not use it. The `sso_token` option was confirmed absent from the production database, so the endpoint was already inert; removing the file prevents it being re-armed if a token were ever written again.
+
+- **Force Theme File Editor mu-plugin (`force-theme-file-editor.php`)**
+  - Removed a local-development-only mu-plugin that re-surfaced the Appearance to Theme File Editor, which allows arbitrary PHP execution for any `edit_themes` user. Its own header warned it must not reach staging or production; removed so it cannot.
+
+- **Author Block toggle ACF field (`inc/acf/author-block-fields.php`)**
+  - Removed the `suppress_auto_author` true/false field. The `[about_author]` block is now opt-in, placed per post as a Shortcode block, so there is no auto-injected block left to suppress and the toggle had nothing to act on. The `about_author` shortcode itself (Code Snippets) is unaffected.
+  - inc/acf/author-block-fields.php
+
+### Maintenance
+
+- **Pre-Deploy QC: Lint + Whitespace Normalization**
+  - Full pre-rollout QC pass over the changed file set (theme plus mu-plugins): every PHP file passes `php -l`, every JS file passes `node --check`, and CSS passes stylelint with no value, property, or deprecation errors and balanced braces/comments.
+  - Normalized whitespace across the touched files: stripped trailing whitespace, collapsed runs of three or more blank lines, and enforced exactly one end-of-file newline. `genes-loop.css` was converted from CRLF to LF to match the rest of the repository, and its duplicate `:root` and superseded `.eic-subtype-card__footer` block were merged.
+  - Removed a dead `loop_no_results` unhook in `functions.php` (TT25 registers no such action or `twentytwentyfive_no_results` callback, so it did nothing; empty-state hiding is handled by CSS).
+
+- **Export/Import Tools: Round-Trip Documentation Notes**
+  - Added a note to the glossary and subtype exporter/importer pairs clarifying that exports are a lossless backup shape (post columns, raw meta, taxonomies, Yoast row) and importers expect the authored shape, so export files restore via the database rather than through the importer. Formats are intentionally different; behavior unchanged.
+  - mu-plugins/eic-glossary-exporter.php, eic-glossary-importer.php, eic-subtype-exporter.php, eic-subtype-importer.php
+
+- **Deferred: main.css Duplicate-Selector Cleanup**
+  - The remaining `no-duplicate-selectors` warnings in `main.css` (`.dr-card`, `.dr-grid`, `:root`, and the `.eic-fact`/`.eic-subtype-fields` blocks) are intentional cascade layering: the current rendering is correct because later rules override earlier ones in place. Deferred to a dedicated session, since deduplicating means recomputing the full cascade and risks changing the working layout. No change shipped beyond the value-bug fixes noted under Fixed.
+
+- **Database Cleanup — Legacy Domain Migration Artifacts**
+  - Removed stale `staging_config` option from `kvu1_options` and `6CV_options`,
+    left over from Installatron migration records.
+  - Updated 39 rows in `kvu1_yoast_indexable` where `permalink` contained the
+    legacy staging domain (`expertsincmt-wu8cfkwyb0.live-website.com`), replacing
+    all instances with `https://expertsincmt.org`.
+  - Corrected `kvu1_yoast_indexable` row 18 (`post-type-archive` / `subtype`),
+    which was storing the legacy `cmtgenes.com` domain as the subtype archive
+    permalink. Updated to `https://expertsincmt.org/subtype/`.
+  - Root cause: database search-replace during migration to Ionos did not target
+    `kvu1_yoast_indexable` and operated against the wrong table prefix (`6CV_`
+    instead of `kvu1_`), leaving all Yoast indexable records on legacy domains.
+  - Resolved downstream effects: malformed breadcrumb `@id` values in Yoast
+    WebPage schema on subtype pages, legacy domain appearing in social URL
+    previews on mobile, and bot-crawl 404s sourced from stale permalink records.
+
+---
+## [2.1.0] - 2026-05-04
+
+### Added
+
+- **Pages JSON-LD Schema (`pages-jsonld.php`)**
+  - New file: injects `MedicalCondition` and `MedicalWebPage` JSON-LD blocks in `<head>` for WordPress Pages.
+  - Fires only when at least one Medical Specialty is selected, excluding non-medical pages from schema injection entirely.
+  - Specialty output is always an array of `MedicalSpecialty` nodes, supporting multi-select.
+  - `about` node points to Charcot-Marie-Tooth disease as the `MedicalCondition`.
+  - Supports audience, aspect, lastReviewed, reviewedBy, publisher, isPartOf, and mentions.
+  - Mentions whitelist consistent with existing CPT JSON-LD files: `/subtype/`, `/glossary/`, `/what-is-cmt/`, `/cmt-and-breathing/`.
+  - Added `code` (`MedicalCode` / OMIM) and `associatedAnatomy` (`AnatomicalStructure` / Peripheral nervous system) to the `MedicalCondition` block for consistency with the subtype schema.
+  - inc/acf/pages-jsonld.php
+
+- **Medical Specialty Checkbox Field — Subtype, What Is CMT, CMT and Breathing**
+  - Added `medical_specialty` checkbox field to the Schema Markup tab in `subtype-fields.php`, `what-is-cmt-fields.php`, and `cmt-and-breathing-fields.php`.
+  - Field renders full width above all other Schema Markup fields on all three CPTs.
+  - Choices match the `pages-fields.php` specialty set for consistency across all content types.
+  - `subtype-fields.php`: field exempted from the global 33% width normalization loop via `_keep_wrapper` flag; ACF ignores unknown keys.
+  - inc/acf/subtype-fields.php
+  - inc/acf/what-is-cmt-fields.php
+  - inc/acf/cmt-and-breathing-fields.php
+
+- **Standalone `MedicalCondition` Block — Educational CPTs (`educational-jsonld.php`)**
+  - Added Block 1 `MedicalCondition` output before the existing `MedicalWebPage` block for What Is CMT and CMT and Breathing CPT posts.
+  - Canonical URL always points to `/what-is-cmt/` as the disease entity anchor, regardless of which CPT the post belongs to.
+  - Added `is_page()` guard to prevent the file from firing on WordPress pages.
+  - Replaced hardcoded `"Neurology"` specialty with dynamic read from `medical_specialty` ACF field; falls back to `Neurologic` when unpopulated.
+  - Normalized `about` URL to `/what-is-cmt/` — removed post-type conditional that previously pointed breathing posts to `/cmt-and-breathing/`.
+  - Added `code` (`MedicalCode` / OMIM) and `associatedAnatomy` (`AnatomicalStructure` / Peripheral nervous system) to the `MedicalCondition` block for consistency with the subtype schema.
+  - inc/acf/educational-jsonld.php
+
+### Changed
+
+- **Subtype JSON-LD — Dynamic Specialty + Unknown Gene Node (`subtype-jsonld.php`)**
+  - Replaced hardcoded `"Neurology"` specialty node in the `MedicalWebPage` block with a dynamic read from the `medical_specialty` ACF field.
+  - Output is always an array of `MedicalSpecialty` nodes, consistent with all other JSON-LD files.
+  - Falls back to `Neurologic` for subtypes with no specialty selection saved.
+  - Added `elseif ($unknown_gene)` branch to the `additionalProperty` block: outputs `"Gene unknown at this time"` as the `Associated Gene Symbol` `PropertyValue` node when the Unknown Gene flag is checked; gene symbol, full name, and alias nodes are suppressed in that state.
+  - inc/acf/subtype-jsonld.php
+
+### Fixed
+
+- **CMT and Breathing Fields — Key Typo (`cmt-and-breathing-fields.php`)**
+  - Corrected mismatched ACF field key on `reviewed_by_name`: was `field_eic_wic_reviewed_by_name` (copied from What Is CMT), now correctly `field_eic_breathing_reviewed_by_name`.
+  - inc/acf/cmt-and-breathing-fields.php
+
+---
+
+## [2.0.9] - 2026-03-13
+
+### Fixed
+- Closed CSRF vulnerability in Genes AJAX endpoint by enforcing nonce validation.
+  - themes/twentytwentyfive/inc/ajax/genes-loop-endpoints.php
+
+- Replaced timing-unsafe token comparison in SSO authentication with constant-time verification.
+  - mu-plugins/sso.php
+
+- Sanitized `$bounce` redirect parameter in SSO authentication flow.
+  - mu-plugins/sso.php
+
+- Restored IPv6 rate-limiting by replacing incorrect `REMOTE_ADDR` handling with validated IP detection and hashed transient keys.
+  - mu-plugins/sso.php
+
+### Performance
+- Increased subtype ID transient cache TTL from 60 seconds to `DAY_IN_SECONDS`.
+  - mu-plugins/cmtgenes-helpers.php
+
+### Maintenance
+- Consolidated ACF JSON path registration into MU-plugin loader to prevent conflicting save locations.
+  - mu-plugins/acf-json-loader.php
+  - mu-plugins/acf-admin-stability.php
+
+## [2.0.0] - 2026-02-16
+
+### Added
+
+- **ClinGen Gene Curation Integration**
+  - Added direct ClinGen gene curation links across the Genetics Database where authoritative curation exists.
+  - Subtype pages now conditionally render ClinGen links alongside existing ClinVar references.
+  - External links resolve to gene-specific ClinGen curation entries.
+  - Rendering logic suppresses the link when no valid curation record is present.
+
+- **Platform Search Production Lock**
+  - Finalized deterministic if/else intent tree.
+  - Implemented full no-results handling with conditional heading replacement.
+  - Added structured two-line no-results messaging with independent styling classes.
+  - Confirmed canonical bucket ordering across Subtypes, Types, Genes, and Content.
+
+- **Semantic Variable Expansion**
+  - Added chromosome-based semantic resolution.
+  - Added inheritance-pattern semantic handling with noise tolerance.
+  - Implemented slash normalization for subtype variables (e.g., 1F/2E).
+  - Anchored subtype-specific semantic URLs at render-time for deterministic routing.
+
+### Changed
+
+- **Subtype More Info Surface**
+  - Expanded subtype external reference layer to include ClinGen alongside ClinVar.
+  - Refined conditional CTA rendering logic for authoritative genetics resources.
+
+- **Search Banner Architecture**
+  - Liberated header banner from native WordPress search context.
+  - Converted Search Results template into a shell-only renderer.
+  - Moved query echo logic into `platform_search_results` layer.
+
+- **Resolver Stability**
+  - Eliminated accidental early returns blocking inheritance queries.
+  - Refined semantic clamp + widening behavior for multi-token input.
+  - Validated stacking logic across noisy or partial inheritance phrases.
+  - Confirmed exact gene symbol resolution (e.g., PMP ≠ PMP22).
+
+- **Branch Governance**
+  - Rebasing and linearization of `dev` prior to merge.
+  - Clean promotion of `main` as first viable production baseline.
+
+### Fixed
+
+- **General Search Fall-Through**
+  - Restored native WordPress fallback for non-intent-based content queries.
+
+- **Semantic Variable Invocation**
+  - Ensured Roussy-Lévy variable is defined and invoked exactly once.
+  - Removed duplicate or competing semantic triggers.
+
+- **Deployment Integrity**
+  - Resolved SSH trust prompt and public key authentication issues.
+  - Eliminated non-fast-forward rejection through controlled rebase workflow.
+
+
+## [1.8.0] – 2026-01-01
+
+### Added
+
+- **Platform Search System**
+  - Fully custom, intent-aware platform search spanning Subtypes, Genes, Classifications, and curated content.
+  - Deterministic resolver pipeline (normalization → intent resolution → variable anchoring → result builder → renderer).
+  - Semantic handling for subtype-specific variables (e.g., CMT1A, CMT1F/2E, chromosome and inheritance queries).
+  - Canonical ordering enforced across all result buckets (Types → Subtypes → Genes → Content).
+  - Graceful fallback to native WordPress search for general content queries.
+  - Result buckets labeled with contextual clarity (“Related to Your Search”) and accurate singular/plural handling.
+
+- **Search Results UX**
+  - Grid-based layout for identifiers (Types, Subtypes, Genes) with responsive column scaling.
+  - Editorial, vertical layout for Content results with title, source label, and excerpt support.
+  - Explicit prevention of identifier wrapping while preserving readable flow for content excerpts.
+  - Intentional spacing and negative space for scannability and reduced cognitive load.
+  - Wide-screen density scaling (≥1600px) without over-stretching sparse result sets.
+
+- **Genetics Database Enhancements**
+  - Added **ClinVar pathogenic variant** links where applicable.
+  - Added **ClinGen** gene curation links for authoritative external reference.
+  - Improved gene and subtype page layouts for clearer hierarchy and readability.
+  - Strengthened outbound link handling for safety and consistency.
+
+- **Custom Mobile Navigation Menu**
+  - Purpose-built mobile navigation experience independent of desktop constraints.
+  - Improved tap targets, spacing rhythm, and visual grouping.
+  - Reduced navigation depth to prioritize core user paths.
+  - Fully aligned with site-wide UX and accessibility standards.
+
+- **Footer Enhancements**
+  - Reworked footer layout to improve readability and visual rhythm across breakpoints.
+  - Mobile-specific refinements to prevent stacking congestion and accidental taps.
+  - Improved link grouping and negative space for easier scanning.
+  - Verified consistency across all major surfaces (Genes, Glossary, Subtypes, Search, Dorsal Root).
+
+### Changed
+
+- **Search Architecture**
+  - Eliminated reliance on native WordPress search rendering while preserving WP search as a fallback engine.
+  - Header banner behavior decoupled from WP search context for deterministic search presentation.
+  - Search results template now functions as a shell, with all logic handled by the platform search stack.
+
+- **Search UI & Typography**
+  - Matched clickable result titles across all buckets for visual consistency.
+  - Ensured content excerpts are visually subordinate to clickable titles.
+  - Removed legacy inline font rules in favor of dedicated, scoped CSS.
+
+- **Mobile UX Consistency**
+  - Unified spacing, typography, and interaction patterns across navigation, footer, and search.
+  - Reduced cramped layouts and visual pressure points on small screens.
+
+### Fixed
+
+- **Search Result Clarity**
+  - Prevented identifier wrapping that caused grid instability for long subtype and gene labels.
+  - Resolved spacing conflicts between grid-based and editorial result buckets.
+  - Removed rogue inline font-weight rules from content source labels.
+
+- **Layout Hygiene**
+  - Eliminated leftover debug artifacts and unused helpers across the search stack.
+  - Normalized spacing and margins to maintain consistent negative space site-wide.
+  - Verified no residual debug output or temporary instrumentation remains.
+
+---
+
+### **v1.8.0 Summary**
+
+This release delivers a first-class, intent-aware search experience and closes long-standing UX gaps across mobile navigation, footer layout, and genetics content surfaces. Search is no longer an afterthought. It is now a guided, readable, and predictable system that respects how people actually look for information about CMT.
+
+
+## [1.0.0] - 2025-11-20
+
+### Added
+- **Staging Deployment Pipeline (SSH + GitHub Integration):**  
+  Fully enabled SSH access on staging; added server-side deploy key; connected staging `wp-content` repo to GitHub via SSH; converted origin remote from HTTPS to SSH; authenticated server with GitHub; validated secure Git operations.
+- **Staging Environment Git Architecture:**  
+  Staging now tracks the `main` branch directly, establishing a stable production-ready deployment workflow.
+- **Complete Path Mapping:**  
+  Verified and documented staging root at `/home1/zdqowomy/public_html/staging/9105/wp-content` as the canonical remote Git root.
+- **SQL Performance Indexes:**  
+  Implemented all required database indexes on staging (`idx_postmeta_key_post`, `idx_term_relationships`, `idx_postmeta_subtype_unique`) for Genes, Glossary, Subtypes, and Dorsal Root query acceleration.
+
+### Changed
+- **Deployment Workflow:**  
+  Updated staging instance to track `main` rather than `dev`, aligning staging with production-intent code and keeping development isolated to local `dev`.
+- **Remote Configuration:**  
+  Replaced legacy HTTPS GitHub remote with authenticated SSH remote (`git@github.com:CMTKennyB/Experts-in-CMT.git`) for secure and passwordless deployment.
+- **Staging Branch Alignment:**  
+  Switched staging worktree from `dev` to `main` cleanly, resolving file deltas and removing environment discrepancies.
+
+### Fixed
+- **AIO Migration Remote Drift:**  
+  Resolved issues where staging inherited incorrect Git origins following AIO Migration import.
+- **Permission Denied (publickey):**  
+  Fixed GitHub authentication failures on staging by generating server-side SSH keys and registering them as a GitHub deploy key.
+- **Shell Access & Host Key Trust:**  
+  Enabled shell access, cleared host key trust prompts, added GitHub host fingerprint, and validated secure SSH communication.
+
+---
+
+### **v1.0.0 Summary**
+This release establishes a stable, production-ready foundation for Experts in CMT. All core interactive stacks (Genes, Glossary, Dorsal Root, Subtypes, What Is CMT, DNSMI modal) are in sync across Local → GitHub → Staging. Staging is now a true deployment target, fully backed by Git, SSH, and validated branch structure.
+
+This marks the project’s transition from MVP development to stable release status.
+
+
+## [0.9.6] - 2025-11-20
+### Added
+- **Do Not Sell My Information (DNSMI) Modal System**  
+  - Full modal experience built via `[do_not_sell_modal]` shortcode.  
+  - Success screen with EIC-standard button design and UX flow.  
+  - Cookie-based state: once submitted, visitors see a disabled confirmation link (“Your data will not be sold to any 3rd party.”).  
+  - Admin bypass: logged-in users bypass cookie restrictions for testing.
+
+### Changed
+- **Modal UX & UI Enhancements**  
+  - Applied full EIC button styling to both submit and success buttons.  
+  - Updated close button to circular EIC style with correct hover colors.  
+  - Upgraded inputs to global field patterns (radius, borders, focus ring, placeholder styling).  
+  - Fixed spacing around labels and fields; resolved rogue `<br>` behavior with markup cleanup.  
+  - Rebased modal to `<body>` to correct z-index and overlay behavior.
+
+### Fixed
+- Blocked LastPass/password manager interference inside modal.  
+- Success state now properly hides the intro text and form.  
+- Resolved hover-locked close button caused by stacking and propagation issues.  
+- Removed rogue `<p>` injection from submit button label.
+
+
+## [0.9.5] – 2025-11-18
+
+### Added
+- **CMT and Breathing CPT**
+  - Full CPT stack (`breathing`) mirroring the What Is CMT system.
+  - Supports modular educational topics with block-template rendering.
+  - URL coexistence with the static `/cmt-and-breathing/` page using unified slug rules.
+  - Admin menu integration and REST support.
+
+- **CMT and Breathing ACF Group**
+  - Same schema as What Is CMT: Overview, Key Points, CTA Link, Updated By.
+  - Fully PHP-registered inside `/inc/acf/cmt-and-breathing-fields.php`.
+
+- **Shortcodes**
+  - `[cmt_and_breathing_fields]` — inline field renderer for future expansion.
+  - `[topic_updated]` — shared dynamic updated-line for What Is CMT + CMT and Breathing.
+  - Modularized `[context_nav]` shortcode into its own include file for clarity and consistency.
+
+- **Block Template**
+  - `single-breathing.html` created and assigned, matching the What Is CMT template architecture.
+
+### Changed
+- **Shortcode architecture cleanup**
+  - Unified updated-line shortcode and removed the old single-CPT version.
+  - Context navigation now supports both What Is CMT and Breathing CPTs with correct labels and back-links.
+
+- **functions.php organization**
+  - Added require statements for all new CPT/ACF/shortcode files.
+  - Ensured load order remains intact and predictable across all includes.
+
+- **UI/UX parity**
+  - CMT and Breathing topics now follow the exact UX flow as What Is CMT topics, including nav layout, updated line, and Dorsal Root footer integration.
+
+### Fixed
+- **404 resolution for new Breathing CPT**
+  - Required rewrite flush after CPT registration.
+  - CPT now resolves correctly under `/cmt-and-breathing/topic-slug/`.
+
+- **Context nav display logic**
+  - Corrected detection for the new CPT.
+  - Ensured nav appears appropriately once more than one topic exists.
+
+- **Shortcode autoload duplication prevention**
+  - Removed accidental duplicate What Is CMT CPT declaration.
+  - Ensured correct modular loading of CPT, ACF, and shortcode files via `/inc/` directories.
+
+
+## [0.9.0] – 2025-11-16
+
+### Added
+
+- **Genes AJAX Stack Completion**: Implemented full DR-parity AJAX system for the Genes Database, including live search, taxonomy/meta filtering, canonical sorting preservation, pagination transport, and fragment-only replacement via `genes-loop-endpoints.php`.
+- **Genes Live Search**: Added live search across all key ACF/meta fields with stable URL state and preserved FIELD() canonical order.
+- **Genes Pagination Overrides**: Added shortcode-controlled per-page overrides and integrated them into AJAX query transport.
+- **Glossary Sort UI + Search UI**: Added Genes-style sort toolbar and search controls to the Glossary loop, with global search facet integration.
+- **Glossary AJAX Loader**: Implemented smooth AJAX swap behavior identical to Dorsal Root, with scroll management and parameter preservation.
+- **DR Filter UI**: Added `[dr_filter]` shortcode with category selector (`dorsal-root`), search input, auto-submit behavior, and fully responsive Genes/Glossary-style UI.
+- **DR Query Expansion**: Implemented OR-based search across title, excerpt, content, tags, and taxonomy term names.
+- **DR Static Page Rewrite (2025)**: Completed migration of Dorsal Root from WP archive to static page using ACF and a custom loop (`dr-posts.php`).
+- **Maintenance Toolbox**: Added `/tools/` directory containing Prettier, Stylelint, PHP CS Fixer, PHPCS, EditorConfig, and npm/composer scripts (`fmt:all`, `lint:all`, etc.) for unified theme formatting.
+- **Subtype Publication Notes**: Added new WYSIWYG fields (Publication Note, Alt Publication Note) with grid-aligned rendering inside `subtype-fields-template.php`.
+- **Subtype CTA Block**: Added 2×2 “More Info” section with external-link CTAs (Symptoms, Research, What is CMTX, What is Intermediate CMT), plus custom `$research_label` support.
+- **Subtype Updated Line**: Added final metadata footer (“Updated: {date} | By: K. Raymond”) to subtype single template.
+- **Genes/Glossary/DR Shared Scripts**: Standardized toolbar, reset behavior, parameter handling, scroll logic, and event interception across all loops.
+
+### Changed
+
+- **Canonical Sort Enforcement**: Restored and protected the canonical FIELD() sort order for Genes under all conditions (default load, reset, clear, AJAX reloads, and URL state).
+- **Genes/Glossary/DR Pagination**: Unified paging behavior; all loops now reset pagination on filter changes and maintain position on reload.
+- **Global Form Handling**: Replaced default WP form bubbling with custom JS to prevent duplicate reloads, lost params, and anchor jumps across all CPT loops.
+- **AJAX Transport Model**: Standardized POST/GET handling (`$req = array_merge($_GET, $_POST)`) across all endpoints.
+- **DR Taxonomy Scope**: Switched all legacy `category` references to the `dorsal-root` taxonomy.
+- **Glossary Rendering**: Updated glossary loop to match Genes/DR structure (bagpipe card parity, featured image fallback, bottom alignment).
+- **Glossary & Genes Scroll Behavior**: Reworked anchors and scroll offsets to eliminate jump scrolling on reloads and resets.
+- **Subtype Single Template Refinements (v0.7.2)**: Updated grid spacing, alignment, note placement, CTAs, dividers, and universal padding rhythm.
+- **Genes Loop Restructure**: Split the Genes loop into shortcode wrapper + fragment (`loop-fragment-genes-loop.php`) for endpoint parity.
+- **Codebase Cleanup**: Ran full theme through formatting + maintenance QC (JS/PHP/CSS), removed redundant wrappers, corrected loader paths, fixed invalid markup, and normalized indentation.
+- **Filter File Restructure**: Moved all filter PHP files into `/inc/content/filters` for modular organization.
+
+### Fixed
+
+- **Genes AJAX Regression**: Resolved full breakdown of filter logic, sort state, and pagination caused by WP form-hook conflicts and redundant reloads.
+- **Genes Canonical Sorting Breakage**: Fixed sort resets that previously killed the FIELD() order; canonical ordering now persists across every reload type.
+- **Glossary AJAX Jitter**: Eliminated double-render jitter by adding global `window.GL_AJAX` guards and ensuring single pipeline execution.
+- **Glossary Bottom Alignment Issue**: Restored bagpipe card alignment via glossary-scoped flex/calc fix without affecting DR or Genes.
+- **DR Tax Query Bug**: Corrected `tax_query` shape for category-only views and removed duplicated sort switch.
+- **DR Reset Jump Scroll**: Fixed jump scroll on DR selector reset; now reloads smoothly without anchor jump.
+- **DR Button Autop Injection**: Fixed WP auto-`<p>` and `<br>` insertion around “More From The Dorsal Root” by wrapping the anchor in `<span class="dr-more-wrap">`.
+- **Genes Loader Path Issues**: Fixed loader script inconsistencies between shortcode and endpoint.
+- **Genes Fragment Mismatch**: Corrected swapped file names (`fragment-loop-genes-loop.php`) and restored consistent include paths.
+- **Filter Reset Behavior**: RESET links on all loops now correctly clear filter params without breaking scroll or losing state.
+- **Multiple Markup Hygiene Issues**: Removed duplicate closing tags in `genes-filter.php`, fixed rogue `<br>` injection, and normalized HTML structure across templates.
+
+### Removed
+
+- Deprecated smooth-scroll scripts from pre-AJAX Genes and Glossary loops (now handled by unified anchor-based navigation).
+- Legacy pagination wrappers from Genes loop after AJAX parity implementation.
+
+## [0.7.7] - 2025-11-07
+
+### Added
+
+- **Dorsal Root Filters UI:** Introduced the `[dr_filter]` shortcode with category dropdown (taxonomy: `dorsal-root`) and search input styled via the global `.site-search__row`. The dropdown auto-submits, resets pagination, and anchors to `#results`.
+- **Glossary (CMT Words) AJAX pipeline:** Implemented a modular AJAX loader with the `glossary_get_loop` endpoint returning identical inner `#results` markup for parity with the non-AJAX shortcode render.
+- **AJAX guards:** Unified `DR_AJAX` and `GL_AJAX` safeguards across both stacks to prevent double-handling, jitter, and redundant reloads. Added `stopImmediatePropagation()` to ensure single-path events.
+- **Search UX polish:** Improved accessibility and mobile typing with `inputmode="search"`, `autocomplete="on"`, `autocapitalize="none"`, `spellcheck="false"`, and `enterkeyhint="search"`.
+- **Dorsal Root filter styling:** Added a page-specific CSS rule to match the category `<select>` height (46 px) to the search input for consistent visual rhythm.
+
+### Changed
+
+- **DR loop query logic:** Search now performs a union across post title, excerpt, and content plus tag names and `dorsal-root` terms. When a category is selected, results are the intersection (Category ∩ Union). “Only category” path uses a single `tax_query` with `include_children`.
+- **Taxonomy scope:** Replaced core `category` references with the custom `dorsal-root` taxonomy.
+- **Parameter handling:** Unified GET handling for DR (`qs`, `dr_paged`, `dr_sort`, `dr_cat`) with hidden inputs preserving all other parameters. Reset clears `qs`, `dr_paged`, and `dr_cat`.
+- **Form behavior standardization:** Overrode native WP form bubbling to deliver consistent submit, reset, and pagination actions across DR, Glossary, and Genes.
+- **CSS structure:** Added a dedicated `/* DORSAL ROOT FILTERS */` section at the end of `main.css` for scoped styling, maintaining modular cascade order.
+
+### Fixed
+
+- **Duplicate sort switch** removed; ensured a single `new WP_Query($args)` call.
+- **`tax_query` shape** corrected for “only category” case.
+- **Anchor jump trimming:** Pagination and submit flows now preserve `#results` and scroll position.
+- **Glossary jitter:** Eliminated through AJAX guards and single-path event handling.
+- **Minor CSS/JS hygiene:** Normalized margins, corrected invalid values, and cleaned inline script placement.
+- **Visual offset:** Fixed mismatch between DR category selector and search input height; full pixel-perfect parity achieved.
+
+### Known Issues / Next
+
+- **RESET jump edge case:** A native anchor jump may still occur on DR reset; planned refinement via `history.replaceState` + programmatic reload.
+- **Glossary render-offset investigation:** Occasional overlap behind hero/search wrapper remains under review (layout flow / z-index vs space reservation).
+- **Genes AJAX stack:** Next milestone will port this validated DR/Glossary architecture to the Genes Database loop.
+
+## [0.7.6] - 2025-11-05
+
+### Added
+
+- **Development Toolbox** under `/tools/`: Prettier, Stylelint, PHP CS Fixer, PHPCS, and EditorConfig with npm scripts to format and lint JS, CSS, and PHP.
+- **Dorsal Root Filters UI**: `[dr_filter]` renders a `dorsal-root` category dropdown and a search input using global form styles. Input UX set with `inputmode="search"`, `autocomplete="on"`, `autocapitalize="none"`, `spellcheck="false"`, and `enterkeyhint="search"`.
+- **Auto-submit on category change**: Resets pagination and appends `#results`. “All Categories” omits `dr_cat`.
+- **Glossary polish pass**: Global spacing, focus states, and typography rhythm aligned to Genes and DR card styles.
+- **Glossary loop** improvements toward Genes parity:
+  - Title-only search and alpha-range filtering (A–E, F–J, K–O, P–T, U–Z, 0–9).
+  - Smooth submit behavior that resets pagination and reloads with `#results`.
+  - Scoped UI classes for consistent grid cards and button rhythm.
+
+### Changed
+
+- **DR Loop Query Logic**: Union search across title, excerpt, content, tag names, and `dorsal-root` term names. When a category is selected, results are intersection of Category ∩ Union. “Only category” path uses a single `tax_query` with `include_children`.
+- **Taxonomy Scope**: All DR taxonomy references switched from core `category` to custom `dorsal-root`.
+- **Param Handling**: Unified GET management for DR (`qs`, `dr_paged`, `dr_sort`, `dr_cat`). Hidden inputs preserve other params and skip these.
+- **Filter Reset Behavior**: RESET and built-in search clear now remove `qs`, `dr_paged`, and `dr_cat`, then reload anchored to `#results`.
+- Moved all filter PHP files into `/inc/content/filters` to match the modular include structure.
+- Verified Glossary scroll and anchor behavior for full parity with the Genes Database.
+- **Glossary loop UI**: Removed the search toolbar while preserving the sort toolbar and existing scroll and pagination behavior.
+- **Subtype Single Template v0.7.2**: Publication Note and Alt Publication Note fields, “More Info” CTA section, dynamic research label, and consistent spacing and divider rhythm.
+
+### Fixed
+
+- Removed duplicate sort switch and ensured a single `WP_Query` execution for DR loop.
+- Corrected `tax_query` array shape for the “only category” path.
+- Restored Glossary Y-axis card alignment by scoping DR button margin rules and adding glossary-only flex adjustments.
+- Minor CSS and JS hygiene: cleaned invalid values, verified script placement after forms, and enforced pagination reset on submit and category change.
+- Clean removal avoided regressions to card markup and equal-height grid behavior.
+- Resolved PHP notice in `glossary-loop.php` by guarding the cleanup callback variable.
+- Eliminated jumpy behavior on pagination by standardizing anchor flow.
+- Rogue `<br>` injection and top padding mismatch fixed in Subtype template. Verified Gutenberg block integration.
+
+### Known Issue / Next
+
+- **Jump scroll** on DR RESET click. Planned solution: client-side navigation that preserves position with a smooth reload and no anchor jump.
+
+---
+
+## [0.7.2] - 2025-10-30
+
+### Added
+
+- **Subtype Single Template v0.7.2**: Publication Note and Alt Publication Note (WYSIWYG) fields.
+- **Subtype Single Template**: “More Info” CTA grid (2×2) using `.dr-more` styling with external link safety attributes.
+- **Subtype Single Template**: Footer metadata — `Updated: {date} | By: K. Raymond`.
+- **Genes Loop**: User-select **Sort** toolbar (Default, Gene A–Z, Subtype A–Z, Oldest→Newest, Newest→Oldest).
+- **Genes Filter/Loop**: No-jump JS reloads for filter apply/reset, sort change, and sort clear.
+
+### Changed
+
+- **Subtype Single Template**: Inline “Note:” label + field on one line; label in roman bold; only gene symbols (e.g., _PMP22_) italicized.
+- **Subtype Single Template**: Standardized divider/spacing rhythm (50px between `.eic-block` sections); bottom divider restored on final block.
+- **Subtype Single Template**: Unified WYSIWYG + inline typography (`font-size: 0.95rem; line-height: 1.45`) and font inheritance across the section.
+- **Genes Loop**: Integrated sort logic for `gene_symbol`, `subtype`, and `year_of_discovery`; preserved canonical `type_classification` FIELD() order when no explicit sort is selected.
+- **Genes Filter**: Restored **APPLY FILTERS** and **RESET** buttons; centered results-level sort toolbar; matched CLEAR styling to filter RESET.
+- Layout refinements across Overview, Clinical & Genetic Context, More Info, Key Publications, Alt Publications, and Updated line for clear hierarchy.
+
+### Fixed
+
+- **Subtype Single Template**: Removed rogue `<br>` inside CTA buttons; corrected top-padding mismatch.
+- **Genes Loop/Filter**: Verified clean URL behavior (anchors/pagination) and stable no-jump interactions.
+- **Subtype Single Template**: Rogue `<br>` injection and top padding mismatch. Verified Gutenberg block integration.
+
+---
+
+## [0.7.1] - 2025-10-28
+
+### Added
+
+- MU plugin `cmtgenes-subtype-uniqueness.php` to hard-stop duplicate Subtype saves.
+- SQL index `idx_postmeta_subtype_unique` for rapid duplicate checks.
+
+### Changed
+
+- Converted Subtype ACF group to code-registered PHP (`/inc/acf/subtype-fields.php`); deactivated UI group.
+- Updated meta mappings (e.g., `gene → gene_symbol`) across search, filter, and counts.
+
+### Fixed
+
+- Added ACF validation filter in `cmtgenes-helpers.php` to prevent duplicate Subtype entries before save.
+- Verified core indexes active: `idx_postmeta_key_post`, `idx_term_relationships`, `idx_postmeta_subtype_unique`.
+
+---
+
+## [0.7.0] - 2025-10-27
+
+### Added
+
+- **Genes Database**: Integrated `[genes_filter]` + `[genes_loop]` into a cohesive system.
+- **Totals**: Real-time counts with plural handling (Subtypes, Genes, Unknown Gene(s)).
+- **Shortcode**: `[genes_totals_inline]` for standalone totals display.
+- **ACF**: `unknown_gene` True/False field on Subtype.
+
+### Changed
+
+- Filter grid: 2×2 layout with full-width search row; removed per-option counts for cleaner UX.
+- Typography and spacing unified to brand tokens; cleaned anchors and query strings.
+
+### Removed
+
+- Legacy smooth-scroll scripts; adopted anchor-only navigation.
+- Global WASD navigation script disabled to avoid editor conflicts.
+
+---
+
+## [0.6.4] - 2025-10-22
+
+### Added
+
+- `[genes_loop]` shortcode: Subtype cards in a 3-column layout using existing DR handles.
+- Fallback `single-subtype.html` and `ensure-single-subtype.php` to persist the TT25 “Single Item: Subtype” template.
+- SQL index for performance:
+  ```sql
+  CREATE INDEX idx_postmeta_key_post ON wp_postmeta (meta_key(191), post_id);
+  ```
+
+### Changed
+
+- Strict custom ASC order for `type_classification`  
+  (CMT1 → CMT2 → CMTX → CMT4 → CMTDI → CMTRI → dHMN → dSMA → GAN → HMSN → HSAN → HSN → SMA-LEP → Unclassified).
+- Subtype title displayed above gene metadata; “Updated” footer centered for layout consistency.
+
+---
+
+## [0.6.3] - 2025-10-21
+
+### Added
+
+- Site-wide keyboard navigation via `global-keyboard-nav.js` (WASD + Arrow Keys).
+- Screen-reader live region injected via `wp_body_open`.
+- Unified `:focus-visible` outline tied to `--primary` token; smooth focus scrolling.
+
+### Changed
+
+- Escape-key handling to exit form/edit contexts; cross-browser compatibility verified.
+
+---
+
+## [0.6.2] - 2025-10-21
+
+### Added
+
+- Text search field to Dorsal Root filter alongside category dropdown.
+- Reset button that mirrors native clear (“×”) and returns to `#blog`.
+- ARIA roles/labels and unified button styling via global tokens.
+
+### Changed
+
+- Cleaned scripts; removed legacy live search remnants.
+- Verified responsive scaling and equal heights (Hi-Tek Squish Test™).
+
+---
+
+## [0.6.0] - 2025-10-19
+
+### Added
+
+- `[dr_posts]` shortcode: PHP-chunked rows of 3 with auto-centering for 2/1-card final rows.
+- `[dr_filter]` shortcode: Category selection preserving query vars; in-page reloads.
+- `.dr-grid` / `.dr-row` wrappers governing structure and equal-height logic.
+
+### Changed
+
+- Preserved `.dr-blog` ecosystem; unified height rhythm; “Read More” buttons aligned on shared Y-axis.
+- Mobile scaling and label alignment refined to 150px (Hi-Tek Squish Test™ certified).
+
+---
+
+## [0.5.2] - 2025-10-18
+
+### Added
+
+- Featured Dorsal Root section (via shortcode) with 3-wide responsive layout (16:9 media, stable rhythm).
+- `.has-separator-border` token for section dividers and header accents.
+- Floating “Back to Top” button with smooth scroll and breakpoint validation.
+
+### Changed
+
+- Query loop card architecture refactored: equalized heights, pinned “Read More,” subtle resting shadow.
+- Standardized `.dr-blog` for symmetry and future reuse.
+
+---
+
+## [0.5.1] - 2025-10-16
+
+### Changed
+
+- Merged Dorsal Root blog setup to main.
+
+---
+
+## [0.5.0] - 2025-10-16
+
+### Added
+
+- Dedicated Dorsal Root blog home and single post templates.
+- Post navigation and “Return to Blog” logic via `functions.php` and `main.css`.
+- “Featured” taxonomy (code-registered) for a three-article featured section.

@@ -1,0 +1,25 @@
+/*
+Theme Name: Experts in CMT
+Theme URI: https://expertsincmt.com
+Author: Kenneth Raymond
+Author URI: https://expertsincmt.com
+Description: Custom block theme for the Experts in CMT platform, built on the TwentyTwentyFive WordPress architecture.
+Requires at least: 7.0
+Tested up to: 7.0
+Version: 3.0.0
+License: All rights reserved.
+Text Domain: expertsincmt
+*/
+
+/*
+ * NOTE:
+ * This stylesheet is intentionally empty.
+ * All global and component styling lives in:
+ *   /assets/css/main.css
+ *   /assets/css/nav-parent-link.css
+ *   /assets/css/genes-filter.css
+ *   /assets/css/loop-ajax.css
+ *   /assets/css/editor-styles.css
+ *
+ * Do not add styles here.
+ */
