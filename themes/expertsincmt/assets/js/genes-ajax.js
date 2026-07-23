@@ -536,7 +536,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		if (pagedEl) pagedEl.value = url.get('gd_paged') || '1';
 
 		// Gene group flags
-		['mito', 'ars', 'unknown'].forEach(function(key) {
+		['mito', 'ars', 'unknown', 'lof', 'gof'].forEach(function(key) {
 			const box = form.querySelector('.genes-filter__checkbox[name="' + key + '"]');
 			if (box) box.checked = url.get(key) === '1';
 		});

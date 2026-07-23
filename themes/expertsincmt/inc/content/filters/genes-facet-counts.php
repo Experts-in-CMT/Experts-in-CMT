@@ -50,6 +50,8 @@ const EIC_GENES_FACET_FLAGS = [
     "mito" => "mitochondrial_involvement",
     "ars" => "ars_gene",
     "unknown" => "unknown_gene",
+    "lof" => "lof_variant",
+    "gof" => "gof_variant",
 ];
 
 /**

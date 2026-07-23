@@ -53,6 +53,8 @@ add_action(
             $post_id
         );
         $ars_gene = (bool) get_field("ars_gene", $post_id);
+        $lof_variant = (bool) get_field("lof_variant", $post_id);
+        $gof_variant = (bool) get_field("gof_variant", $post_id);
         $audience = get_field("medical_audience", $post_id);
         $specialties = get_field("medical_specialty", $post_id);
         $last_reviewed = trim(
@@ -150,6 +152,18 @@ add_action(
         if ($ars_gene) {
             $desc_parts[] = sprintf(
                 "%s is associated with an aminoacyl-tRNA synthetase (ARS) gene.",
+                $subtype_name
+            );
+        }
+        if ($lof_variant) {
+            $desc_parts[] = sprintf(
+                "%s results from a loss-of-function disease mechanism.",
+                $subtype_name
+            );
+        }
+        if ($gof_variant) {
+            $desc_parts[] = sprintf(
+                "%s results from a toxic gain-of-function disease mechanism.",
                 $subtype_name
             );
         }
@@ -276,6 +290,20 @@ add_action(
                 "@type" => "PropertyValue",
                 "name" => "ARS Gene",
                 "value" => "Yes",
+            ];
+        }
+        if ($lof_variant) {
+            $additional[] = [
+                "@type" => "PropertyValue",
+                "name" => "Variant Mechanism",
+                "value" => "Loss of Function (LoF)",
+            ];
+        }
+        if ($gof_variant) {
+            $additional[] = [
+                "@type" => "PropertyValue",
+                "name" => "Variant Mechanism",
+                "value" => "Toxic Gain of Function (GoF)",
             ];
         }
         if ($year_of_discovery) {

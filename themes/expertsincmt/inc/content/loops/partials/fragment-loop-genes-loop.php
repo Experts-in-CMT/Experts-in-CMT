@@ -283,6 +283,20 @@ if (!empty($genes_flags["ars"])) {
         "compare" => "=",
     ];
 }
+if (!empty($genes_flags["lof"])) {
+    $flag_clauses[] = [
+        "key" => "lof_variant",
+        "value" => "1",
+        "compare" => "=",
+    ];
+}
+if (!empty($genes_flags["gof"])) {
+    $flag_clauses[] = [
+        "key" => "gof_variant",
+        "value" => "1",
+        "compare" => "=",
+    ];
+}
 
 if (!empty($flag_clauses)) {
     $flag_block =

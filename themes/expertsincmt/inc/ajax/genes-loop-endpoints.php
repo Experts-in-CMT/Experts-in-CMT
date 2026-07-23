@@ -124,6 +124,8 @@ function eic_genes_loop_endpoint()
         "mito" => !empty($req["mito"]),
         "ars" => !empty($req["ars"]),
         "unknown" => !empty($req["unknown"]),
+        "lof" => !empty($req["lof"]),
+        "gof" => !empty($req["gof"]),
     ]);
 
     set_query_var("genes_args", $args);

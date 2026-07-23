@@ -239,6 +239,42 @@ add_action("acf/init", function () {
             ],
         ],
         [
+            "key" => "field_lof_variant",
+            "label" => "Loss of Function (LoF) Variant",
+            "name" => "lof_variant",
+            "type" => "true_false",
+            "instructions" =>
+                "Check if this subtype is caused by a loss-of-function variant.",
+            "ui" => 1,
+            "ui_on_text" => "Yes",
+            "ui_off_text" => "No",
+            "required" => 0,
+            "conditional_logic" => 0,
+            "wrapper" => [
+                "width" => "33",
+                "class" => "",
+                "id" => "",
+            ],
+        ],
+        [
+            "key" => "field_gof_variant",
+            "label" => "Toxic Gain of Function (GoF) Variant",
+            "name" => "gof_variant",
+            "type" => "true_false",
+            "instructions" =>
+                "Check if this subtype is caused by a toxic gain-of-function variant.",
+            "ui" => 1,
+            "ui_on_text" => "Yes",
+            "ui_off_text" => "No",
+            "required" => 0,
+            "conditional_logic" => 0,
+            "wrapper" => [
+                "width" => "33",
+                "class" => "",
+                "id" => "",
+            ],
+        ],
+        [
             "key" => "field_year_of_discovery",
             "label" => "Year of Discovery",
             "name" => "year_of_discovery",

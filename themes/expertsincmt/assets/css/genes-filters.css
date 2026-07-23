@@ -217,6 +217,19 @@
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 20%, transparent);
 }
 
+/* Variant mechanism flags (LoF / GoF): the second/last flag fieldset in
+   the filter, laid side by side on its own full-width line. Scoped by
+   :last-of-type so no extra markup class is needed. */
+.genesdb-filter-wrap fieldset.genes-filter__field--flags:last-of-type {
+  flex-basis: 100%;
+  min-width: 100%;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 6px 22px;
+}
+
 @media (max-width: 767px) {
   .genesdb-filter-wrap .genes-filter__field--flags {
     flex: 1 1 100%;

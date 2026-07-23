@@ -423,6 +423,37 @@ if (!function_exists("_eicmt_gf_count_suffix")) {
   </label>
 </fieldset>
 
+<!-- VARIANT MECHANISM FLAGS -->
+<fieldset class="genes-filter__field genes-filter__field--flags">
+  <legend class="genes-filter__label">Variant Mechanism</legend>
+
+  <label class="genes-filter__check">
+    <input
+      type="checkbox"
+      class="genes-filter__checkbox"
+      name="lof"
+      value="1"
+      <?php checked(!empty($_GET["lof"])); ?>
+    />
+    <span data-facet-flag="lof" data-facet-label="Loss of Function (LoF)">
+      Loss of Function (LoF) (<?php echo (int) ($eic_facets["flags"]["lof"] ?? 0); ?>)
+    </span>
+  </label>
+
+  <label class="genes-filter__check">
+    <input
+      type="checkbox"
+      class="genes-filter__checkbox"
+      name="gof"
+      value="1"
+      <?php checked(!empty($_GET["gof"])); ?>
+    />
+    <span data-facet-flag="gof" data-facet-label="Toxic Gain of Function (GoF)">
+      Toxic Gain of Function (GoF) (<?php echo (int) ($eic_facets["flags"]["gof"] ?? 0); ?>)
+    </span>
+  </label>
+</fieldset>
+
 <!-- SEARCH -->
 <label class="genes-filter__field genes-filter__field--search">
   <span class="genes-filter__label">Search by Subtype, Gene, Publication Author, Year of Discovery</span>
@@ -463,6 +494,8 @@ foreach ($_GET as $k => $v) {
                 "mito", // rendered as a checkbox above
                 "ars", // rendered as a checkbox above
                 "unknown", // rendered as a checkbox above
+                "lof", // rendered as a checkbox above
+                "gof", // rendered as a checkbox above
                 "gd_paged", // skip to prevent duplicate
             ],
             true

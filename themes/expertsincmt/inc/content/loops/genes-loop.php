@@ -90,6 +90,8 @@ add_shortcode("genes_loop", function ($atts = []) {
         "mito" => !empty($_GET["mito"]),
         "ars" => !empty($_GET["ars"]),
         "unknown" => !empty($_GET["unknown"]),
+        "lof" => !empty($_GET["lof"]),
+        "gof" => !empty($_GET["gof"]),
     ];
 
     /* --------------------------------------------------------

@@ -52,6 +52,8 @@ $clinvar_url = trim((string) get_field("clinvar_url"));
 $clingen_url = trim((string) get_field("clingen_url"));
 $genereviews_url = trim((string) get_field("genereviews_url"));
 $mitochondrial_involvement = get_field("mitochondrial_involvement");
+$lof_variant = (bool) get_field("lof_variant");
+$gof_variant = (bool) get_field("gof_variant");
 $subtype_alias = get_field("subtype_alias");
 $omim_subtype = trim((string) get_field("omim_subtype"));
 $omim_gene = trim((string) get_field("omim_gene"));
@@ -215,6 +217,22 @@ $pub_heading =
   <div class="eic-fact">
     <dt>Mitochondrial Involvement</dt>
     <dd><?php echo $mitochondrial_involvement ? "Yes" : "No"; ?></dd>
+  </div>
+<?php endif; ?>
+
+      <?php
+      $eic_mechanisms = [];
+      if ($lof_variant) {
+          $eic_mechanisms[] = "Loss of Function (LoF)";
+      }
+      if ($gof_variant) {
+          $eic_mechanisms[] = "Toxic Gain of Function (GoF)";
+      }
+      ?>
+      <?php if ($eic_mechanisms): ?>
+  <div class="eic-fact">
+    <dt>Variant Mechanism</dt>
+    <dd><?php echo esc_html(implode(", ", $eic_mechanisms)); ?></dd>
   </div>
 <?php endif; ?>
 
