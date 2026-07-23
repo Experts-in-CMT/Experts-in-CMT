@@ -1,0 +1,2820 @@
+@import url("https://fonts.googleapis.com/css2?family=Albert+Sans:wght@300;400;500;600;700&display=swap");
+
+/*!
+ * Copyright (c) 2025 Kenneth Raymond
+ * All rights reserved.
+ *
+ * Part of the expertsincmt WordPress theme.
+ * Do not copy, modify, or redistribute without permission.
+ *
+ * ------------------------------------------------------------
+ * MAIN STYLESHEET
+ * ------------------------------------------------------------
+ * Core global styling shared across:
+ *   • Genes Database
+ *   • Dorsal Root
+ *   • Glossary
+ *   • Subtype templates
+ *   • Navigation, layout tokens, grid systems
+ *
+ * This file defines:
+ *   – Global reset + base typography
+ *   – Layout containers and spacing system
+ *   – Filter UIs, sort toolbars, and card grids
+ *   – Bagpipe-parity component structures
+ *   – Responsive behavior for all interactive loops
+ */
+
+/* =========================================================
+   expertsincmt — Base Styles
+   White-only backgrounds • Fluid type • Accessible by default
+   ========================================================= */
+
+/* ---------- Design Tokens ---------- */
+:root {
+  /* Fonts */
+  --font-sans: "Albert Sans", system-ui, -apple-system, Segoe UI, Roboto,
+    Helvetica, Arial, sans-serif;
+
+  /* Colors */
+  --text: #111111; /* Dark charcoal for body text */
+  --muted: #555555; /* Muted text */
+  --accent: #1a1a1a; /* Neutral accent for links, nav, etc. */
+  --primary: #174777; /* Deep blue (headings, borders, focus, hover fill) */
+  --primary-light: #5ea0c9; /* Light blue (optional use) */
+  --bg: #ffffff; /* Always white page background */
+  --border: #e1e5ea; /* Hairline separators */
+
+  /* Layout */
+  --maxw: 72ch;
+
+  /* Rhythm / spacing scale */
+  --space-1: 0.5rem;
+  --space-2: 0.75rem;
+  --space-3: 1rem;
+  --space-4: 1.5rem;
+  --space-5: 2rem;
+  --space-6: 3rem;
+
+  /* Fluid type (readable defaults across sizes) */
+  --fs-body: clamp(16px, 0.4vw + 15px, 18px);
+  --fs-h1: clamp(28px, 2.2vw + 18px, 40px);
+  --fs-h2: clamp(22px, 1.4vw + 16px, 28px);
+  --fs-h3: clamp(18px, 0.9vw + 14px, 22px);
+  --fs-h4: clamp(16px, 0.6vw + 13px, 18px);
+
+  /* Lead / dek */
+  --fs-lead: clamp(20px, 1.1vw + 16px, 28px);
+
+  /* Controls (scalable padding + radius) */
+  --radius-ctrl: 10px;
+  --ctrl-pad-y: clamp(10px, 0.5vw + 6px, 14px);
+  --ctrl-pad-x: clamp(12px, 0.6vw + 8px, 18px);
+  --ctrl-font: var(--fs-body);
+}
+
+/* ---------- Global ---------- */
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg); /* White-only */
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.container {
+  width: min(100% - 2rem, 1100px);
+  margin-inline: auto;
+}
+
+.prose {
+  max-width: var(--maxw);
+}
+
+/* Section rhythm without color bands */
+.section {
+  padding: var(--space-6) 0;
+}
+.section + .section {
+  border-top: 1px solid var(--border);
+}
+
+/* ---------- Headings & Paragraphs (Albert-only system) ---------- */
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  line-height: 1.2;
+  margin: 1.25rem 0 0.5rem;
+}
+
+h1 {
+  font-size: var(--fs-h1);
+  letter-spacing: -0.005em;
+}
+h2 {
+  font-size: var(--fs-h2);
+  color: var(--primary);
+}
+/* === H2 Rhythm — Word-style spacing & 1.5 line height === */
+h2 {
+  line-height: 1.2; /* matches Word’s 1.5 line spacing */
+  margin-top: 1.75rem; /* ~18pt before */
+  margin-bottom: 0.25rem; /* ~12pt after */
+}
+
+h3 {
+  font-size: var(--fs-h3);
+  font-weight: 600;
+}
+h4 {
+  font-size: var(--fs-h4);
+  font-weight: 600;
+  color: var(--muted);
+}
+
+p {
+  font-size: var(--fs-body);
+  line-height: 1.6;
+}
+
+/* optional eyebrow for section labels */
+.eyebrow {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.85em;
+  color: var(--muted);
+  margin-bottom: 0.25rem;
+}
+
+/* optional pullquote style using Albert Sans */
+.pullquote {
+  font-family: var(--font-sans);
+  font-size: clamp(20px, 1.2vw + 16px, 28px);
+  line-height: 1.35;
+  color: var(--accent);
+  border-left: 4px solid var(--border);
+  padding-left: 1rem;
+  margin: 1.5rem 0;
+}
+
+/* ---------- Links ---------- */
+a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 2px;
+}
+a:hover,
+a:focus {
+  text-decoration-thickness: 2px; /* stronger underline on hover/focus */
+  opacity: 0.9;
+}
+
+/* === Lists === */
+ul,
+ol {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  padding-left: 2rem; /* default indentation */
+}
+li {
+  margin-bottom: 0.25rem;
+}
+
+/* ---------- List Spacing Enhancement ---------- */
+ul li,
+ol li {
+  margin-bottom: 0.5rem; /* consistent breathing room between bullets */
+  line-height: 1.7; /* uniform line height for multi-line bullets */
+}
+
+ul:last-child,
+ol:last-child {
+  margin-bottom: 1.5rem; /* prevents lists from sitting too close to next paragraph */
+}
+
+/* ---------- Rules, Media ---------- */
+hr {
+  border: 0;
+  height: 1px;
+  background: var(--border);
+  margin: 2rem 0;
+}
+
+img,
+video {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* =========================================================
+   Header / Nav (white-only, separation via hairline border)
+   ========================================================= */
+.site-header {
+  border-bottom: 1px solid var(--border);
+}
+
+/* ===== Utility: thin separator border (light blue) ===== */
+.has-separator-border {
+  border-bottom: 0.02em solid #5ea0c9 !important;
+  width: 100%;
+}
+
+.site-brand {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding: 0.9rem 0;
+}
+.site-title {
+  font-weight: 300;
+  font-size: 1.125rem;
+  margin: 0;
+}
+.site-desc {
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+/* Primary navigation: underline-on-hover; no color fills */
+.nav {
+  padding: 0.5rem 0 1rem;
+}
+.nav ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.nav li {
+  margin: 0;
+  padding: 0;
+}
+.nav a {
+  padding: 0.25rem 0.25rem;
+  border-radius: 0.25rem;
+  text-decoration: none;
+  color: var(--accent);
+  border-bottom: 2px solid transparent;
+}
+.nav a:hover,
+.nav a:focus {
+  border-bottom-color: var(--accent);
+}
+.nav a[aria-current="page"] {
+  border-bottom-color: var(--accent);
+}
+
+/* =========================================================
+   Footer
+   ========================================================= */
+.site-footer {
+  border-top: 1px solid var(--border);
+  padding: 1.25rem 0;
+  margin-top: 2.5rem;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+/* =========================================================
+   Gutenberg content refinements (prose polish)
+   ========================================================= */
+.prose :where(ul) {
+  list-style: disc;
+}
+.prose :where(ol) {
+  list-style: decimal;
+}
+.prose :where(ul, ol) {
+  margin: 1.25em 0;
+  padding-inline-start: 1.75em;
+}
+.prose :where(li) {
+  margin: 0.5em 0;
+  line-height: 1.7;
+}
+.prose :where(figure) {
+  margin: 2em 0;
+}
+.prose :where(figcaption) {
+  color: var(--muted);
+  font-size: 0.875rem;
+  line-height: 1.4;
+  margin-top: 0.5em;
+}
+/* Code blocks: keep white background; differentiate with border */
+.prose :where(pre) {
+  overflow-x: auto;
+  padding: 0.85em 1.1em;
+  border: 1px solid var(--border);
+  border-radius: 0.375rem;
+}
+.prose :where(code) {
+  font-size: 0.9em;
+}
+
+/* =========================================================
+   Forms & Inputs (unified controls, scalable, gentle radius)
+   ========================================================= */
+input[type="text"],
+input[type="email"],
+input[type="url"],
+input[type="search"],
+input[type="password"],
+input[type="number"],
+input[type="tel"],
+input[type="date"],
+input[type="time"],
+input[type="week"],
+input:not([type]),
+select,
+textarea {
+  appearance: none;
+  background-color: #fff;
+  border: 1px solid #6b7280; /* neutral gray */
+  border-radius: var(--radius-ctrl);
+  padding: var(--ctrl-pad-y) var(--ctrl-pad-x);
+  font-size: var(--ctrl-font);
+  line-height: 1.5;
+  color: var(--text);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #9aa0a6;
+}
+
+/* Focus ring (accessible, no tints) */
+input:focus,
+select:focus,
+textarea:focus {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 1px var(--bg), 0 0 0 2px var(--primary);
+  border-color: var(--primary);
+}
+
+/* Select: custom arrow (keeps the radius), RTL-safe */
+select:not([size]) {
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 10 6'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m1 1 4 4 4-4'/%3E%3C/svg%3E");
+  background-position: right calc(var(--ctrl-pad-x) - 2px) center;
+  background-repeat: no-repeat;
+  background-size: 0.75em 0.75em;
+  padding-right: calc(var(--ctrl-pad-x) * 2);
+}
+[dir="rtl"] select:not([size]) {
+  background-position: left calc(var(--ctrl-pad-x) - 2px) center;
+  padding-right: var(--ctrl-pad-x);
+  padding-left: calc(var(--ctrl-pad-x) * 2);
+}
+
+/* Disabled state */
+input:disabled,
+select:disabled,
+textarea:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Search block layout: vertical on mobile, inline on desktop */
+.wp-block-search__inside-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+@media (min-width: 782px) {
+  .wp-block-search__inside-wrapper {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
+/* =========================================================
+   Global Search and Reset Button
+   ========================================================= */
+
+.dr-filter-buttons button,
+.dr-filter-buttons .wp-block-button__link,
+button[type="submit"],
+input[type="submit"],
+button[type="reset"] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--ctrl-pad-y, 0.5em) var(--ctrl-pad-x, 1.5em);
+  border: 1.5px solid var(--primary, #174777);
+  border-radius: var(--radius-ctrl, 15px);
+  background-color: transparent;
+  color: var(--primary, #174777);
+  font-family: var(--font-sans, "Albert Sans", sans-serif);
+  font-weight: 600;
+  font-size: var(--ctrl-font, 16px);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  line-height: 1.5;
+  vertical-align: middle;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+/* Hover + focus states */
+.dr-filter-buttons button:hover,
+.dr-filter-buttons .wp-block-button__link:hover,
+button[type="submit"]:hover,
+input[type="submit"]:hover,
+button[type="reset"]:hover,
+.dr-filter-buttons button:focus,
+.dr-filter-buttons .wp-block-button__link:focus,
+button[type="submit"]:focus,
+input[type="submit"]:focus,
+button[type="reset"]:focus {
+  background-color: var(--primary, #174777);
+  color: #ffffff;
+  border-color: var(--primary, #174777);
+}
+
+/* Focus ring for accessibility */
+button[type="submit"]:focus-visible,
+input[type="submit"]:focus-visible {
+  outline: 2px solid var(--primary, #174777);
+  outline-offset: 2px;
+}
+
+/* Inline layout for Search + Reset buttons */
+.dr-filter-buttons {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+/* =========================================================
+   Single Post Tweaks
+   ========================================================= */
+.meta {
+  color: var(--muted);
+  font-size: 0.95rem;
+  margin-top: -0.25rem;
+}
+.entry > *:first-child {
+  margin-top: 0;
+}
+.post-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+/* =========================================================
+   Accessibility helpers
+   ========================================================= */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+.skip-link:focus {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: 0.5rem 0.75rem;
+  background: #fff; /* white-only for focus legibility */
+  border: 1px solid var(--border);
+}
+
+/* =========================================================
+   Universal Buttons — Outline Default (fill on hover)
+   ========================================================= */
+button,
+input[type="submit"],
+input[type="button"],
+a.button,
+a.wp-block-button__link {
+  background-color: transparent; /* outline default */
+  color: var(--primary);
+  border: 1.5px solid var(--primary);
+  border-radius: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75em 2.5em;
+  line-height: 1.5;
+  font-size: 16px;
+  font-weight: 600;
+  font-family: inherit;
+  letter-spacing: 2px;
+  text-align: center;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: background-color 0.15s ease, color 0.15s ease,
+    box-shadow 0.25s ease, border-color 0.15s ease;
+  cursor: pointer;
+}
+
+button:hover,
+input[type="submit"]:hover,
+input[type="button"]:hover,
+a.button:hover,
+a.wp-block-button__link:hover {
+  background-color: var(--primary); /* deep blue fill on hover */
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+/* Focus & disabled states */
+button:focus-visible,
+input[type="submit"]:focus-visible,
+input[type="button"]:focus-visible,
+a.button:focus-visible,
+a.wp-block-button__link:focus-visible {
+  outline: 1px solid var(--primary);
+  outline-offset: 2px;
+}
+
+button:disabled,
+input[type="submit"]:disabled,
+input[type="button"]:disabled,
+a.button[aria-disabled="true"],
+a.wp-block-button__link[aria-disabled="true"] {
+  opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Optional: Filled variant when you *want* a solid CTA */
+.btn-filled,
+.wp-block-button.is-style-fill .wp-block-button__link {
+  background-color: var(--primary);
+  color: #ffffff;
+  border: 1px solid var(--primary);
+}
+.btn-filled:hover,
+.wp-block-button.is-style-fill .wp-block-button__link:hover {
+  background-color: #123a61; /* slightly darker on hover */
+  border-color: #123a61;
+}
+
+/* ===== Primary Navigation (WP block nav) — normalize size & spacing ===== */
+.wp-block-navigation {
+  font-size: var(--fs-body);
+  line-height: 1.4;
+  font-weight: 400;
+}
+
+.wp-block-navigation__container {
+  gap: 1rem; /* space between items */
+}
+
+/* Links: match our underline-on-hover pattern */
+.wp-block-navigation a,
+.wp-block-navigation-item__content {
+  text-decoration: none;
+  color: var(--accent);
+  padding: 0.4rem 0.6rem;
+  border-bottom: 2px solid transparent;
+  text-transform: none;
+  letter-spacing: 0;
+}
+.wp-block-navigation a:hover,
+.wp-block-navigation a:focus {
+  border-bottom-color: var(--accent);
+}
+
+/* Current item */
+.wp-block-navigation .wp-block-navigation-item__content[aria-current="page"] {
+  border-bottom-color: var(--accent);
+}
+
+/* Submenus: clean dropdowns */
+.wp-block-navigation__submenu-container {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 0.375rem;
+  padding: 0.4rem;
+  min-width: 220px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+}
+.wp-block-navigation__submenu-container a {
+  display: block;
+  padding: 0.4rem 0.6rem;
+  border-bottom-color: transparent;
+}
+.wp-block-navigation__submenu-container a:hover {
+  background: #f5f5f5;
+}
+
+/* Mobile toggle (hamburger) tidy-up */
+.wp-block-navigation__responsive-container-open,
+.wp-block-navigation__responsive-container-close {
+  font-size: 1rem;
+  line-height: 1;
+  color: var(--accent);
+}
+/* ===== Primary Navigation Font — mirror H3 ===== */
+.wp-block-navigation,
+.wp-block-navigation__container,
+.wp-block-navigation a,
+.wp-block-navigation-item__content {
+  font-family: var(--font-sans);
+  font-size: var(--fs-h3);
+  font-weight: 400;
+  line-height: 1.25;
+  color: var(--accent);
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+/* ===== Footer Copyright ===== */
+.site-copyright {
+  text-align: center;
+  font-size: 0.9rem;
+  opacity: 0.8;
+  padding: 50px 0;
+}
+
+/* ===== Default Separator Styling ===== */
+hr,
+.wp-block-separator {
+  border: none;
+  border-top: 1px solid #e1e5ea;
+  width: 100%;
+  margin: 2rem auto;
+}
+
+/* Header layout: mobile re-order */
+@media (max-width: 900px) {
+  .site-header__inner {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  /* Put nav (which contains the WP hamburger) first */
+  .site-header__nav {
+    order: 0;
+  }
+
+  /* Logo next */
+  .site-brand {
+    order: 1;
+  }
+
+  /* Optional search last and pushed right */
+  .site-search {
+    order: 2;
+    margin-left: auto;
+  }
+
+  /* Tighten the hamburger button a bit */
+  .site-header__nav .wp-block-navigation__responsive-container-open {
+    padding: 0.5rem;
+    line-height: 1;
+  }
+}
+
+/* === Bulletproof H2 spacing (TT25/blockGap override) === */
+:root {
+  --h2-mt: 2rem; /* ≈18px before */
+  --h2-mb: 0.25rem; /* ≈12px after  */
+  --h2-lh: 1.5; /* 1.5 line height */
+}
+
+/* 1) Raw H2 anywhere */
+h2 {
+  line-height: var(--h2-lh) !important;
+  margin-top: var(--h2-mt) !important;
+  margin-bottom: var(--h2-mb) !important;
+}
+
+/* 2) Gutenberg H2 (.wp-block-heading becomes the H2 element) */
+h2.wp-block-heading {
+  line-height: var(--h2-lh) !important;
+  margin-top: var(--h2-mt) !important;
+  margin-bottom: var(--h2-mb) !important;
+}
+
+/* 3) When TT25 applies blockGap to direct children in flow layouts */
+:where(.is-layout-flow) > h2,
+:where(.is-layout-flow) > h2.wp-block-heading,
+:where(
+    .wp-site-blocks,
+    .wp-block-post-content,
+    .entry-content,
+    .prose
+  ).is-layout-flow
+  > h2,
+:where(
+    .wp-site-blocks,
+    .wp-block-post-content,
+    .entry-content,
+    .prose
+  ).is-layout-flow
+  > h2.wp-block-heading {
+  margin-block-start: var(--h2-mt) !important;
+  margin-block-end: var(--h2-mb) !important;
+  line-height: var(--h2-lh) !important;
+}
+
+/* 4) If the heading is the first child (TT25 often zeroes top margin) */
+:where(.is-layout-flow) > h2:first-child,
+:where(.is-layout-flow) > h2.wp-block-heading:first-child {
+  margin-top: var(--h2-mt) !important;
+}
+
+/* 5) If TT25 injects margins on the generic child selector, neutralize for H2 */
+:where(.is-layout-flow) > :where(h2, h2.wp-block-heading) {
+  margin-block-start: var(--h2-mt) !important;
+  margin-block-end: var(--h2-mb) !important;
+}
+
+/* 6) Inside typical content roots without .is-layout-flow */
+:where(.wp-site-blocks, .wp-block-post-content, .entry-content, .prose) h2 {
+  line-height: var(--h2-lh) !important;
+  margin-top: var(--h2-mt) !important;
+  margin-bottom: var(--h2-mb) !important;
+}
+
+/* =========================================================
+   Components — Context Nav (Prev / Back / Next)
+   ========================================================= */
+.eicmt-ctnav-wrap {
+  margin: 3rem 0;
+}
+
+.eicmt-ctnav {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr; /* left | center | right */
+  align-items: center;
+  text-transform: uppercase;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  font-size: 0.875rem;
+}
+
+.eicmt-ctnav__col--prev {
+  justify-self: start;
+  text-align: left;
+}
+
+.eicmt-ctnav__col--back {
+  justify-self: center;
+  text-align: center;
+}
+
+.eicmt-ctnav__col--next {
+  justify-self: end;
+  text-align: right;
+}
+
+.eicmt-ctnav__link {
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.eicmt-ctnav__link:hover,
+.eicmt-ctnav__link:focus {
+  text-decoration: underline;
+}
+
+/* Optional top divider */
+.eicmt-ctnav-wrap::before {
+  content: "";
+  display: block;
+  width: 24rem;
+  height: 1px;
+  margin: 0 auto 2rem;
+  background-color: var(--primary);
+  opacity: 0.25;
+}
+
+/* ==================================================
+   Shared loop card base (.dr-grid / .dr-card) — also used by the
+   genes and glossary grids. The Dorsal Root teaser section styles
+   moved to their own dr-feature namespace in section-dorsal-root.css.
+   ================================================== */
+
+.dr-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+}
+.dr-card {
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: box-shadow 0.15s ease, background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+.dr-card:hover {
+  background-color: #f8fafc;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+  border-color: #dbe1e6;
+}
+
+/* Shared CTA button — used by glossary source links, OMIM buttons,
+   fact boxes, and forms (the DR teaser has its own .dr-feature__more). */
+.dr-more {
+  font-weight: 600;
+  text-decoration: none;
+  border: 1px solid #174777;
+  color: #174777;
+  border-radius: 12px;
+  padding: 0.5rem 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1.1;
+  background: transparent;
+  transition: background-color 0.15s ease, color 0.15s ease,
+    border-color 0.15s ease;
+  margin-top: 25px;
+  margin-bottom: 25px;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+}
+.dr-more:hover,
+.dr-more:focus-visible {
+  outline: none;
+  background-color: #174777;
+  color: #fff;
+  border-color: #174777;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dr-card,
+  .dr-more {
+    transition: none;
+  }
+}
+
+/* ============= The Dorsal Root — Query Loop cards (equal height) ====================
+   ========= Because all cards should always be the same height as one another ====
+   ===========================Kenny Approved========================================
+   =================================================================================*/
+
+.dr-blog .wp-block-post,
+.wp-block-query .wp-block-post {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+  /* Subtle resting shadow */
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  transition: transform 0.15s ease, box-shadow 0.15s ease,
+    background-color 0.15s ease, border-color 0.15s ease;
+}
+
+/* Hover styling (matches Dorsal Root featured section) */
+.dr-blog .wp-block-post:hover,
+.wp-block-query .wp-block-post:hover {
+  background-color: #f3f6f8;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  border-color: #d0d8df;
+  transform: translateY(-2px);
+}
+
+/* 16:9 image lock */
+.dr-blog .wp-block-post-featured-image,
+.wp-block-query .wp-block-post-featured-image {
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  display: block;
+  background: #f1f5f9;
+}
+
+.dr-blog .wp-block-post-featured-image img,
+.wp-block-query .wp-block-post-featured-image img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  object-position: center;
+}
+
+/* Content spacing */
+.dr-blog .wp-block-post-title,
+.dr-blog .wp-block-post-date,
+.dr-blog .wp-block-post-excerpt,
+.wp-block-query .wp-block-post-title,
+.wp-block-query .wp-block-post-date,
+.wp-block-query .wp-block-post-excerpt {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+/* Dorsal Root: tighten space directly under the image */
+.dr-blog .wp-block-post .wp-block-post-featured-image {
+  margin-bottom: 0.25rem !important;
+}
+
+.dr-blog .wp-block-post .wp-block-post-title {
+  margin-top: 0.25rem !important;
+}
+
+.dr-blog .wp-block-post .wp-block-post-date {
+  margin-top: 0.25rem !important;
+}
+
+.dr-blog .wp-block-post-title,
+.wp-block-query .wp-block-post-title {
+  margin-top: 0.85rem;
+  margin-bottom: 0;
+  font-size: clamp(1rem, 0.9rem + 0.3vw, 1.25rem);
+  line-height: 1.25;
+}
+
+.dr-blog .wp-block-post-title a,
+.wp-block-query .wp-block-post-title a {
+  color: var(--text, #111);
+  text-decoration: none;
+}
+
+.dr-blog .wp-block-post-title a:hover,
+.wp-block-query .wp-block-post-title a:hover {
+  text-decoration: underline;
+}
+
+.dr-blog .wp-block-post-date,
+.wp-block-query .wp-block-post-date {
+  margin-top: 0.35rem;
+  color: var(--text, #111);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.dr-blog .wp-block-post-excerpt,
+.wp-block-query .wp-block-post-excerpt {
+  margin-top: 0.35rem;
+  color: var(--muted, #555);
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Read More pinned to bottom for equal heights */
+.dr-blog .wp-block-read-more,
+.wp-block-query .wp-block-read-more {
+  margin: 1rem;
+  margin-top: auto;
+  align-self: flex-start;
+  text-decoration: none !important;
+  border: 1px solid #174777;
+  color: #174777;
+  border-radius: 12px;
+  padding: 0.5rem 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1.1;
+  background: transparent;
+  transition: background-color 0.15s ease, color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+/* FINAL lock — center Read More in Dorsal Root cards */
+.dr-blog .wp-block-post .wp-block-read-more {
+  margin-top: 25px !important;
+  margin-bottom: 50px !important; /* was 1.25rem */
+  margin-left: auto !important;
+  margin-right: auto !important;
+  align-self: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  display: flex !important;
+  width: fit-content !important;
+}
+
+/* Glossary: re-pin Read More to the card floor */
+.dr--glossary .wp-block-post-excerpt {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+.dr--glossary .wp-block-post .wp-block-read-more {
+  margin-top: auto !important;
+  /* keep whatever bottom margin you want here; 20–25px works well */
+}
+
+/* Dorsal Root: move extra space below excerpt (button stays bottom-aligned) */
+.dr-blog .wp-block-post-excerpt {
+  flex-grow: 1; /* fills vertical space above the button */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start; /* keeps text at top of excerpt area */
+}
+
+.dr-blog .wp-block-read-more {
+  margin-top: auto !important;
+  margin-bottom: 1.25rem !important; /* consistent bottom spacing */
+}
+
+.dr-blog .wp-block-read-more:hover,
+.wp-block-query .wp-block-read-more:hover {
+  background-color: #174777;
+  color: #fff;
+  border-color: #174777;
+}
+
+/* Accessibility / keyboard focus polish */
+.dr-blog .wp-block-post:focus-within,
+.wp-block-query .wp-block-post:focus-within {
+  outline: 2px solid #5ea0c9;
+  outline-offset: 2px;
+  transform: translateY(-2px);
+}
+
+/* Columns helpers (if using Columns/Stackable) */
+.wp-block-columns,
+.stk-row {
+  align-items: stretch;
+}
+
+/* ===== Dorsal Root loop — grid + spacing (append) ===== */
+/* The UL that holds cards: make it a responsive grid */
+.dr-blog .wp-block-post-template {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 2rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Tablet: 2 columns */
+@media (max-width: 980px) {
+  .dr-blog .wp-block-post-template {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Mobile: 1 column */
+@media (max-width: 640px) {
+  .dr-blog .wp-block-post-template {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Ensure the featured-image link behaves like a block */
+.dr-blog .wp-block-post-featured-image,
+.wp-block-query .wp-block-post-featured-image {
+  display: block; /* reinforce */
+}
+
+/* Pin Read More to the bottom AND center it */
+.dr-blog .wp-block-read-more,
+.wp-block-query .wp-block-read-more {
+  margin-top: auto;
+  margin-left: auto;
+  margin-right: auto;
+  align-self: center; /* was flex-start; center looks better in equal-height cards */
+}
+
+/* ===== DR rows + centered last row (PHP-driven) ===== */
+:root {
+  --dr-col: 360px;
+  --dr-gap: 2rem;
+}
+
+/* Grid wrapper just stacks rows with spacing */
+.dr-grid {
+  display: grid;
+  gap: var(--dr-gap);
+}
+
+/* Each row is a grid of exactly 3 tracks on desktop */
+.dr-row {
+  display: grid;
+  grid-template-columns: repeat(3, var(--dr-col));
+  gap: var(--dr-gap);
+  justify-content: center; /* rows are centered as a unit */
+  width: 100%; /* full width for 3-up rows */
+}
+
+/* Last row shrink-wraps to its item count */
+.dr-row--last[data-count="2"] {
+  grid-template-columns: repeat(2, var(--dr-col));
+  width: calc(
+    2 * var(--dr-col) + var(--dr-gap)
+  ); /* exact width of 2 cards + gap */
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.dr-row--last[data-count="1"] {
+  grid-template-columns: var(--dr-col);
+  width: var(--dr-col);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ===== DR rows + centered last row (pairs with the PHP above) ===== */
+:root {
+  --dr-col: 360px;
+  --dr-gap: 2rem;
+}
+
+.dr-grid {
+  display: grid;
+  gap: var(--dr-gap);
+}
+
+/* Default desktop rows: exactly 3 tracks, row centered as a unit */
+.dr-row {
+  display: grid;
+  grid-template-columns: repeat(3, var(--dr-col));
+  gap: var(--dr-gap);
+  justify-content: center;
+}
+
+/* Last row shrink-wraps to its item count for true centering */
+.dr-row--last[data-count="2"] {
+  grid-template-columns: repeat(2, var(--dr-col));
+  width: calc(2 * var(--dr-col) + var(--dr-gap));
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.dr-row--last[data-count="1"] {
+  grid-template-columns: var(--dr-col);
+  width: var(--dr-col);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Equal-height cards with bottom-pinned button */
+.dr-card {
+  display: grid;
+  grid-template-rows: auto auto auto 1fr auto; /* image, title, date, excerpt flex, button */
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #fff;
+  overflow: hidden;
+  min-height: 100%;
+}
+
+.dr-card .wp-block-post-featured-image {
+  display: block;
+}
+
+.dr-card .wp-block-post-featured-image img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.dr-card .wp-block-read-more {
+  margin-top: auto;
+  margin-left: auto;
+  margin-right: auto;
+  display: inline-flex;
+  justify-content: center;
+}
+
+/* Tablet: rows render as 2-up */
+@media (max-width: 980px) {
+  .dr-row {
+    grid-template-columns: repeat(2, var(--dr-col));
+  }
+
+  .dr-row--last[data-count="1"] {
+    grid-template-columns: var(--dr-col);
+    width: var(--dr-col);
+  }
+}
+
+/* Mobile: rows render 1-up, full width */
+@media (max-width: 640px) {
+  .dr-row,
+  .dr-row--last[data-count="2"],
+  .dr-row--last[data-count="1"] {
+    grid-template-columns: 1fr;
+    width: 100%;
+  }
+
+  .dr-card {
+    width: 100%;
+  }
+}
+
+/* =========================================================
+   Dorsal Root Pagination — expanded spacing + visual balance
+   ========================================================= */
+.dr-blog .wp-block-query-pagination > ul,
+.dr-blog .wp-block-query-pagination {
+  display: flex;
+  justify-content: center;
+  gap: 2rem; /* increased from 0.5rem */
+  margin-top: 2.5rem; /* adds subtle separation from cards */
+}
+
+.dr-blog .wp-block-query-pagination li {
+  list-style: none;
+}
+
+.dr-blog .wp-block-query-pagination a,
+.dr-blog .wp-block-query-pagination span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.55rem 0.9rem; /* slightly more internal space */
+  border: 1px solid #e5e7eb;
+  border-radius: 12px; /* matches button roundness */
+  text-decoration: none;
+  color: var(--text, #111);
+  font-family: var(--font-sans);
+  font-weight: 400;
+  transition: background-color 0.2s ease, color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.dr-blog .wp-block-query-pagination .current,
+.dr-blog .wp-block-query-pagination a:hover {
+  background: #174777;
+  color: #fff;
+  border-color: #174777;
+}
+
+/* Optional: tighter layout on narrow screens */
+@media (max-width: 500px) {
+  .dr-blog .wp-block-query-pagination > ul,
+  .dr-blog .wp-block-query-pagination {
+    gap: 0.6rem;
+    margin-top: 2rem;
+  }
+  .dr-blog .wp-block-query-pagination a,
+  .dr-blog .wp-block-query-pagination span {
+    padding: 0.45rem 0.75rem;
+  }
+}
+
+/* ===== Back to Top button =====
+    ================================ */
+.back-to-top {
+  position: fixed;
+  right: 32px;
+  bottom: 96px; /* 32px right / 96px bottom = optimal visual balance, passes hi-techsquish test - Kenny-approved */
+  z-index: 9999;
+  border: 1px solid #174777;
+  background: #fff;
+  color: #174777;
+  border-radius: 999px;
+  padding: 0.6rem 0.9rem;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.15s ease, transform 0.15s ease,
+    background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+.back-to-top.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.back-to-top:hover,
+.back-to-top:focus-visible {
+  outline: none;
+  background: #174777;
+  color: #fff;
+  border-color: #174777;
+}
+@media (prefers-reduced-motion: reduce) {
+  .back-to-top {
+    transition: none;
+  }
+}
+
+/* Mobile: tuck the floating button tighter into the corner and shrink it
+   so it covers less content while scrolling (it's position:fixed, so it
+   floats over whatever is behind it). */
+@media (max-width: 600px) {
+  .back-to-top {
+    right: 14px;
+    bottom: 84px;
+    padding: 0.45rem 0.7rem;
+    font-size: 0.82rem;
+  }
+}
+
+/* =========================================================
+   DORSAL ROOT FILTER — Micro Layout Adjustments (Kenny Approved)
+   ========================================================= */
+.dr-filter label {
+  padding-left: 1.1rem; /* desktop alignment */
+}
+
+/* =========================================================
+   DORSAL ROOT FILTER — Mobile Optimization (Keeps Inline Layout)
+   ========================================================= */
+@media (max-width: 640px) {
+  .dr-filter label {
+    padding-left: 0.75rem !important; /* override desktop value cleanly */
+    margin-right: 0.25rem; /* small breathing room from select */
+    vertical-align: middle;
+  }
+
+  .dr-filter select {
+    max-width: 100%;
+    vertical-align: middle;
+  }
+}
+
+/* DR — card width tweak (final override) */
+.dr-grid {
+  --dr-col: 400px;
+} /* optimal: 380–400 */
+
+/* =========================================================
+     Z-LAYER + NO-CLIP SAFETY NET
+   - Keeps nav dropdowns above the header banner
+   - Prevents Stackable wrappers from clipping submenus
+   - DO NOT SPLIT these rules; they must live together
+   ========================================================= */
+
+/* Nav block (“Nav” Stackable block) */
+.stk-454b6a7 {
+  position: relative;
+  z-index: 1001; /* ensure this block stacks above the banner */
+  overflow: visible !important; /* do not clip dropdowns */
+}
+
+/* The actual dropdown layer */
+.stk-454b6a7 .wp-block-navigation__submenu-container {
+  position: absolute; /* overlay, not in flow */
+  z-index: 1002; /* above its parent block */
+  overflow: visible;
+}
+
+/* Header Banner block (“Header Banner” Stackable block) */
+.stk-9690350 {
+  position: relative;
+  z-index: 0; /* explicitly beneath nav */
+  overflow: visible !important; /* no clipping from the banner */
+}
+
+/* ============================================================
+   Global Keyboard Focus Outline (Keyboard-Only, Accessible)
+   ============================================================ */
+:focus-visible {
+  outline: 2px solid var(--primary, #007bff); /* Use theme color */
+  outline-offset: 3px;
+  transform: scale(1.02);
+  transition: outline 0.15s ease, transform 0.15s ease;
+  z-index: 10;
+}
+
+/* Optional: remove outlines from mouse clicks */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Extra safety: cover backgrounds should never sit above nav */
+.wp-block-cover__background,
+.wp-block-cover__image-background,
+.wp-block-cover__video-background,
+.wp-block-cover__gradient-background {
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* Reset top margin/padding on featured image */
+.dr-card .wp-block-post-featured-image {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+  display: block; /* prevent inline gap */
+}
+
+/* Remove default margin from images */
+.dr-card img {
+  margin-top: 0 !important;
+  display: block;
+}
+
+/* Remove top spacing from the card wrapper */
+.dr-card {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+/* =========================================================
+   DR Filter — make existing markup match Genes filter look
+   Scope: .dr-filter (no PHP changes needed)
+   ========================================================= */
+
+.dr-filter {
+  max-width: 980px;
+  margin: 0 auto 28px;
+  padding-inline: 12px;
+}
+.dr-filter [for="dr-cat"] {
+  display: block;
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: #1f2937;
+  margin: 0 0 2px 2px;
+  text-align: left;
+}
+
+/* Inputs */
+.dr-filter select,
+.dr-filter input[type="search"] {
+  width: 100%;
+  height: 44px;
+  padding: 10px 14px;
+  border: 1px solid #d6d9de;
+  border-radius: 12px;
+  background: #fff;
+  font-size: 15px;
+  line-height: 1.2;
+  outline: none;
+  transition: box-shadow 0.12s ease, border-color 0.12s ease;
+}
+.dr-filter select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238E97A3' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 12px 8px;
+}
+.dr-filter input[type="search"] {
+  background-image: none;
+}
+.dr-filter select:focus,
+.dr-filter input[type="search"]:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 20%, transparent);
+}
+
+/* Actions row (match Genes layout) */
+.dr-filter .dr-filter-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+/* Apply button (map to Genes .genes-filter__btn) */
+.dr-filter .dr-filter-buttons .wp-block-button__link:first-child {
+  background: transparent;
+  border: 1.5px solid var(--primary);
+  color: var(--primary);
+  border-radius: 16px;
+  padding: 0.75em 2.5em;
+  line-height: 1.5;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  transition: background-color 0.15s ease, color 0.15s ease,
+    border-color 0.15s ease, box-shadow 0.25s ease;
+}
+.dr-filter .dr-filter-buttons .wp-block-button__link:first-child:hover,
+.dr-filter .dr-filter-buttons .wp-block-button__link:first-child:focus {
+  background-color: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+  text-decoration: none;
+}
+
+/* Reset link (map to Genes .genes-filter__link) */
+#dr-reset.wp-block-button__link,
+.dr-filter .dr-filter-buttons .wp-block-button__link#dr-reset {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: 0.75em 2.5em;
+  line-height: 1.5;
+  min-block-size: 48px;
+  border-radius: 16px;
+  border: 1.5px solid #f1bbbb;
+  background: #fff5f5;
+  color: #8b1b1b;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease,
+    border-color 0.15s ease;
+}
+#dr-reset.wp-block-button__link:hover,
+#dr-reset.wp-block-button__link:focus {
+  background-color: #fbecec;
+  border-color: #d33;
+  text-decoration: none;
+}
+
+/* Space + alignment parity */
+.dr-filter #dr-q {
+  margin-top: 8px;
+}
+
+/* Kill TT25's automatic gap between direct children in the DR form */
+:where(.wp-site-blocks) .dr-filter > * + * {
+  margin-block-start: 0 !important;
+}
+.dr-filter > * + * {
+  margin-top: 0 !important;
+} /* fallback */
+
+/* Now set the exact spacing you want between the label and the select */
+.dr-filter label[for="dr-cat"] {
+  margin-bottom: 1px !important;
+}
+.dr-filter #dr-cat {
+  margin-top: 0 !important;
+}
+
+/* =========================================================
+   DR CARDS — REMOVE WHITE STRIPE ABOVE FEATURED IMAGE
+   Applies to: loop cards (.dr-blog) + featured section (.dr-wrap)
+   ========================================================= */
+
+.dr-card {
+  padding-top: 0 !important; /* kill theme padding */
+  overflow: hidden; /* ensures rounded corners clip image */
+}
+
+/* WP block-gap can add space before first child — nuke it */
+:where(.wp-site-blocks) .dr-card > *:first-child {
+  margin-block-start: 0 !important;
+}
+.dr-card > *:first-child {
+  margin-top: 0 !important;
+}
+
+/* Featured image links or media wrappers — flush alignment */
+.dr-card .wp-block-post-featured-image,
+.dr-card .dr-media {
+  display: block;
+  margin: 0 !important;
+  line-height: 0; /* removes inline baseline gap */
+}
+
+/* Images and placeholders: block-level, full-width, no baseline gap */
+.dr-card .wp-block-post-featured-image img,
+.dr-card .dr-media img,
+.dr-card .dr-media__ph {
+  display: block;
+  width: 100%;
+  height: auto;
+  vertical-align: middle;
+  border-top-left-radius: inherit; /* keep rounded corners */
+  border-top-right-radius: inherit;
+}
+
+/* === Genes Totals — responsive, viewport-centered === */
+.genes-totals {
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+  top: -100px; /* lifts it upward */
+  text-align: center;
+  font-weight: 400;
+  font-size: clamp(0.9rem, 1vw + 0.6rem, 1.05rem);
+  line-height: 1.3;
+  width: 100%;
+  max-width: 90vw; /* avoids overflow on small screens */
+}
+/* mobile tuning: lower the offset for short screens */
+@media (max-width: 600px) {
+  .genes-totals {
+    /* Lifted above the (DOM-later) sort toolbar via relative offset.
+       A bit more lift opens the cramped gap below the totals line and
+       trims the roomier gap above it, balancing the two. */
+    top: -80px;
+    font-size: clamp(0.9rem, 2vw + 0.6rem, 1.1rem);
+  }
+}
+.genes-totals-inline {
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: left;
+  font-family: var(--font-body, "Albert Sans", sans-serif);
+  font-weight: 500;
+  font-size: clamp(1rem, 1vw + 0.6rem, 1.25rem);
+  line-height: 1.2; /* tightened */
+  color: var(--primary);
+  width: 100%;
+  max-width: 90vw;
+  opacity: 0.9;
+}
+.genes-totals-label {
+  display: block;
+  text-align: left;
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(1rem, 1vw + 0.6rem, 1.25rem);
+  color: var(--primary);
+  margin-bottom: -1.5rem; /* closes gap */
+  opacity: 0.9;
+}
+.genes-totals-updated {
+  display: block;
+  font-size: 0.8em; /* subordinate to the totals line */
+  font-weight: 400;
+  opacity: 0.75;
+}
+@media (max-width: 600px) {
+  .genes-totals-inline {
+    font-size: clamp(0.95rem, 2vw + 0.6rem, 1.05rem);
+  }
+}
+
+/* ============================================================
+   SUBTYPE — POSITION ADJUSTMENT
+   ============================================================ */
+.eic-subtype-fields {
+  margin-top: -100px; /* shift section upward */
+  padding-top: 0;
+}
+
+/* ============================================================
+   SUBTYPE — SECTION & TYPOGRAPHY
+   ============================================================ */
+.eic-subtype-fields {
+  padding: 0.5rem 0 3.5rem;
+}
+
+.eic-block {
+  position: relative;
+  margin: 0 1rem 0.05rem;
+  padding-top: 50px; /* 50px breathing room above divider */
+  opacity: 1;
+  border-top: 0;
+}
+
+.eic-block-title {
+  font-size: clamp(1.35rem, 1.1rem + 0.8vw, 1.6rem);
+  line-height: 1.25;
+  color: var(--primary, #174777);
+  margin: 0 0 1rem;
+  padding-bottom: 25px;
+}
+
+/* First block starts flush (no top padding/divider) */
+.eic-block:first-of-type {
+  padding-top: 0;
+}
+.eic-block:first-of-type::before {
+  content: none;
+}
+
+/* Centered divider before each block */
+.eic-block::before {
+  content: "";
+  position: absolute;
+  top: 0; /* sits at top of the 50px pad */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 24rem;
+  height: 1px;
+  background-color: var(--primary, #174777);
+  opacity: 0.25;
+  pointer-events: none;
+}
+
+/* Bottom divider after the final block */
+.eic-subtype-fields .eic-block:last-of-type::after {
+  content: "";
+  display: block;
+  width: 24rem;
+  height: 1px;
+  margin: 50px auto 0;
+  background-color: var(--primary, #174777);
+  opacity: 0.25;
+  pointer-events: none;
+}
+
+/* Kill any legacy hairline variants */
+.eic-separator--hairline,
+.eic-separator--hairline.eic-separator--pub {
+  display: none !important;
+}
+
+/* === Normalize WYSIWYG font size inside subtype fields === */
+.eic-subtype-fields .eic-fact dd,
+.eic-subtype-fields .eic-fact--inline-note dd,
+.eic-subtype-fields .eic-fact dd p,
+.eic-subtype-fields .eic-fact dd span,
+.eic-subtype-fields .eic-fact dd strong,
+.eic-subtype-fields .eic-fact dd em {
+  font-size: 0.95rem; /* slightly smaller to match Note: label */
+  line-height: 1.45;
+  font-family: inherit; /* force same family */
+  color: var(--text, #1d2a33);
+}
+
+/* Tighten spacing between label and field */
+.eic-fact.eic-fact--inline-note dt {
+  margin-right: 0.15rem;
+  font-size: 0.95rem; /* visually equalize with field text */
+}
+
+/* Optional: tighten strong text for visual balance */
+.eic-subtype-fields .eic-fact dd strong {
+  font-weight: 600;
+  font-size: inherit; /* prevent size jump */
+}
+
+/* ============================================================
+   FACT GRID
+   ============================================================ */
+.eic-facts {
+  display: grid;
+  gap: 0.25rem 2rem;
+  margin-left: 2.5rem;
+}
+@media (min-width: 900px) {
+  .eic-facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-left: 3rem;
+  }
+}
+
+/* Full-width rows (legacy helper) */
+.eic-fact--full {
+  grid-column: 1 / -1;
+  padding-bottom: 0.5rem;
+}
+
+/* ============================================================
+   FACT ITEM — base
+   ============================================================ */
+.eic-fact {
+  display: flex;
+  flex-direction: column; /* label above value by default */
+  gap: 0.25rem;
+  padding: 0.35rem 0;
+}
+
+/* Label (dt) */
+.eic-fact dt {
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  font-weight: 600;
+  color: var(--primary, #174777);
+  margin: 0;
+}
+
+.eic-fact--no-label dt {
+  display: none;
+}
+.eic-fact--no-label {
+  align-self: end;
+}
+
+/* Value (dd) */
+.eic-fact dd {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.4;
+  color: var(--text, #1d2a33);
+  overflow-wrap: break-word;
+}
+
+/* ============================================================
+   PUBLICATIONS — Inline "Note:" label/value (primary & alt)
+   ============================================================ */
+.eic-fact--inline-note {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.35rem 0;
+  grid-column: 1 / -1; /* span both columns */
+}
+.eic-fact__label-inline {
+  font-weight: 600;
+  color: var(--ink-700, #1f2937);
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  letter-spacing: 0.02em;
+  margin: 0;
+}
+.eic-fact__value-inline {
+  font-weight: 500;
+  color: var(--ink-600, #374151);
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+/* ============================================================
+   DOI FACT (stacked label + link)
+   ============================================================ */
+.eic-fact--doi {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.35rem 0;
+}
+.eic-fact--doi dt {
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  font-weight: 600;
+  color: var(--primary, #174777);
+  margin: 0;
+}
+.eic-fact--doi dd {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.4;
+  color: var(--text, #1d2a33);
+}
+.eic-fact--doi dd a {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  overflow-wrap: anywhere;
+}
+
+/* Normalize WYSIWYG spacing inside values */
+.eic-fact dd p {
+  margin: 0;
+}
+.eic-fact dd p + p {
+  margin-top: 0.35rem;
+}
+.eic-fact dd a {
+  text-underline-offset: 2px;
+}
+
+/* Prevent rogue <br> inside CTA buttons */
+.eic-fact dd a.dr-more br {
+  display: none !important;
+}
+
+/* Remove stray empty paragraphs between blocks */
+.eic-subtype-fields > p:empty {
+  display: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Normalize headings inside subtype blocks */
+.eic-subtype-fields .eic-block-title {
+  margin-top: 0 !important;
+}
+.eic-subtype-fields .eic-block > h1,
+.eic-subtype-fields .eic-block > h2,
+.eic-subtype-fields .eic-block > h3,
+.eic-subtype-fields .eic-block > h4 {
+  margin-top: 0 !important;
+}
+
+/* ============================================================
+   UPDATED LINE
+   ============================================================ */
+.eic-updated {
+  margin: 2rem 1rem 0.5rem;
+  font-size: 0.95rem;
+  color: rgba(29, 42, 51, 0.7);
+}
+
+/* Capitalize inheritance pattern on loop cards */
+.eic-card-inheritance {
+  text-transform: capitalize;
+}
+
+/* =========================================================
+   RESULTS-LEVEL SORT TOOLBAR — centered, card-width, matched UI
+   - Lives under totals, above grid
+   - Right-aligned label, inline select + CLEAR
+   - Select matches CLEAR button height/shape
+   ========================================================= */
+
+/* Tweak if your card width differs */
+:root {
+  --eic-card-w: 360px;
+} /* desktop target */
+
+.genes-sort--results {
+  display: block; /* allow centering */
+  max-width: var(--eic-card-w); /* no wider than one card */
+  margin: 36px auto 0px auto; /* breathing room + centered */
+  padding: 0 4px;
+}
+
+.genes-sort--results .genes-sort__form {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  flex-wrap: nowrap; /* keep on one line (desktop) */
+}
+
+/* Right-aligned compact label */
+.genes-sort--results .genes-sort__label {
+  flex: 0 0 64px;
+  text-align: right;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--ink-500, #6b7280);
+  line-height: 1;
+  margin-top: 2px; /* optical baseline */
+}
+
+/* Selector matches CLEAR button height/shape */
+.genes-sort--results .genes-sort__select {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 40px; /* same as CLEAR */
+  padding: 0 1.25em;
+  border: 1.25px solid #d4d4d4;
+  border-radius: 14px;
+  background-color: #fff;
+  color: #1f2937;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1;
+  appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%231f2937'><path fill-rule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.24 4.5a.75.75 0 01-1.08 0l-4.24-4.5a.75.75 0 01.02-1.06z' clip-rule='evenodd'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 0.9em center;
+  background-size: 1em;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.genes-sort--results .genes-sort__select:focus {
+  outline: none;
+  border-color: #8b1b1b;
+  box-shadow: 0 0 0 1.5px rgba(139, 27, 27, 0.25);
+}
+
+/* CLEAR matches filter RESET, slightly lighter footprint */
+.genes-sort--results .genes-sort__clear {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: 0.55em 1.25em;
+  min-block-size: 40px;
+  border-radius: 14px;
+  border: 1.25px solid #f1bbbb;
+  background: #fff5f5;
+  color: #8b1b1b;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease,
+    border-color 0.15s ease;
+  margin-left: 2px;
+}
+.genes-sort--results .genes-sort__clear:hover,
+.genes-sort--results .genes-sort__clear:focus {
+  background-color: #fbecec;
+  border-color: #d33;
+}
+
+/* Responsive tuning */
+@media (max-width: 1024px) {
+  :root {
+    --eic-card-w: 340px;
+  }
+}
+@media (max-width: 767.98px) {
+  :root {
+    --eic-card-w: 300px;
+  }
+  .genes-sort--results .genes-sort__form {
+    flex-wrap: wrap; /* allow stacking on mobile */
+    justify-content: center;
+    gap: 8px 10px;
+  }
+  .genes-sort--results .genes-sort__label {
+    flex: 0 0 60px;
+    font-size: 0.84rem;
+    text-align: right;
+  }
+  .genes-sort--results .genes-sort__clear {
+    min-block-size: 38px;
+    padding: 0.5em 1.1em;
+  }
+}
+
+/* === Publications: force "Note:" inline === */
+.eic-fact.eic-fact--inline-note {
+  display: flex;
+  flex-direction: row; /* override the column default */
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.15rem;
+  grid-column: 1 / -1; /* span both columns in the grid */
+  padding: 0.35rem 0;
+}
+
+.eic-fact.eic-fact--inline-note dt {
+  margin: 0;
+  white-space: nowrap; /* keep "Note:" from wrapping */
+}
+
+.eic-fact.eic-fact--inline-note dd {
+  margin: 0;
+}
+
+/* === Fine-tune spacing between "NOTE:" label and field === */
+.eic-fact.eic-fact--inline-note {
+  gap: 0.25rem; /* tighten from 0.5rem */
+  align-items: center; /* keep the baseline balanced */
+}
+
+/* === Force tighter Note label spacing (margin-based override) === */
+.eic-fact.eic-fact--inline-note {
+  gap: 0 !important; /* neutralize flex gap */
+  align-items: baseline; /* keep optical line */
+}
+
+.eic-fact.eic-fact--inline-note dt {
+  margin: 0 0.2ch 0 0 !important; /* small inline gap using ch units for precision */
+  white-space: nowrap;
+}
+
+.eic-fact.eic-fact--inline-note dd {
+  margin: 0;
+}
+
+/* === Match NOTE: label color to field text === */
+.eic-fact.eic-fact--inline-note dt {
+  color: var(--text, #1d2a33) !important; /* same as field color */
+  font-weight: 700;
+}
+
+/* === Inline Note label polish === */
+.eic-fact.eic-fact--inline-note dt {
+  color: var(--text, #1d2a33) !important; /* same tone as field */
+  font-family: inherit; /* match value font */
+  font-weight: 600;
+  text-transform: none; /* remove uppercase */
+  font-variant: normal; /* kill small-caps */
+}
+
+.eic-fact.eic-fact--inline-note dt::first-letter {
+  text-transform: capitalize; /* “Note:” not “NOTE:” */
+}
+
+/* Subtype template: lock font family for WYSIWYG output */
+.eic-subtype-fields {
+  font-family: var(
+    --font-sans,
+    "Albert Sans",
+    system-ui,
+    -apple-system,
+    Segoe UI,
+    Roboto,
+    "Helvetica Neue",
+    Arial,
+    "Noto Sans",
+    "Liberation Sans",
+    sans-serif
+  );
+}
+.eic-subtype-fields * {
+  font-family: inherit; /* inherit within this region */
+}
+
+/* Ensure inline Note label/value also inherit */
+.eic-fact.eic-fact--inline-note dt,
+.eic-fact.eic-fact--inline-note dd,
+.eic-fact dd strong,
+.eic-fact dd em,
+.eic-fact dd a {
+  font-family: inherit;
+}
+
+/* Glossary — Source button alignment + spacing */
+.eic-glossary-fields {
+  margin-top: 1.25rem;
+}
+.eic-glossary-source {
+  display: flex;
+  justify-content: center;
+}
+.eic-glossary-source .dr-more {
+  margin-top: 0.25rem;
+}
+
+/* Kill TT25 blockGap on the first child from shortcode output */
+:where(.wp-site-blocks) .eic-glossary-fields > *:first-child {
+  margin-block-start: 0 !important;
+}
+
+/* =========================================================
+   SEARCH Filter
+   ========================================================= */
+
+/* ========== Layout & Container ========== */
+.site-searchwrap {
+  max-width: 980px; /* overall container width */
+  margin: 16px auto 0; /* top spacing + centered */
+  padding: 0 12px; /* slight horizontal breathing room */
+}
+
+.site-searchwrap .site-search__bar {
+  max-width: 720px; /* matches Genes filter width */
+  margin-inline: auto; /* centers inner form */
+}
+
+.site-searchwrap .site-search__row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px; /* space between rows */
+  align-items: end;
+}
+
+/* ========== Label & Input Field ========== */
+.site-searchwrap .site-search__label {
+  display: block;
+  margin: 0 0 6px 2px;
+  line-height: 1.25;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #1f2937; /* neutral dark gray */
+}
+
+.site-searchwrap .site-search input[type="search"] {
+  height: 46px;
+  padding: 10px 14px;
+  border: 1.5px solid #d6d9de;
+  border-radius: 14px;
+  background: #fff;
+  font-size: 15px;
+  line-height: 1.2;
+  outline: none;
+  transition: box-shadow 0.12s, border-color 0.12s;
+}
+
+/* placeholder text styling */
+.site-searchwrap .site-search input[type="search"]::placeholder {
+  color: #9aa2af;
+  font-size: 14px;
+}
+
+/* focus ring (blue glow) */
+.site-searchwrap .site-search input[type="search"]:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 22%, transparent);
+}
+
+/* ========== Action Buttons Row ========== */
+.site-searchwrap .site-search__actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px; /* space between buttons */
+  margin-top: 8px;
+}
+
+/* ========== Button Base (shared) ========== */
+.site-searchwrap .site-search__btn,
+.site-searchwrap .site-search__reset {
+  box-sizing: border-box; /* fixes anchor vs button height drift */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  height: 44px; /* fixed height for perfect alignment */
+  padding: 0 2em; /* horizontal padding only */
+  border-radius: 14px;
+
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s,
+    box-shadow 0.25s;
+}
+
+/* ========== Primary Button (SEARCH) ========== */
+.site-searchwrap .site-search__btn {
+  border: 1px solid var(--primary);
+  background: #fff;
+  color: var(--primary);
+}
+
+.site-searchwrap .site-search__btn:hover,
+.site-searchwrap .site-search__btn:focus {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
+/* ========== Secondary Button (RESET) ========== */
+.site-searchwrap .site-search__reset {
+  border: 1.5px solid #f1bbbb;
+  background: #fff5f5;
+  color: #8b1b1b;
+}
+
+.site-searchwrap .site-search__reset:hover,
+.site-searchwrap .site-search__reset:focus {
+  background: #fbecec;
+  border-color: #d33;
+}
+
+/* ========== WordPress / Gutenberg Adjustment ========== */
+.wp-block-shortcode .site-searchwrap {
+  margin-top: 8px; /* tighten extra space added by block */
+}
+
+/* ============================
+   Stackable Buttons → EIC CTA
+   ============================ */
+.stk-block-button a,
+.stk-button {
+  background-color: transparent;
+  color: var(--primary);
+  border: 1.5px solid var(--primary);
+  border-radius: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75em 2.5em;
+  line-height: 1.5;
+  font-size: 16px;
+  font-weight: 600;
+  font-family: inherit;
+  letter-spacing: 2px;
+  text-align: center;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: background-color 0.15s ease, color 0.15s ease,
+    box-shadow 0.25s ease, border-color 0.15s ease;
+  cursor: pointer;
+}
+
+.stk-block-button a:hover,
+.stk-block-button a:focus,
+.stk-button:hover,
+.stk-button:focus {
+  background-color: var(--primary);
+  color: #ffffff;
+  border-color: var(--primary);
+}
+
+/* ============================================================
+   Stackable Buttons → Universal EIC Button Styling
+   ============================================================ */
+
+/* Wrapper */
+.stk-block-button,
+.stk-block-button * {
+  box-sizing: border-box;
+}
+
+/* Main clickable element (covers ALL Stackable variants) */
+.stk-block-button a,
+.stk-block-button button,
+.stk-button,
+.stk-button__inner,
+.stk-block-button__button {
+  background-color: transparent !important;
+  color: var(--primary) !important;
+  border: 1.5px solid var(--primary) !important;
+  border-radius: 16px !important;
+
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  padding: 0.75em 2.5em !important;
+  line-height: 1.5 !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  letter-spacing: 2px !important;
+  text-transform: uppercase !important;
+  text-decoration: none !important;
+  cursor: pointer !important;
+
+  transition: background-color 0.15s ease, color 0.15s ease,
+    border-color 0.15s ease, box-shadow 0.25s ease !important;
+}
+
+/* Hover + focus */
+.stk-block-button a:hover,
+.stk-block-button button:hover,
+.stk-button:hover,
+.stk-button__inner:hover,
+.stk-block-button__button:hover,
+.stk-block-button a:focus,
+.stk-block-button button:focus,
+.stk-button:focus,
+.stk-button__inner:focus,
+.stk-block-button__button:focus {
+  background-color: var(--primary) !important;
+  color: #ffffff !important;
+  border-color: var(--primary) !important;
+}
+
+/* Ensure Stackable's internal label (span) also switches to white */
+.stk-block-button a:hover span,
+.stk-block-button button:hover span,
+.stk-button:hover span,
+.stk-button__inner:hover span,
+.stk-block-button__button:hover span,
+.stk-block-button a:focus span,
+.stk-block-button button:focus span,
+.stk-button:focus span,
+.stk-button__inner:focus span,
+.stk-block-button__button:focus span {
+  color: #ffffff !important;
+}
+
+.wp-block-query-no-results {
+  display: none !important;
+}
+
+/* ============================================================
+   GLOBAL LINK STYLE + HOVER SCALE ANIMATION
+   Underlines all links, and applies a subtle scale animation on
+   hover/focus to every anchor site-wide (links are inline-block
+   so the transform can render). Intentional global behavior.
+   ============================================================ */
+a {
+  text-decoration: underline;
+  display: inline-block;
+  transition: text-decoration 0.15s ease-out, transform 0.18s ease-out;
+}
+
+a:hover,
+a:focus {
+  text-decoration: underline;
+  transform: scale(1.01);
+}
+
+.stk-block-columns.stk-d0c700c p > a,
+.stk-block-columns.stk-d0c700c a {
+  text-decoration: none;
+  display: inline-block;
+  transition: text-decoration 0.15s ease-out, transform 0.18s ease-out;
+}
+
+/* ============================================================
+   HARD-EXEMPT PRIMARY NAV FROM GLOBAL LINK EFFECTS
+   Applies to:
+     - Parent menu buttons (.wp-block-navigation-item__content as <button>)
+     - Regular anchor links (.wp-block-navigation-item__content as <a>)
+   ============================================================ */
+
+.wp-block-navigation button.wp-block-navigation-item__content,
+.wp-block-navigation button.wp-block-navigation-item__content:hover,
+.wp-block-navigation button.wp-block-navigation-item__content:focus,
+.wp-block-navigation a.wp-block-navigation-item__content,
+.wp-block-navigation a.wp-block-navigation-item__content:hover,
+.wp-block-navigation a.wp-block-navigation-item__content:focus {
+  transform: none !important;
+  text-decoration: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+/* ============================================================
+   NAVIGATION — HOVER FONT WEIGHT FEEDBACK
+   (Keeps subtle feedback without any underline/scale)
+   ============================================================ */
+
+.wp-block-navigation a.wp-block-navigation-item__content:hover,
+.wp-block-navigation button.wp-block-navigation-item__content:hover {
+  font-weight: 500 !important;
+}
+
+/* ============================================================
+   EXEMPT CTA LINKS FROM GLOBAL UNDERLINE ON HOVER
+   Applies to: .dr-more (Dorsal Root CTA)
+   ============================================================ */
+a.dr-more,
+a.dr-more:hover,
+a.dr-more:focus {
+  text-decoration: none !important;
+}
+
+/* ============================================================
+   OMIM NO ENTRY — DISABLE HOVER FILL ON STATIC BUTTONS
+   Applies to: a.dr-more without an href (No Entry state)
+   ============================================================ */
+a.dr-more:not([href]):hover,
+a.dr-more:not([href]):focus {
+  background: none;
+  color: var(--primary);
+  transform: none;
+  cursor: default;
+}
+
+/* ------------------------------------------------------------------
+   Mobile Overrides
+   ------------------------------------------------------------------ */
+@media (max-width: 600px) {
+
+  body,
+  html,
+  body * {
+    font-size: 18px !important;
+    line-height: 1.6 !important;
+  }
+
+  p,
+  body p,
+  .wp-site-blocks p,
+  .entry-content p,
+  .prose p,
+  .wp-block-paragraph {
+    font-size: 18px !important;
+    line-height: 1.6 !important;
+  }
+}
+
+/* === Mobile: prose heading hierarchy ===
+   The `body * { 18px }` floor above flattens headings to body size. Bump
+   the block-editor prose headings (.wp-block-heading) back above body so
+   sections read as headings. Scoped to .wp-block-heading so the dialed
+   BEM component titles (card / hero / list / banner __title) are NOT
+   touched and keep their own sizing. */
+@media (max-width: 600px) {
+  h2.wp-block-heading {
+    font-size: clamp(1.5rem, 5vw, 1.7rem) !important;
+    line-height: 1.25 !important;
+  }
+
+  h3.wp-block-heading {
+    font-size: clamp(1.25rem, 4vw, 1.4rem) !important;
+    line-height: 1.3 !important;
+  }
+}
+
+/* === Mobile: tighten totals line spacing === */
+@media (max-width: 600px) {
+  .genes-totals {
+    margin-top: -150px !important; /* pulls it upward */
+    margin-bottom: 125px !important; /* keeps breathing room above cards */
+    /* Body copy is 18px on mobile, so 16px read as "tiny" against it.
+       Bump above body size to give the summary line proper presence. */
+    font-size: 22px !important;
+    font-weight: 500 !important;
+    line-height: 1.4 !important;
+  }
+}
+
+/* === Mobile: keep Prev / Next on one line === */
+@media (max-width: 600px) {
+  .pagination .prev,
+  .pagination .next,
+  .nav-links .prev,
+  .nav-links .next,
+  .page-numbers.prev,
+  .page-numbers.next {
+    white-space: nowrap;
+  }
+}
+
+/* ===========================================
+              MOBILE HEADER LAYOUT
+   ------------------------------------------
+   Rebuilt (2026-07): logo top-left, hamburger
+   pinned + vertically centered at top-right, and
+   a full-width search on its own line. Replaces
+   the old -175px search / -75px hamburger lifts,
+   which assumed one fixed header height and
+   overlapped the tagline (and menu tap targets)
+   on narrower devices.
+   =========================================== */
+@media (max-width: 600px) {
+  header.wp-block-template-part {
+    position: relative !important;
+    padding-top: 6px !important;
+    padding-bottom: 14px !important;
+  }
+
+  /* Halve the top spacer that pushed the logo down. */
+  header.wp-block-template-part > .wp-block-spacer:first-of-type {
+    height: 24px !important;
+    min-height: 24px !important;
+  }
+
+  /* Empty Stackable spacer columns only pad the desktop rows; hide them
+     so they don't add blank stacked gaps on mobile. */
+  .stk-88dc9f4,
+  .stk-bd0b7b2,
+  .stk-cee3b4d,
+  .stk-5e4c253,
+  .stk-3a29f7c {
+    display: none !important;
+  }
+
+  /* Logo: capped height, left-aligned to the search's left edge. */
+  .site-header img,
+  header .custom-logo,
+  header .wp-block-site-logo img {
+    max-height: 64px !important;
+    height: auto !important;
+    width: auto !important;
+  }
+  .stk-15a7156 .stk-block-content {
+    align-items: flex-start !important;
+    text-align: left !important;
+  }
+  header .wp-block-site-logo,
+  header .custom-logo-link {
+    margin-left: 0 !important;
+    display: block !important;
+    text-align: left !important;
+  }
+  header .wp-block-site-logo img,
+  header .custom-logo {
+    margin-left: 0 !important;
+    margin-right: auto !important;
+  }
+
+  /* Drop the desktop-only 58px baseline spacer + nested search border. */
+  .stk-8f6b491 .wp-block-spacer {
+    height: 0 !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+  }
+  .stk-33187c6 {
+    border-bottom-width: 0 !important;
+    margin-bottom: 0 !important;
+  }
+
+  /* Search: full width, on its own line, no lift. */
+  header .wp-block-search,
+  header .header-search {
+    margin: 14px 0 0 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    float: none !important;
+  }
+  .site-search {
+    margin-top: 0 !important;
+  }
+  header .wp-block-search__inside-wrapper {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
+  header .wp-block-search__input {
+    flex: 1 1 auto !important;
+    width: auto !important;
+    padding: 8px 12px !important;
+    font-size: 14px !important;
+    height: 40px !important;
+    border-radius: 6px !important;
+    box-sizing: border-box !important;
+  }
+  header .wp-block-search__button {
+    flex: 0 0 auto !important;
+    width: auto !important;
+    padding: 8px 16px !important;
+    font-size: 14px !important;
+    height: 40px !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Hamburger row: pinned to the header's top-right corner and vertically
+     centered against the logo band, so it can't drift onto the tagline or
+     eat taps (both of which the old -75px lift caused). */
+  .stk-454b6a7 {
+    position: absolute !important;
+    top: 30px !important;
+    right: 16px !important;
+    bottom: auto !important;
+    left: auto !important;
+    height: 64px !important;
+    width: auto !important;
+    margin: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+  }
+  .stk-454b6a7 .stk-row {
+    height: 100% !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+  }
+  .stk-454b6a7 .stk-9a351a9 {
+    width: auto !important;
+    align-self: center !important;
+  }
+}
+
+/* ===== MOBILE SPACER REDUCTION (≤600px) =====
+   Fixed 50px / 100px content spacers around the related-section buttons
+   and the Dorsal Root feature read as huge empty voids on a phone. Shrink
+   just those (not the small 12px paragraph spacers, and not desktop). */
+@media (max-width: 600px) {
+  .entry-content .wp-block-spacer[style*="height:100px"] {
+    height: 36px !important;
+    min-height: 0 !important;
+  }
+  .entry-content .wp-block-spacer[style*="height:50px"] {
+    height: 24px !important;
+    min-height: 0 !important;
+  }
+}
+
+/* ===== LONG-URL WRAPPING (all widths) =====
+   Raw URLs (e.g. lab test-catalog links) have no natural break points and
+   run off a narrow content column, clipping and forcing horizontal scroll.
+   Allow them to wrap. */
+.entry-content,
+.wp-block-post-content,
+.entry-content li,
+.wp-block-post-content li,
+.entry-content p,
+.wp-block-post-content p,
+.entry-content a,
+.wp-block-post-content a {
+  overflow-wrap: anywhere;
+}
+
+/* === MOBILE HAMBURGER RESET – TRUE THREE-LINE ICON === */
+@media (max-width: 600px) {
+  .wp-block-navigation__responsive-container-open {
+    width: 60px;
+    height: 42px;
+    padding: 0;
+    border: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    margin: 0 !important;
+    transform: none !important;
+
+    /* Middle line (center bar) */
+    background: linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent calc(50% - 1.5px),
+      var(--primary) calc(50% - 1.5px),
+      var(--primary) calc(50% + 1.5px),
+      transparent calc(50% + 1.5px),
+      transparent 100%
+    );
+    border-radius: 4px;
+  }
+
+  .wp-block-navigation__responsive-container-open:hover {
+    background-color: transparent !important;
+    transform: scale(1.03) !important;
+    transition: transform 0.18s ease-out;
+  }
+
+  .wp-block-navigation__responsive-container-open svg {
+    display: none !important;
+  }
+
+  .wp-block-navigation__responsive-container-open::before,
+  .wp-block-navigation__responsive-container-open::after {
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 3px;
+    background-color: var(--primary);
+    border-radius: 3px;
+    left: 0;
+  }
+
+  .wp-block-navigation__responsive-container-open::before {
+    top: 4px;
+  }
+
+  .wp-block-navigation__responsive-container-open::after {
+    bottom: 4px;
+  }
+}
+
+/* ============================================================
+   MOBILE FOOTER LEGAL ALIGNMENT (≤600px)
+   Overrides Gutenberg’s .has-text-align-center class inside the
+   Stackable footer column to force left alignment on small screens.
+   ============================================================ */
+@media (max-width: 600px) {
+  .stk-block-column .has-text-align-center {
+    text-align: left !important;
+  }
+}
+
+/* ============================================================
+   WPForms INPUT OVERRIDES
+   ============================================================ */
+
+.wpforms-container .wpforms-field input,
+.wpforms-container .wpforms-field textarea,
+.wpforms-container .wpforms-field select {
+  font-size: 1rem !important;
+  padding: 0.75rem 1rem !important;
+  border: 1px solid #d0d7de !important;
+  border-radius: 8px !important;
+  background: #fff !important;
+  width: 100% !important;
+  color: var(--text) !important;
+}
+
+.wpforms-container .wpforms-field input:focus,
+.wpforms-container .wpforms-field textarea:focus,
+.wpforms-container .wpforms-field select:focus {
+  outline: none !important;
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 2px rgba(23, 71, 119, 0.25) !important;
+}
+
+/* Fix WPForms labels */
+.wpforms-container .wpforms-field-label,
+.wpforms-container .wpforms-field-sublabel {
+  font-size: 0.9rem !important;
+  font-weight: 500 !important;
+}
+
+/* Align submit button to our global button style */
+.wpforms-container .wpforms-submit-container .dr-more {
+  margin-top: 1.5rem;
+}
+
+/* ============================================================
+   WPForms Submit Button — EIC Style Override
+   Makes the submit button match dr-more: pill, border, scale.
+   ============================================================ */
+
+.wpforms-submit {
+  background: none !important;
+  color: var(--primary) !important;
+  border: 1.5px solid var(--primary) !important;
+  border-radius: 9999px !important;
+  padding: 0.55rem 1.4rem !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  cursor: pointer;
+  transition: transform 0.18s ease-out, background-color 0.18s ease-out,
+    color 0.18s ease-out !important;
+}
+
+/* Hover + Focus */
+.wpforms-submit:hover,
+.wpforms-submit:focus {
+  transform: scale(1.03);
+  background: var(--primary) !important;
+  color: #fff !important;
+}
+
+@media (max-width: 600px) {
+  /* Back (center) label gets wider allowance */
+  .ctnav-back-label {
+    white-space: normal;
+    display: inline-block;
+    max-width: 120px;
+    line-height: 1.3;
+  }
+
+  /* Prev/Next get narrower width */
+  .ctnav-prev-label,
+  .ctnav-next-label {
+    white-space: normal;
+    display: inline-block;
+    max-width: 80px;
+    line-height: 1.3;
+  }
+}

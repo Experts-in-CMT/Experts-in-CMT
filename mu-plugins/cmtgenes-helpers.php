@@ -295,13 +295,17 @@ if (!function_exists("eic_gl_count_unique_genes")) {
             return 0;
         }
         global $wpdb;
-        $ids_csv = implode(",", array_map("intval", $ids));
+        $ids = array_map("intval", $ids);
+        $placeholders = implode(",", array_fill(0, count($ids), "%d"));
         $pm = $wpdb->postmeta;
-        $sql = "SELECT COUNT(DISTINCT UPPER(TRIM(pm.meta_value)))
+        $sql = $wpdb->prepare(
+            "SELECT COUNT(DISTINCT UPPER(TRIM(pm.meta_value)))
             FROM $pm pm
-            WHERE pm.post_id IN ($ids_csv)
+            WHERE pm.post_id IN ($placeholders)
               AND pm.meta_key = 'gene_symbol'
-              AND UPPER(TRIM(pm.meta_value)) <> 'UNKNOWN'";
+              AND UPPER(TRIM(pm.meta_value)) <> 'UNKNOWN'",
+            $ids
+        );
         return (int) $wpdb->get_var($sql);
     }
 }
@@ -317,13 +321,17 @@ if (!function_exists("eic_gl_count_unknown_genes")) {
             return 0;
         }
         global $wpdb;
-        $ids_csv = implode(",", array_map("intval", $ids));
+        $ids = array_map("intval", $ids);
+        $placeholders = implode(",", array_fill(0, count($ids), "%d"));
         $pm = $wpdb->postmeta;
-        $sql = "SELECT COUNT(DISTINCT pm.post_id)
+        $sql = $wpdb->prepare(
+            "SELECT COUNT(DISTINCT pm.post_id)
             FROM $pm pm
-            WHERE pm.post_id IN ($ids_csv)
+            WHERE pm.post_id IN ($placeholders)
               AND pm.meta_key = 'unknown_gene'
-              AND pm.meta_value = '1'";
+              AND pm.meta_value = '1'",
+            $ids
+        );
         return (int) $wpdb->get_var($sql);
     }
 }

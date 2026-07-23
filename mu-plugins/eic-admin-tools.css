@@ -1,0 +1,237 @@
+/*!
+ * Copyright (c) 2025 Kenneth Raymond
+ * All rights reserved.
+ *
+ * Part of the Experts in CMT platform.
+ * Do not copy, modify, or redistribute without permission.
+ *
+ * ------------------------------------------------------------
+ * EIC ADMIN TOOLS — SHARED BRANDING + LAYOUT
+ * ------------------------------------------------------------
+ * One stylesheet for every Tools > EIC utility page. Enqueued by
+ * eic-admin-tools.php on admin screens whose `page` slug starts
+ * with `eic-`, so it never touches core wp-admin.
+ *
+ * Everything is scoped under .eic-tool (the shared header-shell
+ * wrapper) so no rule can leak outside a tool page.
+ *
+ * Brand tokens mirror the front-end theme:
+ *   --primary #174777 (deep navy)  •  Albert Sans
+ * ------------------------------------------------------------
+ */
+
+.eic-tool {
+  --eic-navy: #174777;
+  --eic-navy-hover: #123a61;
+  --eic-navy-active: #0e2d4c;
+  --eic-navy-tint: #eef3f8;
+  --eic-danger: #b3261e;
+  --eic-danger-hover: #8f1e18;
+  --eic-ink: #14233b;
+  --eic-muted: #56617a;
+  --eic-border: #d7dee7;
+  --eic-radius: 12px;
+
+  max-width: 920px;
+  margin: 20px 20px 40px 0;
+  font-family: "Albert Sans", system-ui, -apple-system, "Segoe UI", Roboto,
+    Helvetica, Arial, sans-serif;
+  color: var(--eic-ink);
+}
+
+/* ---- Branded header bar ---------------------------------- */
+.eic-tool__bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 18px;
+  background: var(--eic-navy);
+  border-radius: var(--eic-radius) var(--eic-radius) 0 0;
+}
+
+.eic-tool__brand {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #fff;
+}
+
+.eic-tool__kicker {
+  margin-left: auto;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, #fff 72%, var(--eic-navy));
+}
+
+/* ---- Title + subtitle + body card ------------------------ */
+.eic-tool__head {
+  padding: 20px 22px 4px;
+  background: #fff;
+  border-inline: 1px solid var(--eic-border);
+}
+
+.eic-tool__title.eic-tool__title {
+  margin: 0;
+  padding: 0;
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--eic-navy);
+}
+
+.eic-tool__sub {
+  margin: 6px 0 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--eic-muted);
+  max-width: 68ch;
+}
+
+.eic-tool__body {
+  padding: 18px 22px 24px;
+  background: #fff;
+  border: 1px solid var(--eic-border);
+  border-top: 0;
+  border-radius: 0 0 var(--eic-radius) var(--eic-radius);
+  box-shadow: 0 1px 2px rgb(20 42 84 / 6%);
+}
+
+.eic-tool__body > h2:first-child,
+.eic-tool__body > h3:first-child,
+.eic-tool__body > p:first-child {
+  margin-top: 0;
+}
+
+/* ---- Typography inside the body -------------------------- */
+.eic-tool__body h2,
+.eic-tool__body h3 {
+  color: var(--eic-ink);
+  font-weight: 600;
+}
+
+.eic-tool__body p,
+.eic-tool__body li,
+.eic-tool__body label {
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--eic-ink);
+}
+
+.eic-tool__body a {
+  color: var(--eic-navy);
+}
+
+.eic-tool__body code {
+  background: var(--eic-navy-tint);
+  color: var(--eic-navy);
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 12.5px;
+}
+
+.eic-tool__body hr {
+  border: 0;
+  border-top: 1px solid var(--eic-border);
+  margin: 18px 0;
+}
+
+/* ---- Form controls --------------------------------------- */
+.eic-tool__body input[type="text"],
+.eic-tool__body input[type="search"],
+.eic-tool__body input[type="number"],
+.eic-tool__body input[type="url"],
+.eic-tool__body select,
+.eic-tool__body textarea {
+  border: 1px solid var(--eic-border);
+  border-radius: 8px;
+  box-shadow: none;
+}
+
+.eic-tool__body input[type="text"]:focus,
+.eic-tool__body input[type="search"]:focus,
+.eic-tool__body input[type="number"]:focus,
+.eic-tool__body input[type="url"]:focus,
+.eic-tool__body select:focus,
+.eic-tool__body textarea:focus {
+  border-color: var(--eic-navy);
+  box-shadow: 0 0 0 1px var(--eic-navy);
+  outline: 2px solid transparent;
+}
+
+/* Native form-table pages (exporter, maintenance) sit flush */
+.eic-tool__body .form-table th {
+  color: var(--eic-ink);
+}
+
+/* ---- Buttons: primary = navy ----------------------------- */
+.eic-tool .button-primary,
+.eic-tool .button-primary:visited {
+  background: var(--eic-navy);
+  border-color: var(--eic-navy);
+  color: #fff;
+  border-radius: 8px;
+  box-shadow: none;
+  text-shadow: none;
+  padding: 2px 16px;
+  height: auto;
+  min-height: 34px;
+  font-weight: 600;
+}
+
+.eic-tool .button-primary:hover,
+.eic-tool .button-primary:focus {
+  background: var(--eic-navy-hover);
+  border-color: var(--eic-navy-hover);
+  color: #fff;
+}
+
+.eic-tool .button-primary:active {
+  background: var(--eic-navy-active);
+  border-color: var(--eic-navy-active);
+}
+
+.eic-tool .button-primary:focus {
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--eic-navy);
+}
+
+/* Secondary / non-primary buttons: outlined navy */
+.eic-tool .button:not(.button-primary):not(.button-link) {
+  border-radius: 8px;
+  border-color: var(--eic-border);
+  color: var(--eic-navy);
+  min-height: 34px;
+}
+
+.eic-tool .button:not(.button-primary):not(.button-link):hover {
+  border-color: var(--eic-navy);
+  color: var(--eic-navy-hover);
+  background: var(--eic-navy-tint);
+}
+
+/* ---- Destructive actions: red ---------------------------- */
+.eic-tool .eic-danger,
+.eic-tool .button-primary.eic-danger,
+.eic-tool .eic-danger:visited {
+  background: var(--eic-danger);
+  border-color: var(--eic-danger);
+  color: #fff;
+}
+
+.eic-tool .eic-danger:hover,
+.eic-tool .eic-danger:focus {
+  background: var(--eic-danger-hover);
+  border-color: var(--eic-danger-hover);
+  color: #fff;
+}
+
+.eic-tool .eic-danger:focus {
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--eic-danger);
+}
+
+/* ---- Notices sit inside the card rhythm ------------------ */
+.eic-tool__body .notice {
+  margin: 14px 0;
+  border-radius: 8px;
+}

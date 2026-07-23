@@ -1,0 +1,6 @@
+# OS / editor only
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.code-workspace

@@ -1,0 +1,30 @@
+/*!
+ * Copyright (c) 2025 Kenneth Raymond
+ * All rights reserved.
+ *
+ * Part of the expertsincmt WordPress theme.
+ * Do not copy, modify, or redistribute without permission.
+ *
+ * ------------------------------------------------------------
+ * LOOP AJAX — GLOBAL LOADING + FOCUS STATES
+ * ------------------------------------------------------------
+ * Styles shared across AJAX-driven loops:
+ *   • Dorsal Root
+ *   • Genes Database
+ *   • Glossary
+ *
+ * Includes:
+ *   - Loading dimmer for result roots
+ *   - Focus outline removal for #results
+ *
+ * Scope:
+ *   #dr-results-root, #results
+ */
+
+#dr-results-root.is-loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+#results:focus {
+  outline: none;
+}

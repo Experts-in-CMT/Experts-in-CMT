@@ -1,6 +1,5 @@
 # --- WordPress wp-content GitIgnore (Experts in CMT / Kenny build) ---
 
-
 # OS/editor junk
 .DS_Store
 Thumbs.db
@@ -11,20 +10,19 @@ Thumbs.db
 # Ignore everything by default
 *
 
-# Ignore all other themes (put BEFORE the whitelist so it doesn't override)
+# Ignore all theme folders (the whitelist below re-includes only the live theme)
 themes/*
-themes/cmtgenes/
 
-# Explicitly include only our active theme and MU plugins
+# Explicitly include only the live theme, MU plugins, and repo meta
 !themes/
-!themes/twentytwentyfive/
-!themes/twentytwentyfive/**
+!themes/expertsincmt/
+!themes/expertsincmt/**
 !mu-plugins/
 !mu-plugins/**
 !.github/
 !.github/**
 
-# Ignore runtime junk inside themes
+# Ignore build/runtime junk inside themes
 themes/*/node_modules/
 themes/*/dist/
 themes/*/vendor/

@@ -1,0 +1,219 @@
+/*!
+ * Copyright (c) 2025 Kenneth Raymond
+ * All rights reserved.
+ *
+ * Part of the expertsincmt WordPress theme.
+ *
+ * ------------------------------------------------------------
+ * DORSAL ROOT — EDITORIAL LIST (archive/loop cards)
+ * ------------------------------------------------------------
+ * Single-column, image-left / text-right rows in the canon type
+ * and color language. Each row carries its category color as a
+ * single custom property (--dr-cat); the dot, pill tint, and pill
+ * text are all derived from it.
+ *
+ * Scope: .dr-list
+ */
+
+.dr-list {
+  width: 100%;
+  max-width: 900px;
+  margin-inline: auto;
+}
+
+.dr-list__item {
+  border-bottom: 1px solid var(--border);
+}
+
+.dr-list__item:last-child {
+  border-bottom: 0;
+}
+
+.dr-list__link {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+  padding: 1.4rem 1rem;
+  border-radius: 14px;
+  color: inherit;
+  text-decoration: none !important;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dr-list__link:hover,
+.dr-list__link:focus-visible {
+  background: color-mix(in srgb, var(--dr-cat) 6%, #fff);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--dr-cat) 18%, transparent);
+}
+
+/* Media (uniform crop, rounded, faint ring) */
+.dr-list__media {
+  position: relative; /* anchor for the absolutely-filled image */
+  flex: 0 0 40%;
+  max-width: 40%;
+  aspect-ratio: 16 / 10;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #e9edf1;
+  box-shadow: inset 0 0 0 1px rgb(20 42 84 / 6%);
+}
+
+/* Absolutely fill the aspect-ratio frame. WordPress adds width/height
+   attributes to the thumbnail and its global styles set img{height:auto},
+   which left the image shorter than the frame (a gap below it). Pinning
+   the image to the frame's edges guarantees it fills the box. */
+.dr-list__media img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.35s ease;
+}
+
+/* Cohesive hover: image zoom to match the dr-feature section */
+.dr-list__link:hover .dr-list__media img,
+.dr-list__link:focus-visible .dr-list__media img {
+  transform: scale(1.04);
+}
+
+.dr-list__media-ph {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Body */
+.dr-list__body {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.dr-list__head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.dr-list__title {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  font-size: clamp(1.25rem, 0.9rem + 0.9vw, 1.5rem);
+  font-weight: 400;
+  line-height: 1.15;
+  color: var(--primary);
+}
+
+/* Category badge: color dot + pill, grouped and vertically centered,
+   pinned to the top-right so it never shifts with the title. */
+.dr-list__cat {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: 12px;
+}
+
+.dr-list__dot {
+  flex: 0 0 auto;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--dr-cat);
+}
+
+.dr-list__link:hover .dr-list__title,
+.dr-list__link:focus-visible .dr-list__title {
+  color: color-mix(in srgb, var(--primary) 80%, var(--dr-cat));
+}
+
+/* Category pill, tint + text both from --dr-cat */
+.dr-list__pill {
+  padding: 4px 11px;
+  border-radius: 999px;
+  font-size: 0.66rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  background: color-mix(in srgb, var(--dr-cat) 12%, #fff);
+  color: color-mix(in srgb, var(--dr-cat) 78%, #000);
+}
+
+.dr-list__date {
+  margin: 8px 0 0;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.dr-list__excerpt {
+  margin: 0.65rem 0 0;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: var(--muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.dr-list__more {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 6px;
+  margin-top: 0.9rem;
+  padding-right: 12px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--dr-cat) 70%, #000);
+}
+
+.dr-list__more span {
+  font-size: 1.15rem;
+  line-height: 1;
+  transition: transform 0.2s ease;
+}
+
+.dr-list__link:hover .dr-list__more span,
+.dr-list__link:focus-visible .dr-list__more span {
+  transform: translateX(4px);
+}
+
+.dr-list__empty {
+  max-width: 700px;
+  margin: 0 auto 64px;
+  padding: 1.5rem 0;
+}
+
+.dr-list__empty p {
+  font-size: 1.1rem;
+  color: var(--text);
+}
+
+/* Mobile: stack image over text */
+@media (max-width: 600px) {
+  .dr-list__link {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1.25rem 0.5rem;
+  }
+
+  .dr-list__media {
+    flex: none;
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .dr-list__pill {
+    margin-left: 0;
+  }
+}

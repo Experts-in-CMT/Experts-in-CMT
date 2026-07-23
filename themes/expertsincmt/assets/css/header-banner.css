@@ -1,0 +1,189 @@
+/*!
+ * Copyright (c) 2025 Kenneth Raymond
+ * All rights reserved.
+ *
+ * Part of the expertsincmt WordPress theme.
+ * Do not copy, modify, or redistribute without permission.
+ *
+ * ------------------------------------------------------------
+ * HEADER BANNER — OVERLAY LAYOUT
+ * ------------------------------------------------------------
+ * Site-wide banner brought in line with the Genes DB app hero:
+ * background image + live CSS mask-image fade, driven by
+ * --banner-fade-start / --banner-fade-end (set inline by
+ * header-banner.php from the banner_fade_start / banner_fade_end
+ * ACF Range fields, defaults 33 / 66). No image editing required
+ * to adjust the fade per page.
+ *
+ * Differs from .genes-hero:
+ *   - Radius on all four corners (28px), not just the top, since
+ *     this banner isn't docked flush against another element.
+ *   - Bottom border preserved as the page separator.
+ *   - Intro is unclamped and flows naturally (WYSIWYG field,
+ *     single editor, no truncation guardrail needed).
+ *
+ * Scope:
+ *   .header-banner
+ */
+
+.header-banner {
+  position: relative;
+  z-index: 0; /* explicitly beneath nav */
+  left: 50%;
+  width: 100vw;
+  max-width: 1180px;
+  transform: translateX(-50%);
+  overflow: hidden;
+  padding-inline: 12px;
+  background: var(--bg, #fff);
+  min-height: clamp(260px, 30vw, 380px);
+  border-radius: 28px;
+  display: flex;
+  align-items: center;
+}
+
+.header-banner::before {
+  content: "";
+  position: absolute;
+  inset: 0 12px;
+  border-radius: 28px;
+  background-image: var(--banner-img);
+  background-size: cover;
+  background-position: right center;
+}
+
+.header-banner::after {
+  content: "";
+  position: absolute;
+  inset: 0 12px;
+  border-radius: 28px;
+  background: linear-gradient(
+    to right,
+    var(--bg, #fff) 0%,
+    var(--bg, #fff) var(--banner-fade-start),
+    transparent var(--banner-fade-end)
+  );
+}
+
+.header-banner__inner {
+  position: relative;
+  z-index: 1;
+  max-width: min(560px, 55%);
+  margin-inline: 0 auto;
+  padding: 2rem 7.5rem;
+}
+
+.header-banner__content {
+  position: relative;
+  width: fit-content; /* shrink to the H1 so the title stays put */
+  text-align: left;
+}
+
+.header-banner__title {
+  margin: 0 0 0.5rem;
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  font-weight: 400;
+  line-height: 1.2;
+  color: #174777;
+  white-space: nowrap; /* single-line title anchors the shared right edge */
+  text-align: right; /* multi-line titles align to their own right edge */
+}
+
+.header-banner__intro {
+  position: absolute;
+  top: 100%; /* sit just below the title */
+  right: 0; /* right edge under the H1's right edge */
+  margin: 0.5rem 0 0;
+  white-space: nowrap;
+  text-align: right;
+}
+
+.header-banner__intro,
+.header-banner__intro p {
+  max-width: none;
+  font-size: clamp(1.1rem, 1.25vw, 1.35rem);
+  font-weight: 400;
+  line-height: 1.5;
+  color: #174777;
+}
+
+.header-banner__intro p {
+  margin: 0;
+  white-space: nowrap;
+}
+
+.header-banner__intro p + p {
+  margin-top: 0.75rem;
+}
+
+/* =========================================================
+   Mobile: crop tighter instead of stacking
+   ========================================================= */
+@media (max-width: 600px) {
+  .header-banner {
+    min-height: clamp(220px, 46vw, 300px);
+    border-radius: 22px;
+  }
+
+  .header-banner::before {
+    background-position: 78% center;
+    border-radius: 22px;
+  }
+
+  .header-banner::after {
+    border-radius: 22px;
+    /* Backdrop for the text column so it reads on flat colour rather than
+       over the DNA image. Solid through the text zone, then a gentle fade
+       so the image reveals across the right half (short-text pages don't
+       leave a wide empty band before the image). Driven by the mobile ACF
+       fade fields via their own vars, separate from the desktop fade which
+       is tuned for the wider layout. Fallbacks match the historic
+       hard-coded values (55% / 100%). */
+    background: linear-gradient(
+      to right,
+      var(--bg, #fff) 0%,
+      var(--bg, #fff) var(--banner-fade-start-mobile, 55%),
+      transparent var(--banner-fade-end-mobile, 100%)
+    );
+  }
+
+  /* Keep the text in the left, readable zone (desktop caps it to ~55%;
+     mobile had opened it to full width, letting the intro run across the
+     image and become unreadable). */
+  .header-banner__inner {
+    max-width: 66%;
+    padding: 1.5rem;
+  }
+
+  .header-banner__content {
+    width: auto;
+  }
+
+  .header-banner__title {
+    /* !important escapes the global `body * { font-size: 18px }` mobile
+       floor, which was flattening the banner title to body size. */
+    font-size: clamp(2rem, 7vw, 2.5rem) !important;
+    line-height: 1.2 !important;
+    white-space: normal;
+    text-align: left;
+  }
+
+  .header-banner__intro {
+    position: static;
+    inset: auto;
+  }
+
+  .header-banner__intro,
+  .header-banner__intro p {
+    width: auto;
+    margin: 0;
+    overflow: visible;
+    white-space: normal;
+    text-align: left;
+    max-width: 38ch;
+    /* !important escapes the 18px mobile floor; sized to sit clearly
+       above body copy but below the title (mid-level in the scale). */
+    font-size: clamp(1.2rem, 4.5vw, 1.45rem) !important;
+    line-height: 1.45 !important;
+  }
+}

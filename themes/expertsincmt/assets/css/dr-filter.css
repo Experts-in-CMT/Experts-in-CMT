@@ -1,0 +1,227 @@
+/*!
+ * Copyright (c) 2025 Kenneth Raymond
+ * All rights reserved.
+ *
+ * Part of the expertsincmt WordPress theme.
+ * Do not copy, modify, or redistribute without permission.
+ *
+ * ------------------------------------------------------------
+ * DORSAL ROOT — FILTER UI
+ * ------------------------------------------------------------
+ * Brings the Dorsal Root filter/search bar in line with the
+ * Genes DB filter's visual pattern: bordered card, order-based
+ * flex row split (search + actions on row one, category select
+ * on row two), visually-hidden labels, matching input/button styling.
+ *
+ * IMPORTANT — scoping:
+ *   `.site-searchwrap` / `.site-search__*` classes are shared with
+ *   Glossary search (glossary-search-filter.php) and general Search
+ *   (search-filter.php). Every rule in this file is scoped to
+ *   form.site-search[data-loop="dr"] specifically so Glossary and
+ *   general Search continue to use the shared base styling in
+ *   main.css, untouched.
+ *
+ * Scope:
+ *   .site-searchwrap:has(form.site-search[data-loop="dr"])
+ *   form.site-search[data-loop="dr"]
+ */
+
+/* Outer wrapper: widen to match genes-filter's card width */
+.site-searchwrap:has(form.site-search[data-loop="dr"]) {
+  max-width: 1180px;
+  padding-inline: 12px;
+}
+
+/* Card */
+form.site-search[data-loop="dr"] .site-search__bar {
+  max-width: 1180px;
+  margin-inline: auto;
+  padding: 1.5rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 28px 0 28px 28px;
+  box-shadow: 0 10px 30px rgb(14 42 84 / 5%);
+}
+
+/* Row: flex, order-based split (search + actions on row 1,
+   category select forced to row 2 regardless of DOM order) */
+form.site-search[data-loop="dr"] .site-search__row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+form.site-search[data-loop="dr"] .site-search__row::after {
+  content: "";
+  flex-basis: 100%;
+  order: 1;
+  height: 0;
+}
+
+form.site-search[data-loop="dr"] .site-search__field--select {
+  order: 2;
+  flex: 1 1 0;
+  min-width: 150px;
+  position: relative;
+}
+
+form.site-search[data-loop="dr"] .site-search__field--input {
+  flex: 1 1 320px;
+  min-width: 320px;
+  position: relative;
+}
+
+/* Labels: visually hidden, still accessible (matches genes-filter) */
+form.site-search[data-loop="dr"] .site-search__label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Inputs */
+form.site-search[data-loop="dr"] select,
+form.site-search[data-loop="dr"] input[type="search"] {
+  width: 100%;
+  height: 48px;
+  min-height: 48px;
+  padding: 10px 38px 10px 14px;
+  border: 1px solid #d6d9de;
+  border-radius: 14px;
+  background: #fff;
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.2;
+  outline: none;
+  transition: box-shadow 0.12s ease, border-color 0.12s ease;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238E97A3' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 12px 8px;
+}
+
+form.site-search[data-loop="dr"] input[type="search"] {
+  padding-right: 14px;
+  background-image: none;
+}
+
+form.site-search[data-loop="dr"] input[type="search"]::placeholder {
+  color: #8e97a3;
+}
+
+form.site-search[data-loop="dr"] select:focus,
+form.site-search[data-loop="dr"] input[type="search"]:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 20%, transparent);
+}
+
+/* Actions row */
+form.site-search[data-loop="dr"] .site-search__actions {
+  order: 0;
+  flex: 0 0 auto;
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: flex-end;
+  margin-top: 0;
+}
+
+/* SEARCH button */
+form.site-search[data-loop="dr"] .site-search__btn {
+  background: transparent;
+  border: 1.5px solid var(--primary);
+  color: var(--primary);
+  border-radius: 16px;
+  padding: 0 1.5em;
+  line-height: 1.2;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  height: auto;
+  transition: background-color 0.15s ease, color 0.15s ease,
+    border-color 0.15s ease, box-shadow 0.25s ease;
+}
+
+form.site-search[data-loop="dr"] .site-search__btn:hover,
+form.site-search[data-loop="dr"] .site-search__btn:focus {
+  background-color: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
+/* RESET button */
+form.site-search[data-loop="dr"] .site-search__reset {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: 0 1.5em;
+  line-height: 1.2;
+  min-block-size: 48px;
+  height: auto;
+  border-radius: 16px;
+  border: 1.5px solid #f1bbbb;
+  background: #fff5f5;
+  color: #8b1b1b;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+form.site-search[data-loop="dr"] .site-search__reset:hover,
+form.site-search[data-loop="dr"] .site-search__reset:focus {
+  background-color: #fbecec;
+  border-color: #d33;
+}
+
+/* =========================================================
+   Mobile: stack fields, full-width actions
+   ========================================================= */
+@media (max-width: 700px) {
+  form.site-search[data-loop="dr"] .site-search__row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  form.site-search[data-loop="dr"] .site-search__field--select,
+  form.site-search[data-loop="dr"] .site-search__field--input {
+    min-width: 0;
+    order: initial;
+    /* Reset the row-layout flex-basis: in a column the 320px/0 basis
+       applies to HEIGHT, inflating each field and leaving a large hollow
+       gap in the card. Size to content instead. */
+    flex: 0 0 auto;
+  }
+
+  form.site-search[data-loop="dr"] .site-search__row::after {
+    display: none;
+  }
+
+  form.site-search[data-loop="dr"] .site-search__actions {
+    order: initial;
+    justify-content: stretch;
+  }
+
+  form.site-search[data-loop="dr"] .site-search__btn,
+  form.site-search[data-loop="dr"] .site-search__reset {
+    flex: 1 1 0;
+  }
+}

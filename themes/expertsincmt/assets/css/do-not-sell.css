@@ -1,0 +1,206 @@
+/**
+ * © 2025 Kenneth Raymond — All rights reserved.
+ * Part of the expertsincmt WordPress theme.
+ * Do not copy, modify, or redistribute without permission.
+ *
+ * ============================================================
+ *  CSS: Do Not Sell My Information Modal
+ * ------------------------------------------------------------
+ *  Purpose:
+ *  - Styles the global DNSMI compliance modal loaded via
+ *    the [do_not_sell_modal] shortcode.
+ *  - Mirrors Wix-style behavior with EIC-standard UI,
+ *    button system, spacing, and accessibility practices.
+ *
+ *  Notes:
+ *  - Works in tandem with dnsmi.js for open/close, success
+ *    screen, cookie logic, and admin bypass behavior.
+ *  - All values use global design tokens where applicable.
+ * ============================================================
+ */
+
+/* ========================================================================
+ *  Modal Root
+ * ======================================================================== */
+
+#dnsmi-modal {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+#dnsmi-modal.is-active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ========================================================================
+ *  Overlay
+ * ======================================================================== */
+
+.dnsmi-modal__overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 1;
+}
+
+/* ========================================================================
+ *  Dialog
+ * ======================================================================== */
+
+.dnsmi-modal__dialog {
+  position: relative;
+  background: #fff;
+  width: min(640px, 92%);
+  max-height: 90vh;
+  overflow-y: auto;
+  border-radius: 12px;
+  padding: 32px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.2);
+  z-index: 2;
+}
+
+/* ========================================================================
+ *  Close Button
+ * ======================================================================== */
+
+.dnsmi-modal__close {
+  position: absolute;
+  top: 42px;
+  right: 28px;
+
+  background: none !important;
+  border: 1.5px solid var(--primary) !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+
+  width: 68px;
+  height: 68px;
+  border-radius: 50% !important;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  line-height: 1;
+  font-size: 68px;
+  font-weight: 400;
+  cursor: pointer;
+  color: var(--primary);
+
+  transition: transform 0.15s ease-in-out, color 0.15s ease-in-out;
+}
+
+.dnsmi-modal__close:hover {
+  background: #123a61 !important;
+  color: #ffffff !important;
+  border-color: #123a61 !important;
+  transform: scale(1.15);
+}
+
+.dnsmi-modal__close:focus {
+  outline: 2px solid #234c8f;
+  outline-offset: 4px;
+}
+
+/* ========================================================================
+ *  Title & Content
+ * ======================================================================== */
+
+.dnsmi-modal__title {
+  margin-top: 0;
+  margin-bottom: 16px;
+  font-size: 1.6rem;
+  text-align: center;
+}
+
+.dnsmi-modal__content p {
+  margin-bottom: 24px;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+/* ========================================================================
+ *  Form Layout
+ * ======================================================================== */
+
+.dnsmi-modal__form {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Label spacing */
+.dnsmi-modal__label {
+  display: block;
+  margin-bottom: 16px;
+}
+
+/* Input fields */
+.dnsmi-modal__input,
+.dnsmi-modal__textarea {
+  width: 100%;
+  padding: 0.75em 1em;
+  border-radius: 12px;
+  border: 1.5px solid var(--primary);
+  background-color: transparent;
+  font-size: 16px;
+  color: var(--primary);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  margin-bottom: 8px;
+}
+
+/* Focus behavior */
+.dnsmi-modal__input:focus,
+.dnsmi-modal__textarea:focus {
+  border-color: #123a61;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(18, 58, 97, 0.25);
+}
+
+/* Placeholder */
+.dnsmi-modal__input::placeholder,
+.dnsmi-modal__textarea::placeholder {
+  color: #6c7a89;
+  opacity: 1;
+}
+
+.dnsmi-modal__textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+/* ========================================================================
+ *  Overrides
+ * ======================================================================== */
+
+/* Disable LastPass */
+#dnsmi-modal [data-lastpass-icon-root],
+#dnsmi-modal [data-lastpass-icon-root] * {
+  pointer-events: none !important;
+}
+
+/* Hide intro text in success screen */
+#dnsmi-modal .dnsmi-modal__success {
+  display: none;
+}
+
+#dnsmi-modal.success-active .dnsmi-modal__success {
+  display: block;
+}
+
+#dnsmi-modal.success-active .dnsmi-modal__form,
+#dnsmi-modal.success-active .dnsmi-modal__content > p:first-of-type {
+  display: none;
+}
