@@ -354,5 +354,22 @@
   .eic-subtype-card__attr-label {
     white-space: nowrap;
     flex-shrink: 0;
+    /* The blanket mobile `body * { font-size:18px !important }` floor blows
+       this caption up to body size; nowrap + no-shrink then let it eat the
+       row and starve the value column until "Autosomal Dominant" breaks
+       mid-word. Restore the caption size so the value keeps its column. */
+    font-size: 11px !important;
+  }
+
+  /* Same floor balloons the type chip to body size, wrapping it below the
+     title; keep it the small chip it was designed to be. */
+  .eic-subtype-card__tag {
+    font-size: 0.72rem !important;
+  }
+
+  /* Wrap values at spaces only, never inside a word. */
+  .eic-subtype-card__attr-value {
+    overflow-wrap: normal;
+    word-break: normal;
   }
 }

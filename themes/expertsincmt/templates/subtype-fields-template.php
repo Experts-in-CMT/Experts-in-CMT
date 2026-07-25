@@ -230,9 +230,58 @@ $pub_heading =
       }
       ?>
       <?php if ($eic_mechanisms): ?>
+  <?php
+  // Curated mechanism detail for this subtype (same fields the Variant
+  // Mechanisms table reads).
+  $eic_vm_conf = strtolower(trim((string) get_field("mechanism_confidence")));
+  if (!in_array($eic_vm_conf, ["high", "medium", "low"], true)) {
+      $eic_vm_conf = "";
+  }
+  $eic_vm_rat = trim((string) get_field("mechanism_rationale"));
+  $eic_vm_src = trim((string) get_field("mechanism_source"));
+  $eic_vm_has_detail =
+      $eic_vm_conf !== "" || $eic_vm_rat !== "" || $eic_vm_src !== "";
+  $eic_vm_call = esc_html(implode(", ", $eic_mechanisms));
+  ?>
   <div class="eic-fact">
     <dt>Variant Mechanism</dt>
-    <dd><?php echo esc_html(implode(", ", $eic_mechanisms)); ?></dd>
+    <dd>
+      <?php if ($eic_vm_has_detail): ?>
+        <p class="eic-mech__call"><?php echo $eic_vm_call; ?></p>
+        <details class="eic-mech">
+          <summary class="eic-mech__toggle dr-more">Details</summary>
+          <div class="eic-mech__body">
+            <?php if ($eic_vm_conf !== ""): ?>
+              <p class="eic-mech__line">
+                <span class="eic-mech__label">Confidence:</span>
+                <span class="eic-mech__conf eic-mech__conf--<?php echo esc_attr(
+                    $eic_vm_conf
+                ); ?>"><?php echo esc_html(ucfirst($eic_vm_conf)); ?></span>
+              </p>
+            <?php endif; ?>
+            <?php if ($eic_vm_rat !== ""): ?>
+              <p class="eic-mech__line eic-mech__rat">
+                <span class="eic-mech__label">Rationale:</span>
+                <?php echo function_exists("eic_vmech_italicize_genes")
+                    ? eic_vmech_italicize_genes(
+                        $eic_vm_rat,
+                        eic_vmech_gene_symbol_list()
+                    )
+                    : esc_html($eic_vm_rat); ?>
+              </p>
+            <?php endif; ?>
+            <?php if ($eic_vm_src !== ""): ?>
+              <p class="eic-mech__line eic-mech__src">
+                <span class="eic-mech__label">Source:</span>
+                <?php echo esc_html($eic_vm_src); ?>
+              </p>
+            <?php endif; ?>
+          </div>
+        </details>
+      <?php else: ?>
+        <?php echo $eic_vm_call; ?>
+      <?php endif; ?>
+    </dd>
   </div>
 <?php endif; ?>
 

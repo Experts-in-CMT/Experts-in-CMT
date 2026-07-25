@@ -1,0 +1,526 @@
+/*!
+ * Copyright (c) 2026 Kenneth Raymond
+ * All rights reserved.
+ *
+ * Part of the expertsincmt WordPress theme.
+ * Do not copy, modify, or redistribute without permission.
+ *
+ * ------------------------------------------------------------
+ * VARIANT MECHANISMS  [variant_mechanism_table]
+ * Accordion table: facets styled to match the Genes DB filter;
+ * compact aligned rows that expand to reveal rationale + source.
+ * Scope: .vmech
+ * ------------------------------------------------------------
+ */
+
+.vmech {
+  --vm-radius: 14px;
+  margin: 1.5rem 0 2.5rem;
+  color: var(--text, #1c2530);
+}
+
+/* ---- Filter card (matches the Genes DB filter aesthetic) ---- */
+.vmech-filter {
+  position: sticky;
+  top: var(--vm-top, 0px);
+  z-index: 30;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem 1.5rem;
+  padding: 1.25rem 1.5rem;
+  background: var(--bg, #f6f8fa);
+  border: 1px solid var(--border, #e2e6ea);
+  border-radius: 28px 0 28px 28px;
+  box-shadow: 0 10px 30px rgb(14 42 84 / 5%);
+}
+
+.vmech-filter__search {
+  flex: 1 1 320px;
+  min-width: 260px;
+}
+
+.vmech-filter__label,
+.vmech-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.vmech-search {
+  width: 100%;
+  padding: 0.7rem 0.9rem;
+  font-size: 15px;
+  color: var(--text, #1c2530);
+  background: #fff;
+  border: 1px solid var(--border, #e2e6ea);
+  border-radius: 10px;
+}
+
+.vmech-search:focus-visible {
+  outline: none;
+  border-color: var(--primary-light, #5ea0c9);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary, #174777) 18%, transparent);
+}
+
+.vmech-filter__group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 18px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.vmech-filter__legend {
+  width: 100%;
+  margin: 0 0 2px;
+  padding: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted, #6b7480);
+}
+
+.vmech-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  line-height: 1.2;
+  cursor: pointer;
+  user-select: none;
+}
+
+.vmech-check input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  border-radius: 5px;
+  accent-color: var(--primary, #174777);
+  cursor: pointer;
+}
+
+.vmech-check input:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary, #174777) 20%, transparent);
+}
+
+.vmech-filter__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  margin-left: auto;
+}
+
+.vmech-reset,
+.vmech-collapse {
+  padding: 0.5rem 1rem;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--primary, #174777);
+  background: #fff;
+  border: 1px solid var(--border, #e2e6ea);
+  border-radius: 20px;
+  cursor: pointer;
+}
+
+.vmech-reset:hover,
+.vmech-collapse:hover {
+  border-color: var(--primary-light, #5ea0c9);
+}
+
+.vmech-count {
+  font-size: 13px;
+  color: var(--muted, #6b7480);
+  white-space: nowrap;
+}
+
+/* ---- Accordion table ---- */
+.vmech-tablewrap {
+  margin-top: 1.25rem;
+  border: 1px solid var(--border, #e2e6ea);
+  border-radius: var(--vm-radius);
+  /* clip (not hidden) keeps the rounded corners without creating a scroll
+     container, which would otherwise cancel the sticky header. */
+  overflow: clip;
+}
+
+.vmech-table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  font-size: 14px;
+  background: #fff;
+}
+
+.vmech-col-gene { width: 17%; }
+.vmech-col-code { width: 19%; }
+.vmech-col-inh { width: 13%; }
+.vmech-col-mech { width: 27%; }
+.vmech-col-conf { width: 16%; }
+.vmech-col-toggle { width: 8%; }
+
+.vmech-table thead th {
+  position: sticky;
+  top: var(--vm-head-top, 0px);
+  z-index: 20;
+  text-align: left;
+  padding: 12px 14px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #fff;
+  background: var(--primary, #174777);
+}
+
+/* Summary row (clickable) */
+.vmech-row {
+  cursor: pointer;
+  /* Deep-linked rows scroll to sit just below the pinned filter + header. */
+  scroll-margin-top: calc(var(--vm-row-top, 0px) + 14px);
+}
+
+/* Landing flash for a deep-linked row (e.g. arriving from a subtype page). */
+@keyframes vmech-flash {
+  0%,
+  30% {
+    background: color-mix(in srgb, var(--primary-light, #5ea0c9) 42%, #fff);
+  }
+  100% {
+    background: transparent;
+  }
+}
+
+.vmech-flash > td {
+  animation: vmech-flash 1.8s ease-out 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vmech-flash > td {
+    animation: none;
+  }
+}
+
+.vmech-row > td {
+  padding: 13px 14px;
+  border-top: 1px solid var(--border, #e2e6ea);
+  vertical-align: middle;
+  overflow-wrap: break-word;
+}
+
+.vmech-row:hover > td {
+  background: color-mix(in srgb, var(--primary-light, #5ea0c9) 8%, #fff);
+}
+
+.vmech-row[aria-expanded="true"] > td {
+  background: color-mix(in srgb, var(--primary-light, #5ea0c9) 12%, #fff);
+  border-bottom: 0;
+}
+
+.vmech-row:focus-visible {
+  outline: 2px solid var(--primary-light, #5ea0c9);
+  outline-offset: -2px;
+}
+
+.vmech-code {
+  font-weight: 700;
+  color: var(--primary, #174777);
+}
+
+.vmech-gene em {
+  color: var(--primary-light, #5ea0c9);
+  font-weight: 600;
+  font-style: italic;
+}
+
+.vmech-inh {
+  white-space: nowrap;
+  color: var(--muted, #6b7480);
+  font-weight: 600;
+}
+
+.vmech-muted {
+  color: var(--muted, #9aa2ac);
+}
+
+/* Mechanism pills */
+.vmech-pill {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.vmech-pill--lof { background: #e3f0ff; color: #0b4a8f; }
+.vmech-pill--gof { background: #ffe9e0; color: #9a3412; }
+.vmech-pill--both { background: #efe4ff; color: #5b21b6; }
+.vmech-pill--unknown { background: #eceff2; color: #5b6675; }
+
+/* Confidence */
+.vmech-conf {
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.vmech-conf--high { color: #137333; }
+.vmech-conf--medium { color: #a06a00; }
+.vmech-conf--low { color: #b02a2a; }
+.vmech-conf--none { font-weight: 400; }
+
+/* Expand toggle */
+.vmech-toggle {
+  text-align: right;
+}
+
+.vmech-plus::before {
+  content: "+";
+  display: inline-block;
+  font-size: 22px;
+  font-weight: 400;
+  line-height: 1;
+  color: var(--primary-light, #5ea0c9);
+  transition: transform 0.2s ease;
+}
+
+.vmech-row[aria-expanded="true"] .vmech-plus::before {
+  transform: rotate(45deg);
+}
+
+/* Detail panel */
+.vmech-detail > td {
+  padding: 0;
+  border-top: 0;
+}
+
+.vmech-detail__body {
+  padding: 4px 18px 20px;
+  background: color-mix(in srgb, var(--primary-light, #5ea0c9) 12%, #fff);
+  border-bottom: 1px solid var(--border, #e2e6ea);
+}
+
+.vmech-detail__rationale {
+  max-width: 70ch;
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--text, #1c2530);
+}
+
+.vmech-detail__ratlabel {
+  font-weight: 500;
+}
+
+.vmech-detail__src {
+  max-width: 70ch;
+  margin: 10px 0 0;
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--muted, #6b7480);
+}
+
+.vmech-detail__srclabel {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 11px;
+}
+
+.vmech-detail__link {
+  margin: 12px 0 0;
+  font-size: 13px;
+}
+
+.vmech-detail__link a {
+  color: var(--primary, #174777);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.vmech-detail__link a:hover {
+  text-decoration: underline;
+}
+
+.vmech-empty td {
+  padding: 2rem;
+  text-align: center;
+  color: var(--muted, #6b7480);
+}
+
+@media (max-width: 640px) {
+  /* On a phone the filter card is tall enough that pinning it would eat
+     most of the screen, so let both scroll normally at this width. */
+  .vmech-filter {
+    position: static;
+    padding: 1rem;
+    border-radius: 18px;
+  }
+  .vmech-filter__actions {
+    margin-left: 0;
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 0.75rem;
+  }
+  /* The count is a status, not a third button: tuck it on its own line
+     above the CTAs (it was floating rogue beside Reset and clipping off
+     the card edge). order:-1 lifts it ahead of the buttons in the DOM. */
+  .vmech-count {
+    flex-basis: 100%;
+    order: -1;
+  }
+  /* Keep the CTA labels on one line (they were breaking to "RESE / T"). */
+  .vmech-reset,
+  .vmech-collapse {
+    white-space: nowrap;
+  }
+
+  /* ---- Stacked cards ----
+     Six fixed columns can't hold shape on a phone (the header wrapped one
+     letter per line and the pill/confidence/toggle collided), so each
+     subtype becomes its own card. The accordion still drives open/close. */
+  .vmech-tablewrap {
+    border: 0;
+    border-radius: 0;
+    overflow: visible;
+    background: transparent;
+  }
+  .vmech-table {
+    display: block;
+    font-size: 14px;
+  }
+  .vmech-table tbody {
+    display: block;
+  }
+  /* Column widths (from <colgroup>) no longer apply once cells are blocks. */
+  .vmech-table td {
+    display: block;
+    width: auto;
+  }
+  /* :not([hidden]) is load-bearing: a bare `tr { display:block }` would beat
+     the [hidden] attribute and force filtered-out rows and collapsed detail
+     rows to show. This keeps hide/show working. */
+  .vmech-table tr:not([hidden]) {
+    display: block;
+  }
+  .vmech-table thead {
+    display: none; /* labels are carried inline per card instead */
+  }
+
+  .vmech-row {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 12px;
+    padding: 14px 46px 14px 16px; /* right room for the + toggle */
+    background: #fff;
+    border: 1px solid var(--border, #e2e6ea);
+    border-radius: var(--vm-radius);
+  }
+  /* Reorder within the card (DOM order is Gene-first for the desktop grid):
+     Subtype title, gene subtitle, then mechanism / inheritance / confidence. */
+  .vmech-code {
+    order: 1;
+  }
+  .vmech-gene {
+    order: 2;
+  }
+  .vmech-call {
+    order: 3;
+  }
+  .vmech-inh {
+    order: 4;
+  }
+  .vmech-conf {
+    order: 5;
+  }
+  .vmech-row > td {
+    padding: 0;
+    border: 0;
+  }
+  .vmech-row:hover > td {
+    background: transparent; /* card, not cell, carries state on mobile */
+  }
+  /* Open card merges with its detail panel below into one unit. */
+  .vmech-row[aria-expanded="true"] {
+    margin-bottom: 0;
+    border-color: color-mix(
+      in srgb,
+      var(--primary-light, #5ea0c9) 40%,
+      var(--border, #e2e6ea)
+    );
+    border-bottom: 0;
+    border-radius: var(--vm-radius) var(--vm-radius) 0 0;
+    background: color-mix(in srgb, var(--primary-light, #5ea0c9) 8%, #fff);
+  }
+  .vmech-row[aria-expanded="true"] > td {
+    background: transparent;
+  }
+
+  /* Card title: Subtype leads, gene rides just beneath it. */
+  .vmech-code {
+    font-size: 16px;
+  }
+  .vmech-gene {
+    margin-top: 2px;
+  }
+  .vmech-gene em {
+    font-size: 14px;
+  }
+
+  /* A bare "AD" or "Medium" needs a label once it leaves its column. */
+  .vmech-inh,
+  .vmech-conf {
+    margin-top: 7px;
+  }
+  .vmech-inh::before,
+  .vmech-conf::before {
+    margin-right: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--muted, #6b7480);
+  }
+  .vmech-inh::before {
+    content: "Inheritance:";
+  }
+  .vmech-conf::before {
+    content: "Confidence:";
+  }
+  .vmech-call {
+    margin-top: 9px;
+  }
+
+  /* + toggle pinned to the card's top-right corner. */
+  .vmech-toggle {
+    position: absolute;
+    top: 12px;
+    right: 14px;
+    text-align: right;
+  }
+
+  /* Detail panel completes the open card (flush sides, rounded bottom). */
+  .vmech-detail > td {
+    padding: 0;
+  }
+  .vmech-detail__body {
+    margin: 0 0 12px;
+    padding: 4px 16px 16px;
+    border: 1px solid
+      color-mix(in srgb, var(--primary-light, #5ea0c9) 40%, var(--border, #e2e6ea));
+    border-top: 0;
+    border-radius: 0 0 var(--vm-radius) var(--vm-radius);
+    background: color-mix(in srgb, var(--primary-light, #5ea0c9) 8%, #fff);
+  }
+}

@@ -2490,9 +2490,11 @@ a.dr-more:not([href]):focus {
   .genes-totals {
     margin-top: -150px !important; /* pulls it upward */
     margin-bottom: 125px !important; /* keeps breathing room above cards */
-    /* Body copy is 18px on mobile, so 16px read as "tiny" against it.
-       Bump above body size to give the summary line proper presence. */
-    font-size: 22px !important;
+    /* 22px wrapped this summary to four lines on a phone, and the fourth
+       line ("Gene") hung down onto the sort toolbar's "Sort by" label.
+       18px (mobile body size) holds it to three lines, so it clears the
+       sort without moving the top toward the filter above it. */
+    font-size: 18px !important;
     font-weight: 500 !important;
     line-height: 1.4 !important;
   }

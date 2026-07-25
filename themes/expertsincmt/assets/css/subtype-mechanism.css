@@ -1,0 +1,111 @@
+/*!
+ * Copyright (c) 2026 Kenneth Raymond
+ * All rights reserved.
+ *
+ * Part of the expertsincmt WordPress theme.
+ * Do not copy, modify, or redistribute without permission.
+ *
+ * ------------------------------------------------------------
+ * SUBTYPE PAGE  Variant Mechanism accordion
+ * The "Variant Mechanism" fact expands (native <details>) to
+ * reveal curated confidence, rationale, and source. No JS.
+ * Scope: .eic-mech
+ * ------------------------------------------------------------
+ */
+
+.eic-mech {
+  --em-radius: 10px;
+}
+
+/* The call value reads as a plain fact value, matching its siblings. */
+.eic-mech__call {
+  margin: 0;
+  color: var(--text, #1c2530);
+}
+
+/* The toggle carries the shared .dr-more button look (the OMIM / ClinVar /
+   ClinGen CTAs on this page). We only neutralize the native <summary> marker
+   and mark the open state with the same navy fill dr-more uses on hover, so
+   an expanded panel reads as an active button. */
+.eic-mech__toggle {
+  cursor: pointer;
+  list-style: none;
+}
+
+.eic-mech__toggle::-webkit-details-marker {
+  display: none;
+}
+
+.eic-mech[open] .eic-mech__toggle {
+  background-color: var(--primary, #174777);
+  color: #fff;
+}
+
+.eic-mech__body {
+  max-width: 70ch;
+  margin-top: 0.65rem;
+  padding: 0.85rem 1rem;
+  background: color-mix(in srgb, var(--primary-light, #5ea0c9) 12%, #fff);
+  border: 1px solid var(--border, #e2e6ea);
+  border-radius: var(--em-radius);
+}
+
+/* ------------------------------------------------------------
+   Panel type scale
+   The subtype-fields stylesheet normalizes every value with
+   `.eic-subtype-fields .eic-fact dd span/p/em` (specificity 0,2,2),
+   which forces 0.95rem and the default ink onto anything in here.
+   Each rule below is anchored with three classes (0,3,0) so the
+   panel keeps its own hierarchy without reaching for !important.
+   ------------------------------------------------------------ */
+.eic-mech .eic-mech__body .eic-mech__line {
+  margin: 0 0 0.85rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--text, #1c2530);
+}
+
+.eic-mech .eic-mech__body .eic-mech__line:last-child {
+  margin-bottom: 0;
+}
+
+/* Field labels: small, uppercase, muted, tight to their value. */
+.eic-mech .eic-mech__body .eic-mech__label {
+  display: block;
+  margin: 0 0 2px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted, #6b7480);
+}
+
+/* Keep italic gene mentions at the surrounding text size (the normalizer
+   would otherwise bump them to 0.95rem and break the line). */
+.eic-mech .eic-mech__body .eic-mech__rat em {
+  font-size: inherit;
+  font-style: italic;
+}
+
+/* Source reads as a quieter citation line. */
+.eic-mech .eic-mech__body .eic-mech__src {
+  font-size: 0.8rem;
+  color: var(--muted, #6b7480);
+}
+
+.eic-mech .eic-mech__body .eic-mech__conf {
+  font-weight: 700;
+}
+
+.eic-mech .eic-mech__body .eic-mech__conf--high {
+  color: #137333;
+}
+
+.eic-mech .eic-mech__body .eic-mech__conf--medium {
+  color: #a06a00;
+}
+
+.eic-mech .eic-mech__body .eic-mech__conf--low {
+  color: #b02a2a;
+}

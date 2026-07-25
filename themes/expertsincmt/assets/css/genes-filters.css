@@ -236,6 +236,10 @@
     min-width: 100%;
     flex-direction: row;
     flex-wrap: wrap;
+    /* Left-align the Mito / ARS / Unknown checks so they line up with the
+       LoF / GoF flags below (which are already flex-start), instead of each
+       wrapped row centering on its own. */
+    justify-content: flex-start;
     gap: 6px 18px;
   }
 }
