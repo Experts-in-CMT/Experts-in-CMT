@@ -66,6 +66,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - WordPress's auto-paragraph pass inserts a `<br>` after each block label in the mechanism disclosure, from the newline in the template markup, adding an empty second line between every label and its value. The block label already breaks to its own line, so that `<br>` is now suppressed and each label sits tight above its value.
   - assets/css/subtype-mechanism.css
 
+- **Page Template: Removed a Stray `/header` Paragraph (`page.html`)**
+  - A leftover block-editor paragraph, `<p>/header</p>`, was baked into the page template, most likely from typing `/header` to insert a template part via the slash command and having it land as literal text. It rendered "/header" in the page body on every page using this template, including once it shipped to production. Removed. If a Site Editor customization of the Page template overrides the file, clearing that customization reverts to the corrected file.
+  - templates/page.html
+
 ### Removed
 
 - **Retired the Two-Flag Mechanism Admin Tools (`eic-lof-gof-tool.php`, `eic-mechanism-details-tool.php`)**
