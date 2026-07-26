@@ -29,6 +29,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - A new utilities stylesheet for small, reusable, opt-in helpers that apply only when a block adds the class in its editor "Additional CSS class(es)" field. Its first helper, `.eic-collapse-mobile`, collapses a block to zero height at 600px and below, so a Spacer block placed for desktop breathing room does not leave a tall empty band on phones.
   - assets/css/utilities.css
 
+- **Mechanism Importer: Load the Corrected Variant-Mechanism Dataset onto Subtypes (`eic-mechanism-importer.php`)**
+  - The single-value mechanism model added the `mechanism`, `mechanism_flavor`, `mechanism_confidence`, `mechanism_prediction`, and `mechanism_rationale` fields, but the curated dataset that fills them had no loader, so each subtype would otherwise be hand-entered or left at the Unknown default. A run-once admin tool (Tools > Mechanism Importer), built on the same pattern as the Subtype Importer, ingests the corrected dataset as JSON (paste or `.json` upload) and writes those five fields onto existing subtypes, diff-only, after a dry run. It is update-only and never creates a subtype: each record is matched by its `code` (the ACF subtype field, then exact title, then slug), and unmatched or invalid records are reported and skipped. The `new_call` value is mapped to the mechanism select key (LoF, GoF, Dominant-negative, Complex, Unknown), while flavor, confidence, prediction, and rationale are written verbatim and validated against the field enums; the dataset's bookkeeping keys are ignored. The dry run shows the exact before and after for every field so the write is reviewed before commit.
+  - mu-plugins/eic-mechanism-importer.php
+
 ### Changed
 
 - **Variant Mechanism: Single-Value Model Replaces the Two-Flag System (`subtype-fields.php`)**
