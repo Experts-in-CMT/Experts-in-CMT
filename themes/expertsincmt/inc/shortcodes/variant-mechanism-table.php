@@ -314,6 +314,8 @@ add_shortcode("variant_mechanism_table", function ($atts = []) {
     ?>
 <div class="vmech" data-total="<?php echo (int) $total; ?>">
 
+  <div class="vmech-stick">
+
   <div class="vmech-filter" role="search">
     <label class="vmech-filter__search">
       <span class="vmech-filter__label">Search subtype, gene, or rationale</span>
@@ -366,10 +368,33 @@ add_shortcode("variant_mechanism_table", function ($atts = []) {
     </div>
   </div>
 
-  <?php // Sticky spacer: holds the resting gap between the filter and the
-  // header, and (pinned by its own sticky offset) covers any row scrolling
-  // through the band when both bars are stuck. ?>
-  <div class="vmech-gapcover" aria-hidden="true"></div>
+    <?php // Header bar: a standalone table that shares the data table's
+    // colgroup so its columns track the body automatically. It rides inside
+    // .vmech-stick alongside the filter, so the pair pins and releases as one
+    // unit -- no independent sticky ranges to diverge at end of scroll. It is
+    // aria-hidden; the data table below keeps its own (visually hidden) thead
+    // for screen readers. ?>
+    <table class="vmech-headtable" aria-hidden="true">
+      <colgroup>
+        <col class="vmech-col-gene" />
+        <col class="vmech-col-code" />
+        <col class="vmech-col-inh" />
+        <col class="vmech-col-mech" />
+        <col class="vmech-col-conf" />
+        <col class="vmech-col-toggle" />
+      </colgroup>
+      <thead>
+        <tr>
+          <th scope="col">Gene</th>
+          <th scope="col">Subtype</th>
+          <th scope="col">Inheritance</th>
+          <th scope="col">Mechanism</th>
+          <th scope="col">Confidence</th>
+          <th scope="col"></th>
+        </tr>
+      </thead>
+    </table>
+  </div>
 
   <div class="vmech-tablewrap">
     <table class="vmech-table">
@@ -486,40 +511,18 @@ function eicVmechInit(root) {
   var filter = root.querySelector('.vmech-filter');
   var total = rows.length;
 
-  // The filter card and the column header are both sticky. Pin the header
-  // flush under the filter by measuring the filter's live height (it wraps
-  // at narrow widths), offset by the WP admin bar when a logged-in user is
-  // viewing the front end.
+  // The filter and the column header ride together inside .vmech-stick, which
+  // is the single sticky element. We only need to offset it below the WP admin
+  // bar (present when a logged-in user views the front end), and tell a
+  // deep-linked row how far to clear the pinned unit.
   function stickyTops() {
     var bar = document.getElementById('wpadminbar');
     var barH = bar ? bar.offsetHeight : 0;
-    var filterH = filter ? filter.offsetHeight : 0;
-    var thead = root.querySelector('.vmech-table thead');
-    var headH = thead ? thead.offsetHeight : 0;
-    // The white spacer doubles as a backdrop for the ENTIRE filter card, so
-    // none of its rounded corner notches (all four) expose scrolling content,
-    // and it holds the gap below. Size it to the live filter height + the gap,
-    // pulled up behind the filter in flow. Skip on mobile, where the filter is
-    // static and the spacer is just a plain flow gap.
-    var GAP = 20; // 1.25rem visible gap
-    var cover = root.querySelector('.vmech-gapcover');
-    if (cover) {
-      if (getComputedStyle(filter).position === 'sticky') {
-        cover.style.height = (filterH + GAP) + 'px';
-        cover.style.marginTop = (-filterH) + 'px';
-      } else {
-        cover.style.height = '';
-        cover.style.marginTop = '';
-      }
-    }
+    var stick = root.querySelector('.vmech-stick');
+    var stickH = stick ? stick.offsetHeight : 0;
     root.style.setProperty('--vm-top', barH + 'px');
-    // Spacer pins at the top of the filter and reaches down to the gap.
-    root.style.setProperty('--vm-cover-top', barH + 'px');
-    // Pin the header 3px into the spacer so it swallows the sub-pixel seam
-    // where a row could otherwise peek between the two pinned bars.
-    root.style.setProperty('--vm-head-top', (barH + filterH + GAP - 3) + 'px');
-    // Where a deep-linked row should land: clear of the whole pinned stack.
-    root.style.setProperty('--vm-row-top', (barH + filterH + GAP + headH) + 'px');
+    // Where a deep-linked row should land: clear of the whole pinned unit.
+    root.style.setProperty('--vm-row-top', (barH + stickH) + 'px');
   }
   stickyTops();
   window.addEventListener('resize', stickyTops);

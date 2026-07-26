@@ -19,11 +19,22 @@
   color: var(--text, #1c2530);
 }
 
-/* ---- Filter card (matches the Genes DB filter aesthetic) ---- */
-.vmech-filter {
+/* ---- Sticky unit: filter + header ride together ----
+   The filter card and the column-header bar share one sticky wrapper, so they
+   pin and release as a single element. Because .vmech-stick's containing block
+   is .vmech (which the data table fills), the unit stays pinned through the
+   whole table and releases cleanly at the bottom, letting the page scroll on
+   into the footer. Its white background backs the gap between the two bars and
+   the filter's rounded corner notches, so no scrolling row shows through. */
+.vmech-stick {
   position: sticky;
   top: var(--vm-top, 0px);
   z-index: 30;
+  background: #fff;
+}
+
+/* ---- Filter card (matches the Genes DB filter aesthetic) ---- */
+.vmech-filter {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -35,25 +46,34 @@
   box-shadow: 0 10px 30px rgb(14 42 84 / 5%);
 }
 
-/* Sticky spacer between the filter and the header. In normal flow it provides
-   the resting gap; pinned by its own sticky offset (just below the filter, and
-   above the header in z-order) it covers any row scrolling through the band
-   when both bars are stuck. The white page background makes it invisible at
-   rest. Using a real sticky element (not a pseudo on the sticky filter) keeps
-   it reliable, since browsers position absolute children of a sticky element
-   inconsistently. */
-.vmech-gapcover {
-  position: sticky;
-  top: var(--vm-cover-top, 0px);
-  /* Below the filter (z 30) and header (z 20), above the rows: a white backdrop
-     that hides behind the whole filter card so none of its rounded corner
-     notches (all four) expose scrolling content, and that holds the gap below
-     it. Its height (filter height + gap) and negative pull-up are set in JS
-     from the live filter height; this is just the pre-JS fallback. */
-  z-index: 10;
-  height: 1.25rem;
-  background: var(--bg, #fff);
-  pointer-events: none;
+/* ---- Header bar (standalone table, shares the data table's colgroup) ----
+   Inset 1px on each side so its columns sit over the data table, which lives
+   inside the tablewrap's 1px left/right border. */
+.vmech-headtable {
+  width: calc(100% - 2px);
+  margin: 20px 1px 0; /* 20px = the resting gap below the filter */
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.vmech-headtable th {
+  text-align: left;
+  padding: 17px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #fff;
+  background: var(--primary, #174777);
+}
+
+.vmech-headtable th:first-child {
+  border-top-left-radius: var(--vm-radius);
+}
+
+.vmech-headtable th:last-child {
+  border-top-right-radius: var(--vm-radius);
 }
 
 .vmech-filter__search {
@@ -167,17 +187,15 @@
 
 /* ---- Accordion table ---- */
 .vmech-tablewrap {
-  /* The gap above the table is owned by .vmech-gapcover (a sticky spacer), so
-     no top margin here. */
   margin-top: 0;
   border: 1px solid var(--border, #e2e6ea);
-  /* No top border: the navy header owns the top edge, and its rounded corners
-     come from the radius + clip below. A top border here only draws a hairline
-     that the sticky gap then exposes above the pinned header. */
+  /* No top border: the navy header bar (in .vmech-stick, directly above) owns
+     the top edge and its rounded top corners. Only the bottom corners round
+     here. */
   border-top: 0;
-  border-radius: var(--vm-radius);
+  border-radius: 0 0 var(--vm-radius) var(--vm-radius);
   /* clip (not hidden) keeps the rounded corners without creating a scroll
-     container, which would otherwise cancel the sticky header. */
+     container. */
   overflow: clip;
 }
 
@@ -201,27 +219,22 @@
 .vmech-col-conf { width: 16%; }
 .vmech-col-toggle { width: 8%; }
 
-.vmech-table thead th {
-  position: sticky;
-  top: var(--vm-head-top, 0px);
-  z-index: 20;
-  text-align: left;
-  padding: 17px 14px;
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: #fff;
-  background: var(--primary, #174777);
-}
-
-/* Keep the header's top corners rounded even when pinned (the tablewrap clip
-   only rounds them at rest). */
-.vmech-table thead th:first-child {
-  border-top-left-radius: var(--vm-radius);
-}
-.vmech-table thead th:last-child {
-  border-top-right-radius: var(--vm-radius);
+/* The data table keeps a thead for screen-reader column association, but the
+   visible header is the separate .vmech-headtable above. Hide this one without
+   removing it from the accessibility tree, and take it out of flow so it does
+   not add a row to the top of the table (column widths come from the colgroup,
+   so the tbody is unaffected). */
+.vmech-table thead {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
 }
 
 /* Summary row (clickable) */
@@ -409,19 +422,19 @@
 }
 
 @media (max-width: 640px) {
-  /* On a phone the filter card is tall enough that pinning it would eat
-     most of the screen, so let both scroll normally at this width. */
-  .vmech-filter {
+  /* On a phone the filter card is tall enough that pinning it would eat most
+     of the screen, so let the whole unit scroll normally at this width. */
+  .vmech-stick {
     position: static;
+    background: transparent;
+  }
+  .vmech-filter {
     padding: 1rem;
     border-radius: 18px;
   }
-  /* No sticky stack on a phone: the spacer is just a plain flow gap (no reach
-     behind the filter, so no negative margin). */
-  .vmech-gapcover {
-    position: static;
-    height: 1.25rem;
-    margin-top: 0;
+  /* No column header on a phone: rows become stacked cards with inline labels. */
+  .vmech-headtable {
+    display: none;
   }
   .vmech-filter__actions {
     margin-left: 0;
