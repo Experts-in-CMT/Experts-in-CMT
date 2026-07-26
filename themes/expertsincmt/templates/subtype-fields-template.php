@@ -52,8 +52,7 @@ $clinvar_url = trim((string) get_field("clinvar_url"));
 $clingen_url = trim((string) get_field("clingen_url"));
 $genereviews_url = trim((string) get_field("genereviews_url"));
 $mitochondrial_involvement = get_field("mitochondrial_involvement");
-$lof_variant = (bool) get_field("lof_variant");
-$gof_variant = (bool) get_field("gof_variant");
+$mechanism = strtolower(trim((string) get_field("mechanism")));
 $subtype_alias = get_field("subtype_alias");
 $omim_subtype = trim((string) get_field("omim_subtype"));
 $omim_gene = trim((string) get_field("omim_gene"));
@@ -221,27 +220,44 @@ $pub_heading =
 <?php endif; ?>
 
       <?php
-      $eic_mechanisms = [];
-      if ($lof_variant) {
-          $eic_mechanisms[] = "Loss of Function (LoF)";
-      }
-      if ($gof_variant) {
-          $eic_mechanisms[] = "Toxic Gain of Function (GoF)";
-      }
+      // Single curated mechanism call + detail (same fields the Variant
+      // Mechanisms table reads).
+      $eic_call_labels = [
+          "lof" => "Loss of Function (LoF)",
+          "dominant_negative" => "Dominant-Negative",
+          "gof" => "Toxic Gain of Function (GoF)",
+          "complex" => "Complex",
+          "unknown" => "Unknown",
+      ];
+      $eic_flavor_labels = [
+          "biallelic" => "Biallelic",
+          "haploinsufficiency" => "Haploinsufficiency",
+          "dosage" => "Dosage",
+          "dominant-negative" => "Dominant-negative",
+          "neomorphic" => "Neomorphic",
+          "overactivity" => "Overactivity",
+          "repeat-expansion" => "Repeat expansion",
+          "mixed" => "Mixed",
+          "unresolved" => "Unresolved",
+          "no-gene" => "Gene unknown",
+      ];
       ?>
-      <?php if ($eic_mechanisms): ?>
+      <?php if ($mechanism !== "" && isset($eic_call_labels[$mechanism])): ?>
   <?php
-  // Curated mechanism detail for this subtype (same fields the Variant
-  // Mechanisms table reads).
+  $eic_vm_call = esc_html($eic_call_labels[$mechanism]);
+  $eic_vm_flavor = trim((string) get_field("mechanism_flavor"));
+  $eic_vm_basis = $eic_flavor_labels[$eic_vm_flavor] ?? "";
   $eic_vm_conf = strtolower(trim((string) get_field("mechanism_confidence")));
   if (!in_array($eic_vm_conf, ["high", "medium", "low"], true)) {
       $eic_vm_conf = "";
   }
+  $eic_vm_pred = trim((string) get_field("mechanism_prediction"));
   $eic_vm_rat = trim((string) get_field("mechanism_rationale"));
-  $eic_vm_src = trim((string) get_field("mechanism_source"));
   $eic_vm_has_detail =
-      $eic_vm_conf !== "" || $eic_vm_rat !== "" || $eic_vm_src !== "";
-  $eic_vm_call = esc_html(implode(", ", $eic_mechanisms));
+      $eic_vm_basis !== "" ||
+      $eic_vm_conf !== "" ||
+      $eic_vm_pred !== "" ||
+      $eic_vm_rat !== "";
   ?>
   <div class="eic-fact">
     <dt>Variant Mechanism</dt>
@@ -251,12 +267,29 @@ $pub_heading =
         <details class="eic-mech">
           <summary class="eic-mech__toggle dr-more">Details</summary>
           <div class="eic-mech__body">
+            <?php if ($eic_vm_basis !== ""): ?>
+              <p class="eic-mech__line eic-mech__basis">
+                <span class="eic-mech__label">Mechanistic basis:</span>
+                <?php echo esc_html($eic_vm_basis); ?>
+              </p>
+            <?php endif; ?>
             <?php if ($eic_vm_conf !== ""): ?>
               <p class="eic-mech__line">
                 <span class="eic-mech__label">Confidence:</span>
                 <span class="eic-mech__conf eic-mech__conf--<?php echo esc_attr(
                     $eic_vm_conf
                 ); ?>"><?php echo esc_html(ucfirst($eic_vm_conf)); ?></span>
+              </p>
+            <?php endif; ?>
+            <?php if ($eic_vm_pred !== ""): ?>
+              <p class="eic-mech__line eic-mech__pred">
+                <span class="eic-mech__label">Prediction:</span>
+                <?php echo function_exists("eic_vmech_italicize_genes")
+                    ? eic_vmech_italicize_genes(
+                        $eic_vm_pred,
+                        eic_vmech_gene_symbol_list()
+                    )
+                    : esc_html($eic_vm_pred); ?>
               </p>
             <?php endif; ?>
             <?php if ($eic_vm_rat !== ""): ?>
@@ -268,12 +301,6 @@ $pub_heading =
                         eic_vmech_gene_symbol_list()
                     )
                     : esc_html($eic_vm_rat); ?>
-              </p>
-            <?php endif; ?>
-            <?php if ($eic_vm_src !== ""): ?>
-              <p class="eic-mech__line eic-mech__src">
-                <span class="eic-mech__label">Source:</span>
-                <?php echo esc_html($eic_vm_src); ?>
               </p>
             <?php endif; ?>
           </div>

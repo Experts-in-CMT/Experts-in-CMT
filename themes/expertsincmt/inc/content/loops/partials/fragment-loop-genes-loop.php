@@ -283,35 +283,51 @@ if (!empty($genes_flags["ars"])) {
         "compare" => "=",
     ];
 }
-if (!empty($genes_flags["lof"])) {
-    $flag_clauses[] = [
-        "key" => "lof_variant",
-        "value" => "1",
-        "compare" => "=",
-    ];
+// Variant Mechanism (single-value `mechanism` field) — OR facet: any of the
+// selected mechanism values matches.
+$genes_mech = get_query_var("genes_mech", []);
+if (!is_array($genes_mech)) {
+    $genes_mech = [];
 }
-if (!empty($genes_flags["gof"])) {
-    $flag_clauses[] = [
-        "key" => "gof_variant",
-        "value" => "1",
+$mech_clauses = [];
+foreach ($genes_mech as $mval) {
+    $mech_clauses[] = [
+        "key" => "mechanism",
+        "value" => $mval,
         "compare" => "=",
     ];
 }
 
+// Assemble the flag block (AND across gene-group flags) and the mechanism
+// block (OR across selected mechanisms), then AND both with any existing
+// meta_query (e.g. the search branch above).
+$extra_blocks = [];
 if (!empty($flag_clauses)) {
-    $flag_block =
+    $extra_blocks[] =
         count($flag_clauses) === 1
             ? $flag_clauses[0]
             : array_merge(["relation" => "AND"], $flag_clauses);
+}
+if (!empty($mech_clauses)) {
+    $extra_blocks[] =
+        count($mech_clauses) === 1
+            ? $mech_clauses[0]
+            : array_merge(["relation" => "OR"], $mech_clauses);
+}
 
+if (!empty($extra_blocks)) {
     if (!empty($args["meta_query"])) {
-        $args["meta_query"] = [
-            "relation" => "AND",
-            $args["meta_query"],
-            $flag_block,
-        ];
+        $args["meta_query"] = array_merge(
+            ["relation" => "AND", $args["meta_query"]],
+            $extra_blocks
+        );
+    } elseif (count($extra_blocks) === 1) {
+        $args["meta_query"] = $extra_blocks;
     } else {
-        $args["meta_query"] = [$flag_block];
+        $args["meta_query"] = array_merge(
+            ["relation" => "AND"],
+            $extra_blocks
+        );
     }
 }
 

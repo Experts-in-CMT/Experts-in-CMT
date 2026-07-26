@@ -124,9 +124,23 @@ function eic_genes_loop_endpoint()
         "mito" => !empty($req["mito"]),
         "ars" => !empty($req["ars"]),
         "unknown" => !empty($req["unknown"]),
-        "lof" => !empty($req["lof"]),
-        "gof" => !empty($req["gof"]),
     ]);
+
+    // Variant Mechanism (OR facet): collect selected mechanism values.
+    $eic_mech_map = [
+        "mech_lof" => "lof",
+        "mech_dn" => "dominant_negative",
+        "mech_gof" => "gof",
+        "mech_complex" => "complex",
+        "mech_unknown" => "unknown",
+    ];
+    $eic_genes_mech = [];
+    foreach ($eic_mech_map as $mk => $mv) {
+        if (!empty($req[$mk])) {
+            $eic_genes_mech[] = $mv;
+        }
+    }
+    set_query_var("genes_mech", $eic_genes_mech);
 
     set_query_var("genes_args", $args);
     set_query_var("qs", $search);

@@ -31,8 +31,29 @@
   padding: 1.25rem 1.5rem;
   background: var(--bg, #f6f8fa);
   border: 1px solid var(--border, #e2e6ea);
-  border-radius: 28px 0 28px 28px;
+  border-radius: 28px;
   box-shadow: 0 10px 30px rgb(14 42 84 / 5%);
+}
+
+/* Sticky spacer between the filter and the header. In normal flow it provides
+   the resting gap; pinned by its own sticky offset (just below the filter, and
+   above the header in z-order) it covers any row scrolling through the band
+   when both bars are stuck. The white page background makes it invisible at
+   rest. Using a real sticky element (not a pseudo on the sticky filter) keeps
+   it reliable, since browsers position absolute children of a sticky element
+   inconsistently. */
+.vmech-gapcover {
+  position: sticky;
+  top: var(--vm-cover-top, 0px);
+  /* Below the filter (z 30) and header (z 20), above the rows: a white backdrop
+     that hides behind the whole filter card so none of its rounded corner
+     notches (all four) expose scrolling content, and that holds the gap below
+     it. Its height (filter height + gap) and negative pull-up are set in JS
+     from the live filter height; this is just the pre-JS fallback. */
+  z-index: 10;
+  height: 1.25rem;
+  background: var(--bg, #fff);
+  pointer-events: none;
 }
 
 .vmech-filter__search {
@@ -92,7 +113,7 @@
 
 .vmech-check {
   display: inline-flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
   font-size: 14px;
   line-height: 1.2;
@@ -103,7 +124,7 @@
 .vmech-check input {
   width: 18px;
   height: 18px;
-  margin: 0;
+  margin: 1px 0 0; /* optically center against the first label line, incl. wraps */
   border-radius: 5px;
   accent-color: var(--primary, #174777);
   cursor: pointer;
@@ -146,8 +167,14 @@
 
 /* ---- Accordion table ---- */
 .vmech-tablewrap {
-  margin-top: 1.25rem;
+  /* The gap above the table is owned by .vmech-gapcover (a sticky spacer), so
+     no top margin here. */
+  margin-top: 0;
   border: 1px solid var(--border, #e2e6ea);
+  /* No top border: the navy header owns the top edge, and its rounded corners
+     come from the radius + clip below. A top border here only draws a hairline
+     that the sticky gap then exposes above the pinned header. */
+  border-top: 0;
   border-radius: var(--vm-radius);
   /* clip (not hidden) keeps the rounded corners without creating a scroll
      container, which would otherwise cancel the sticky header. */
@@ -157,7 +184,12 @@
 .vmech-table {
   width: 100%;
   table-layout: fixed;
-  border-collapse: collapse;
+  /* Separate (not collapse) so the header cells can carry their own top-corner
+     radius, which keeps the header rounded once it detaches from the
+     tablewrap's clip on sticking. Row dividers use only border-top, so there
+     is nothing to double against at spacing 0. */
+  border-collapse: separate;
+  border-spacing: 0;
   font-size: 14px;
   background: #fff;
 }
@@ -174,12 +206,22 @@
   top: var(--vm-head-top, 0px);
   z-index: 20;
   text-align: left;
-  padding: 12px 14px;
-  font-size: 11px;
+  padding: 17px 14px;
+  font-size: 13px;
   font-weight: 700;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
   color: #fff;
   background: var(--primary, #174777);
+}
+
+/* Keep the header's top corners rounded even when pinned (the tablewrap clip
+   only rounds them at rest). */
+.vmech-table thead th:first-child {
+  border-top-left-radius: var(--vm-radius);
+}
+.vmech-table thead th:last-child {
+  border-top-right-radius: var(--vm-radius);
 }
 
 /* Summary row (clickable) */
@@ -232,7 +274,7 @@
 }
 
 .vmech-code {
-  font-weight: 700;
+  font-weight: 400;
   color: var(--primary, #174777);
 }
 
@@ -263,8 +305,9 @@
 }
 
 .vmech-pill--lof { background: #e3f0ff; color: #0b4a8f; }
+.vmech-pill--dominant_negative { background: #efe4ff; color: #5b21b6; }
 .vmech-pill--gof { background: #ffe9e0; color: #9a3412; }
-.vmech-pill--both { background: #efe4ff; color: #5b21b6; }
+.vmech-pill--complex { background: #e6f6ef; color: #0f6b45; }
 .vmech-pill--unknown { background: #eceff2; color: #5b6675; }
 
 /* Confidence */
@@ -309,6 +352,7 @@
   border-bottom: 1px solid var(--border, #e2e6ea);
 }
 
+.vmech-detail__prediction,
 .vmech-detail__rationale {
   max-width: 70ch;
   margin: 0;
@@ -317,19 +361,26 @@
   color: var(--text, #1c2530);
 }
 
+.vmech-detail__predlabel,
 .vmech-detail__ratlabel {
   font-weight: 500;
 }
 
-.vmech-detail__src {
+/* Stack the detail paragraphs (basis, prediction, rationale, link) evenly. */
+.vmech-detail__body > p + p {
+  margin-top: 12px;
+}
+
+/* Mechanistic basis reads as a quiet metadata line above the prose. */
+.vmech-detail__basis {
   max-width: 70ch;
-  margin: 10px 0 0;
+  margin: 0;
   font-size: 12.5px;
   line-height: 1.4;
   color: var(--muted, #6b7480);
 }
 
-.vmech-detail__srclabel {
+.vmech-detail__basislabel {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -364,6 +415,13 @@
     position: static;
     padding: 1rem;
     border-radius: 18px;
+  }
+  /* No sticky stack on a phone: the spacer is just a plain flow gap (no reach
+     behind the filter, so no negative margin). */
+  .vmech-gapcover {
+    position: static;
+    height: 1.25rem;
+    margin-top: 0;
   }
   .vmech-filter__actions {
     margin-left: 0;
@@ -412,6 +470,12 @@
      rows to show. This keeps hide/show working. */
   .vmech-table tr:not([hidden]) {
     display: block;
+  }
+  /* Hidden rows (filtered out, or a collapsed detail) must stay hidden. The
+     unguarded `.vmech-row { display:flex }` below would otherwise force
+     filtered-out cards back into view, so pin [hidden] rows off explicitly. */
+  .vmech-table tr[hidden] {
+    display: none !important;
   }
   .vmech-table thead {
     display: none; /* labels are carried inline per card instead */
@@ -470,6 +534,7 @@
   /* Card title: Subtype leads, gene rides just beneath it. */
   .vmech-code {
     font-size: 16px;
+    font-weight: 600;
   }
   .vmech-gene {
     margin-top: 2px;

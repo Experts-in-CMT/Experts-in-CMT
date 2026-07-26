@@ -69,6 +69,14 @@
   margin-bottom: 0;
 }
 
+/* The label is display:block, so it already breaks to its own line. WordPress's
+   auto-paragraph pass inserts a <br> after it (from the newline in the template
+   markup), which would add an empty second line before the value. Suppress it so
+   each label sits tight above its value. */
+.eic-mech .eic-mech__body .eic-mech__line br {
+  display: none;
+}
+
 /* Field labels: small, uppercase, muted, tight to their value. */
 .eic-mech .eic-mech__body .eic-mech__label {
   display: block;
@@ -83,7 +91,8 @@
 
 /* Keep italic gene mentions at the surrounding text size (the normalizer
    would otherwise bump them to 0.95rem and break the line). */
-.eic-mech .eic-mech__body .eic-mech__rat em {
+.eic-mech .eic-mech__body .eic-mech__rat em,
+.eic-mech .eic-mech__body .eic-mech__pred em {
   font-size: inherit;
   font-style: italic;
 }

@@ -423,35 +423,35 @@ if (!function_exists("_eicmt_gf_count_suffix")) {
   </label>
 </fieldset>
 
-<!-- VARIANT MECHANISM FLAGS -->
+<!-- VARIANT MECHANISM (single-value field, OR facet) -->
 <fieldset class="genes-filter__field genes-filter__field--flags">
   <legend class="genes-filter__label">Variant Mechanism</legend>
-
-  <label class="genes-filter__check">
-    <input
-      type="checkbox"
-      class="genes-filter__checkbox"
-      name="lof"
-      value="1"
-      <?php checked(!empty($_GET["lof"])); ?>
-    />
-    <span data-facet-flag="lof" data-facet-label="Loss of Function (LoF)">
-      Loss of Function (LoF) (<?php echo (int) ($eic_facets["flags"]["lof"] ?? 0); ?>)
-    </span>
-  </label>
-
-  <label class="genes-filter__check">
-    <input
-      type="checkbox"
-      class="genes-filter__checkbox"
-      name="gof"
-      value="1"
-      <?php checked(!empty($_GET["gof"])); ?>
-    />
-    <span data-facet-flag="gof" data-facet-label="Toxic Gain of Function (GoF)">
-      Toxic Gain of Function (GoF) (<?php echo (int) ($eic_facets["flags"]["gof"] ?? 0); ?>)
-    </span>
-  </label>
+  <?php
+  $eic_mech_facets = [
+      "mech_lof" => "Loss of Function (LoF)",
+      "mech_dn" => "Dominant-Negative",
+      "mech_gof" => "Toxic Gain of Function (GoF)",
+      "mech_complex" => "Complex",
+      "mech_unknown" => "Unknown",
+  ];
+  foreach ($eic_mech_facets as $mkey => $mlabel): ?>
+    <label class="genes-filter__check">
+      <input
+        type="checkbox"
+        class="genes-filter__checkbox"
+        name="<?php echo esc_attr($mkey); ?>"
+        value="1"
+        <?php checked(!empty($_GET[$mkey])); ?>
+      />
+      <span data-facet-flag="<?php echo esc_attr(
+          $mkey
+      ); ?>" data-facet-label="<?php echo esc_attr($mlabel); ?>">
+        <?php echo esc_html(
+            $mlabel
+        ); ?> (<?php echo (int) ($eic_facets["flags"][$mkey] ?? 0); ?>)
+      </span>
+    </label>
+  <?php endforeach; ?>
 </fieldset>
 
 <!-- SEARCH -->
@@ -494,8 +494,11 @@ foreach ($_GET as $k => $v) {
                 "mito", // rendered as a checkbox above
                 "ars", // rendered as a checkbox above
                 "unknown", // rendered as a checkbox above
-                "lof", // rendered as a checkbox above
-                "gof", // rendered as a checkbox above
+                "mech_lof", // rendered as a checkbox above
+                "mech_dn", // rendered as a checkbox above
+                "mech_gof", // rendered as a checkbox above
+                "mech_complex", // rendered as a checkbox above
+                "mech_unknown", // rendered as a checkbox above
                 "gd_paged", // skip to prevent duplicate
             ],
             true

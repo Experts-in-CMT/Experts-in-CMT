@@ -184,7 +184,7 @@
 
 .genesdb-filter-wrap .genes-filter__check {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
   font-size: 14px;
   line-height: 1.25;
@@ -197,7 +197,7 @@
   flex: 0 0 auto;
   width: 18px;
   height: 18px;
-  margin: 0;
+  margin: 1px 0 0; /* optically center against the first label line, incl. wraps */
   border-radius: 5px;
   accent-color: var(--primary);
   cursor: pointer;

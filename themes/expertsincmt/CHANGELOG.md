@@ -11,6 +11,68 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Variant Mechanism: Single-Value Model Replaces the Two-Flag System (`subtype-fields.php`)**
+  - The mechanism call had been derived from two ACF true/false flags, `lof_variant` and `gof_variant` (both on read as "Both," neither as "Unknown"), with `mechanism_source` holding a citation. That model could not express a dominant-negative or a complex mechanism, and it collapsed genuinely distinct calls into a single "Both." The two flags and `mechanism_source` are retired. In their place the subtype record carries a single `mechanism` select (Loss of Function, Dominant-Negative, Toxic Gain of Function, Complex, or Unknown, defaulting to Unknown so an uncurated record still renders), a `mechanism_flavor` select for the mechanistic basis (biallelic, haploinsufficiency, dosage, dominant-negative, neomorphic, overactivity, repeat-expansion, mixed, unresolved, no-gene), and a `mechanism_prediction` textarea. `mechanism_confidence` and `mechanism_rationale` are unchanged.
+  - inc/acf/subtype-fields.php
+
+- **Variant Mechanisms Table: Reads the Single Call, Five Facets, Basis / Prediction / Rationale (`variant-mechanism-table.php`)**
+  - The `[variant_mechanism_table]` shortcode now reads the single `mechanism` value instead of deriving a call from the two flags, so the "Both" bucket is gone and Dominant-Negative and Complex are first-class options. The Mechanism facet offers all five calls, and each expanded row shows the mechanistic basis, then the prediction, then the rationale, with the Source line removed. The gene-symbol italic pass runs over both the prediction and the rationale.
+  - inc/shortcodes/variant-mechanism-table.php
+
+- **Subtype Page: Variant Mechanism Block Rebuilt (`subtype-fields-template.php`)**
+  - The single subtype page's Variant Mechanism fact reads the single call and is gated on a curated `mechanism` value, so it stays hidden until a record is curated. The disclosure reads mechanistic basis, confidence, prediction, then rationale; the Source line is removed.
+  - templates/subtype-fields-template.php
+
+- **Subtype JSON-LD: Mechanism Sentence and Mechanistic Basis Property (`subtype-jsonld.php`)**
+  - The MedicalCondition schema derives one mechanism sentence and one "Variant Mechanism" property from the single call, both omitted for Unknown so no mechanism is asserted without evidence, and adds a "Mechanistic Basis" property when the basis is set.
+  - inc/acf/subtype-jsonld.php
+
+- **Genes Database: Five-Value Mechanism Filter as an OR Facet (`genes-filter.php` and four others)**
+  - The Genes DB "Variant Mechanism" filter replaced its two boolean checkboxes with five, one per call, filtering the single `mechanism` meta as an OR facet (selecting several widens the set) rather than the AND-of-booleans the gene-group flags use. Per-option counts are emitted through the existing flags channel so the filter markup and its facet-count repaint work unchanged; the only JavaScript edit adds the five `mech_*` keys to the URL-restore whitelist.
+  - inc/content/filters/genes-filter.php
+  - inc/content/filters/genes-facet-counts.php
+  - inc/content/loops/partials/fragment-loop-genes-loop.php
+  - inc/ajax/genes-loop-endpoints.php
+  - inc/content/loops/genes-loop.php
+  - assets/js/genes-ajax.js
+
+- **Variant Mechanisms Table: Header Presence and Subtype De-emphasis (`variant-mechanism.css`)**
+  - The header bar was thin (11px labels, 12px padding) and did not anchor the columns, and the Subtype column's bold navy competed with the italic teal Gene link for "what is this row." The header is now taller with 13px letter-spaced labels, and the Subtype cell drops to regular weight while keeping its `#174777` navy, so Gene leads and Subtype supports, matching this table's gene-first design. On the mobile card view, where the subtype is the card's title, it stays semibold.
+  - assets/css/variant-mechanism.css
+
+- **Variant Mechanisms Filter: All Four Corners Rounded (`variant-mechanism.css`)**
+  - The filter card's top-right corner was square (`28px 0 28px 28px`, matching the Genes DB filter's notch). This filter is now a full 28px on all four corners; the Genes DB filter keeps its notch, so the two intentionally differ.
+  - assets/css/variant-mechanism.css
+
+### Fixed
+
+- **Variant Mechanisms: Sticky Filter and Header Gap, Seam, and Corner Backdrop (`variant-mechanism.css`, `variant-mechanism-table.php`)**
+  - The filter card and the column header are both sticky and pin independently, so the resting gap between them collapsed to flush on scroll. A sticky spacer element now holds that gap; it is sized in JavaScript to sit behind the entire filter card so none of its rounded corner notches expose a scrolling row, and it pins above the rows but below the header, which is pinned three pixels into it to swallow the sub-pixel seam where a row could otherwise peek. The header also lost its rounded top corners when it detached from the tablewrap's clip on sticking; the table now uses the separate border model (row dividers use only `border-top`, so nothing doubles) and the header cells carry their own top-corner radius, so the rounding travels with the pinned header. The tablewrap's top border, which the new gap exposed as a hairline, was dropped.
+  - assets/css/variant-mechanism.css
+  - inc/shortcodes/variant-mechanism-table.php
+
+- **Variant Mechanisms: Mobile Filter Checkbox Alignment on Wrapped Labels (`variant-mechanism.css`, `genes-filters.css`)**
+  - At the narrowest widths a long facet label ("Toxic Gain of Function (GoF)") wraps to two lines, and the checkbox was vertically centered against the pair, floating in the middle. Both filter components now top-align the checkbox against the label's first line, with a one-pixel optical nudge.
+  - assets/css/variant-mechanism.css
+  - assets/css/genes-filters.css
+
+- **Variant Mechanisms Table: Filtered Cards Now Hide on Mobile (`variant-mechanism.css`)**
+  - In the stacked mobile card view the result count updated when a mechanism or confidence box was checked, but the filtered-out cards stayed on screen: an unguarded `.vmech-row { display: flex }` overrode the `hidden` attribute the filter sets. An explicit rule now keeps `[hidden]` rows hidden.
+  - assets/css/variant-mechanism.css
+
+- **Subtype Page: Mechanism Detail Label Spacing (`subtype-mechanism.css`)**
+  - WordPress's auto-paragraph pass inserts a `<br>` after each block label in the mechanism disclosure, from the newline in the template markup, adding an empty second line between every label and its value. The block label already breaks to its own line, so that `<br>` is now suppressed and each label sits tight above its value.
+  - assets/css/subtype-mechanism.css
+
+### Removed
+
+- **Retired the Two-Flag Mechanism Admin Tools (`eic-lof-gof-tool.php`, `eic-mechanism-details-tool.php`)**
+  - Both tools managed the retired two-flag model, and `eic-lof-gof-tool.php` re-wrote `lof_variant` / `gof_variant` on use. Superseded by the single-value model, which is edited in the standard subtype editor, both were moved out of the mu-plugins auto-load path so neither can re-introduce the old meta.
+  - mu-plugins/eic-lof-gof-tool.php
+  - mu-plugins/eic-mechanism-details-tool.php
+
 ## [3.0.0] - 2026-07-22
 
 ### Changed

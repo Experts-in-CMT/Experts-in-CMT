@@ -50,8 +50,18 @@ const EIC_GENES_FACET_FLAGS = [
     "mito" => "mitochondrial_involvement",
     "ars" => "ars_gene",
     "unknown" => "unknown_gene",
-    "lof" => "lof_variant",
-    "gof" => "gof_variant",
+];
+
+// Variant Mechanism is a single-value field (meta key `mechanism`), filtered
+// as an OR facet: selecting several boxes widens the set. Param key => stored
+// mechanism value. Per-option counts are emitted into the flags channel (keyed
+// by param) so the existing filter UI and its JS repaint them unchanged.
+const EIC_GENES_MECH = [
+    "mech_lof" => "lof",
+    "mech_dn" => "dominant_negative",
+    "mech_gof" => "gof",
+    "mech_complex" => "complex",
+    "mech_unknown" => "unknown",
 ];
 
 /**
@@ -66,6 +76,7 @@ function eic_genes_facet_normalize_state(array $req)
         "qs" => isset($req["qs"]) ? trim(sanitize_text_field($req["qs"])) : "",
         "flags" => [],
         "tax" => [],
+        "mech" => [],
     ];
 
     foreach (EIC_GENES_FACET_TAXONOMIES as $tax) {
@@ -96,6 +107,13 @@ function eic_genes_facet_normalize_state(array $req)
     if ($state["flags"]["unknown"]) {
         $state["flags"]["mito"] = false;
         $state["flags"]["ars"] = false;
+    }
+
+    // Selected mechanism values (OR facet).
+    foreach (EIC_GENES_MECH as $mkey => $mval) {
+        if (!empty($req[$mkey])) {
+            $state["mech"][] = $mval;
+        }
     }
 
     return $state;
@@ -190,7 +208,7 @@ function eic_genes_facet_base_ids($qs)
  */
 function eic_genes_facet_index(array $ids)
 {
-    $index = ["tax" => [], "flags" => []];
+    $index = ["tax" => [], "flags" => [], "mech" => []];
 
     if (empty($ids)) {
         foreach (EIC_GENES_FACET_TAXONOMIES as $tax) {
@@ -229,6 +247,13 @@ function eic_genes_facet_index(array $ids)
         }
         $index["flags"][$flag] = $map;
     }
+
+    // Single mechanism value per post for the OR facet.
+    $mech_map = [];
+    foreach ($ids as $id) {
+        $mech_map[$id] = (string) get_post_meta($id, "mechanism", true);
+    }
+    $index["mech"] = $mech_map;
 
     return $index;
 }
@@ -275,6 +300,14 @@ function eic_genes_facet_matches(
             continue;
         }
         if (empty($index["flags"][$flag][$id])) {
+            return false;
+        }
+    }
+
+    // Mechanism OR facet: post must carry one of the selected values.
+    if ($except !== "mech" && !empty($state["mech"])) {
+        $val = $index["mech"][$id] ?? "";
+        if (!in_array($val, $state["mech"], true)) {
             return false;
         }
     }
@@ -342,6 +375,23 @@ function eic_genes_facet_counts(array $req)
             }
         }
         $out["flags"][$flag] = $count;
+    }
+
+    // Mechanism facet (OR): count each option against all OTHER dimensions
+    // (mechanism excluded), then emit per option into the flags channel.
+    foreach (EIC_GENES_MECH as $mkey => $mval) {
+        $count = 0;
+        foreach ($base as $id) {
+            if (
+                !eic_genes_facet_matches($id, $state, $index, "mech", $searching)
+            ) {
+                continue;
+            }
+            if (($index["mech"][$id] ?? "") === $mval) {
+                $count++;
+            }
+        }
+        $out["flags"][$mkey] = $count;
     }
 
     // Total under the full current state.

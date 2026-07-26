@@ -90,15 +90,29 @@ add_shortcode("genes_loop", function ($atts = []) {
         "mito" => !empty($_GET["mito"]),
         "ars" => !empty($_GET["ars"]),
         "unknown" => !empty($_GET["unknown"]),
-        "lof" => !empty($_GET["lof"]),
-        "gof" => !empty($_GET["gof"]),
     ];
+
+    // Variant Mechanism (OR facet): selected mechanism values from GET.
+    $eic_mech_map = [
+        "mech_lof" => "lof",
+        "mech_dn" => "dominant_negative",
+        "mech_gof" => "gof",
+        "mech_complex" => "complex",
+        "mech_unknown" => "unknown",
+    ];
+    $genes_mech = [];
+    foreach ($eic_mech_map as $mk => $mv) {
+        if (!empty($_GET[$mk])) {
+            $genes_mech[] = $mv;
+        }
+    }
 
     /* --------------------------------------------------------
    PASS VARIABLES TO FRAGMENT
    -------------------------------------------------------- */
     set_query_var("a", $a);
     set_query_var("genes_flags", $genes_flags);
+    set_query_var("genes_mech", $genes_mech);
     set_query_var("tax_query", $tax_query);
     set_query_var("qs", $qs);
     set_query_var("qs_all", $qs_all);

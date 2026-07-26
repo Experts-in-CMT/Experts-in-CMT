@@ -53,8 +53,31 @@ add_action(
             $post_id
         );
         $ars_gene = (bool) get_field("ars_gene", $post_id);
-        $lof_variant = (bool) get_field("lof_variant", $post_id);
-        $gof_variant = (bool) get_field("gof_variant", $post_id);
+        $mechanism = strtolower(
+            trim((string) get_field("mechanism", $post_id))
+        );
+        $mechanism_flavor = trim(
+            (string) get_field("mechanism_flavor", $post_id)
+        );
+        $mechanism_labels = [
+            "lof" => "Loss of Function (LoF)",
+            "dominant_negative" => "Dominant-Negative",
+            "gof" => "Toxic Gain of Function (GoF)",
+            "complex" => "Complex",
+            "unknown" => "Unknown",
+        ];
+        $mechanism_flavor_labels = [
+            "biallelic" => "Biallelic",
+            "haploinsufficiency" => "Haploinsufficiency",
+            "dosage" => "Dosage",
+            "dominant-negative" => "Dominant-negative",
+            "neomorphic" => "Neomorphic",
+            "overactivity" => "Overactivity",
+            "repeat-expansion" => "Repeat expansion",
+            "mixed" => "Mixed",
+            "unresolved" => "Unresolved",
+            "no-gene" => "Gene unknown",
+        ];
         $audience = get_field("medical_audience", $post_id);
         $specialties = get_field("medical_specialty", $post_id);
         $last_reviewed = trim(
@@ -155,15 +178,17 @@ add_action(
                 $subtype_name
             );
         }
-        if ($lof_variant) {
-            $desc_parts[] = sprintf(
-                "%s results from a loss-of-function disease mechanism.",
-                $subtype_name
-            );
-        }
-        if ($gof_variant) {
-            $desc_parts[] = sprintf(
+        $mechanism_sentences = [
+            "lof" => "%s results from a loss-of-function disease mechanism.",
+            "dominant_negative" =>
+                "%s results from a dominant-negative disease mechanism.",
+            "gof" =>
                 "%s results from a toxic gain-of-function disease mechanism.",
+            "complex" => "%s results from a complex disease mechanism.",
+        ];
+        if (isset($mechanism_sentences[$mechanism])) {
+            $desc_parts[] = sprintf(
+                $mechanism_sentences[$mechanism],
                 $subtype_name
             );
         }
@@ -292,18 +317,21 @@ add_action(
                 "value" => "Yes",
             ];
         }
-        if ($lof_variant) {
+        if (
+            isset($mechanism_labels[$mechanism]) &&
+            $mechanism !== "unknown"
+        ) {
             $additional[] = [
                 "@type" => "PropertyValue",
                 "name" => "Variant Mechanism",
-                "value" => "Loss of Function (LoF)",
+                "value" => $mechanism_labels[$mechanism],
             ];
         }
-        if ($gof_variant) {
+        if (isset($mechanism_flavor_labels[$mechanism_flavor])) {
             $additional[] = [
                 "@type" => "PropertyValue",
-                "name" => "Variant Mechanism",
-                "value" => "Toxic Gain of Function (GoF)",
+                "name" => "Mechanistic Basis",
+                "value" => $mechanism_flavor_labels[$mechanism_flavor],
             ];
         }
         if ($year_of_discovery) {

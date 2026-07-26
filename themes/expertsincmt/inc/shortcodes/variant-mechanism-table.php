@@ -9,18 +9,18 @@
  * ============================================================
  *  [variant_mechanism_table] — Variant Mechanisms
  *  ------------------------------------------------------------
- *  A live, database-driven listing of the LoF / GoF variant
- *  mechanism call for every subtype. The call is DERIVED from
- *  the `lof_variant` / `gof_variant` flags (both = Both, lof =
- *  LoF, gof = GoF, neither = Unknown); confidence, rationale,
- *  and source come from the curated mechanism fields.
+ *  A live, database-driven listing of the variant mechanism call
+ *  for every subtype. The call is a single curated value in the
+ *  `mechanism` field (LoF, Dominant-Negative, GoF, Complex, or
+ *  Unknown); the mechanistic basis, confidence, prediction, and
+ *  rationale come from the curated mechanism fields.
  *
  *  Presentation: an accordion table. Each subtype is a compact
  *  aligned row (Gene, Subtype, Inheritance, Mechanism,
- *  Confidence) that expands on click to reveal its rationale and
- *  source. Facets and search are client-side (small catalog), so
- *  a newly added subtype appears automatically, reading Unknown
- *  until its mechanism is curated.
+ *  Confidence) that expands on click to reveal its mechanistic
+ *  basis, prediction, and rationale. Facets and search are
+ *  client-side (small catalog), so a newly added subtype appears
+ *  automatically, reading Unknown until its mechanism is curated.
  *
  *  Usage: [variant_mechanism_table]
  *  Location: /inc/shortcodes/variant-mechanism-table.php
@@ -185,10 +185,39 @@ add_shortcode("variant_mechanism_table", function ($atts = []) {
         "order" => "ASC",
     ]);
 
+    // Public display labels for the single mechanism call.
+    $call_labels = [
+        "lof" => "Loss of Function",
+        "dominant_negative" => "Dominant-Negative",
+        "gof" => "Toxic Gain of Function",
+        "complex" => "Complex",
+        "unknown" => "Unknown",
+    ];
+
+    // Public display labels for the mechanistic basis (flavor).
+    $flavor_labels = [
+        "biallelic" => "Biallelic",
+        "haploinsufficiency" => "Haploinsufficiency",
+        "dosage" => "Dosage",
+        "dominant-negative" => "Dominant-negative",
+        "neomorphic" => "Neomorphic",
+        "overactivity" => "Overactivity",
+        "repeat-expansion" => "Repeat expansion",
+        "mixed" => "Mixed",
+        "unresolved" => "Unresolved",
+        "no-gene" => "Gene unknown",
+    ];
+
     $rows = [];
     $gene_symbols = [];
     $counts = [
-        "call" => ["lof" => 0, "gof" => 0, "both" => 0, "unknown" => 0],
+        "call" => [
+            "lof" => 0,
+            "dominant_negative" => 0,
+            "gof" => 0,
+            "complex" => 0,
+            "unknown" => 0,
+        ],
         "conf" => ["high" => 0, "medium" => 0, "low" => 0, "none" => 0],
     ];
 
@@ -214,22 +243,15 @@ add_shortcode("variant_mechanism_table", function ($atts = []) {
         }
         $inheritance = trim((string) get_field("inheritance", $id));
 
-        $lof = (bool) get_field("lof_variant", $id);
-        $gof = (bool) get_field("gof_variant", $id);
-        if ($lof && $gof) {
-            $call = "both";
-            $call_label = "Both (LoF + GoF)";
-        } elseif ($lof) {
-            $call = "lof";
-            $call_label = "Loss of Function";
-        } elseif ($gof) {
-            $call = "gof";
-            $call_label = "Toxic Gain of Function";
-        } else {
+        $call = strtolower(trim((string) get_field("mechanism", $id)));
+        if (!isset($call_labels[$call])) {
             $call = "unknown";
-            $call_label = "Unknown";
         }
+        $call_label = $call_labels[$call];
         $counts["call"][$call]++;
+
+        $flavor = trim((string) get_field("mechanism_flavor", $id));
+        $flavor_label = $flavor_labels[$flavor] ?? "";
 
         $conf = strtolower(trim((string) get_field("mechanism_confidence", $id)));
         if (!in_array($conf, ["high", "medium", "low"], true)) {
@@ -243,9 +265,12 @@ add_shortcode("variant_mechanism_table", function ($atts = []) {
             "inheritance" => $inheritance,
             "call" => $call,
             "call_label" => $call_label,
+            "flavor_label" => $flavor_label,
             "confidence" => $conf,
+            "prediction" => trim(
+                (string) get_field("mechanism_prediction", $id)
+            ),
             "rationale" => trim((string) get_field("mechanism_rationale", $id)),
-            "source" => trim((string) get_field("mechanism_source", $id)),
             "url" => get_permalink($id),
         ];
     }
@@ -302,8 +327,9 @@ add_shortcode("variant_mechanism_table", function ($atts = []) {
       <?php
       $call_facets = [
           "lof" => "Loss of Function (LoF)",
+          "dominant_negative" => "Dominant-Negative",
           "gof" => "Toxic Gain of Function (GoF)",
-          "both" => "Both",
+          "complex" => "Complex",
           "unknown" => "Unknown",
       ];
       foreach ($call_facets as $key => $label): ?>
@@ -340,6 +366,11 @@ add_shortcode("variant_mechanism_table", function ($atts = []) {
     </div>
   </div>
 
+  <?php // Sticky spacer: holds the resting gap between the filter and the
+  // header, and (pinned by its own sticky offset) covers any row scrolling
+  // through the band when both bars are stuck. ?>
+  <div class="vmech-gapcover" aria-hidden="true"></div>
+
   <div class="vmech-tablewrap">
     <table class="vmech-table">
       <colgroup>
@@ -371,9 +402,11 @@ add_shortcode("variant_mechanism_table", function ($atts = []) {
                     " " .
                     $r["call_label"] .
                     " " .
-                    $r["rationale"] .
+                    $r["flavor_label"] .
                     " " .
-                    $r["source"]
+                    $r["prediction"] .
+                    " " .
+                    $r["rationale"]
             );
             ?>
         <tr class="vmech-row" id="<?php echo esc_attr(
@@ -404,14 +437,22 @@ add_shortcode("variant_mechanism_table", function ($atts = []) {
         <tr class="vmech-detail" hidden>
           <td colspan="6">
             <div class="vmech-detail__body">
-              <p class="vmech-detail__rationale"><span class="vmech-detail__ratlabel">Rationale:</span> <?php echo eic_vmech_italicize_genes(
-                  $r["rationale"],
-                  $gene_symbol_list
-              ); ?></p>
-              <?php if ($r["source"] !== ""): ?>
-                <p class="vmech-detail__src"><span class="vmech-detail__srclabel">Source:</span> <?php echo esc_html(
-    $r["source"]
+              <?php if ($r["flavor_label"] !== ""): ?>
+                <p class="vmech-detail__basis"><span class="vmech-detail__basislabel">Mechanistic basis:</span> <?php echo esc_html(
+    $r["flavor_label"]
 ); ?></p>
+              <?php endif; ?>
+              <?php if ($r["prediction"] !== ""): ?>
+                <p class="vmech-detail__prediction"><span class="vmech-detail__predlabel">Prediction:</span> <?php echo eic_vmech_italicize_genes(
+                    $r["prediction"],
+                    $gene_symbol_list
+                ); ?></p>
+              <?php endif; ?>
+              <?php if ($r["rationale"] !== ""): ?>
+                <p class="vmech-detail__rationale"><span class="vmech-detail__ratlabel">Rationale:</span> <?php echo eic_vmech_italicize_genes(
+                    $r["rationale"],
+                    $gene_symbol_list
+                ); ?></p>
               <?php endif; ?>
               <?php if ($r["url"]): ?>
                 <p class="vmech-detail__link"><a href="<?php echo esc_url(
@@ -455,10 +496,30 @@ function eicVmechInit(root) {
     var filterH = filter ? filter.offsetHeight : 0;
     var thead = root.querySelector('.vmech-table thead');
     var headH = thead ? thead.offsetHeight : 0;
+    // The white spacer doubles as a backdrop for the ENTIRE filter card, so
+    // none of its rounded corner notches (all four) expose scrolling content,
+    // and it holds the gap below. Size it to the live filter height + the gap,
+    // pulled up behind the filter in flow. Skip on mobile, where the filter is
+    // static and the spacer is just a plain flow gap.
+    var GAP = 20; // 1.25rem visible gap
+    var cover = root.querySelector('.vmech-gapcover');
+    if (cover) {
+      if (getComputedStyle(filter).position === 'sticky') {
+        cover.style.height = (filterH + GAP) + 'px';
+        cover.style.marginTop = (-filterH) + 'px';
+      } else {
+        cover.style.height = '';
+        cover.style.marginTop = '';
+      }
+    }
     root.style.setProperty('--vm-top', barH + 'px');
-    root.style.setProperty('--vm-head-top', (barH + filterH) + 'px');
+    // Spacer pins at the top of the filter and reaches down to the gap.
+    root.style.setProperty('--vm-cover-top', barH + 'px');
+    // Pin the header 3px into the spacer so it swallows the sub-pixel seam
+    // where a row could otherwise peek between the two pinned bars.
+    root.style.setProperty('--vm-head-top', (barH + filterH + GAP - 3) + 'px');
     // Where a deep-linked row should land: clear of the whole pinned stack.
-    root.style.setProperty('--vm-row-top', (barH + filterH + headH) + 'px');
+    root.style.setProperty('--vm-row-top', (barH + filterH + GAP + headH) + 'px');
   }
   stickyTops();
   window.addEventListener('resize', stickyTops);
