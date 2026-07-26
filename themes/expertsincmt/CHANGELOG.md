@@ -11,6 +11,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Variant Mechanism Browser: App Hero (`variant-mechanism-hero-shortcode.php`, `variant-mechanism-hero-fields.php`, `variant-mechanism-hero.css`)**
+  - The Variant Mechanisms page opened on a plain post-title while its sibling, the Genes DB, opened on an app hero. A new `[variant_mechanism_hero]` shortcode gives it the same treatment: a background image output as a CSS custom property, a left-side fade driven by two ACF Range sliders, a navy title, intro copy, and a three-item stats line, all editable from a meta box on the page. It is built as its own component rather than a shared one, so the Genes DB hero is never at risk and the two can carry different image, copy, and stats. The stats are data-forward for this tool: subtypes classified, mechanism categories, and count with a resolved mechanism, each a curated number surfaced as its own field and skipped if left empty.
+  - The ACF field group mirrors the Genes DB hero's meta-box architecture with Var-Mech-specific fields, and locates itself to whichever page hosts `[variant_mechanism_table]` (cached, invalidated on page save) so there is no hard-coded page ID to maintain. The title renders as an H2 so it inherits the same navy heading style as the Genes DB hero; the page's real H1 stays as the theme post-title, made screen-reader-only so heading order and SEO hold without a second visible title. The hero and the filter/table break out to the same centered 1180px width as the Genes DB, and the filter is pulled up to overlap the hero's flat bottom edge, the same app seam. The breakout adds a transform to the section that holds the sticky filter/header unit; because that section is tall, the sticky keeps its full range and the end-of-scroll release is unaffected.
+  - inc/shortcodes/variant-mechanism-hero-shortcode.php
+  - inc/acf/variant-mechanism-hero-fields.php
+  - assets/css/variant-mechanism-hero.css
+
+- **Both Hero Images: Live Fade-Mask Preview in the Editor (`eic-vmech-hero-mask-preview.php`, `eic-genes-hero-mask-preview.php`)**
+  - Both app heroes drive their left-side fade from ACF Range sliders, but an editor could only see where the fade actually landed by saving and reloading the front end. Two editor-only mu-plugins now paint a live preview of the fade directly onto the hero image thumbnail in its meta box: a desktop overlay plus a small mobile tile, both repainting as the sliders move. They are cloned from the existing header-banner mask preview, each under its own class namespace (`eic-vmh-preview` for Variant Mechanisms, `eic-gh-preview` for the Genes DB) so the two never collide, and they load only in the admin.
+  - mu-plugins/eic-vmech-hero-mask-preview.php
+  - mu-plugins/eic-genes-hero-mask-preview.php
+
+- **Utilities Stylesheet: Opt-In `.eic-collapse-mobile` Helper (`utilities.css`)**
+  - A new utilities stylesheet for small, reusable, opt-in helpers that apply only when a block adds the class in its editor "Additional CSS class(es)" field. Its first helper, `.eic-collapse-mobile`, collapses a block to zero height at 600px and below, so a Spacer block placed for desktop breathing room does not leave a tall empty band on phones.
+  - assets/css/utilities.css
+
 ### Changed
 
 - **Variant Mechanism: Single-Value Model Replaces the Two-Flag System (`subtype-fields.php`)**
@@ -42,9 +60,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - The header bar was thin (11px labels, 12px padding) and did not anchor the columns, and the Subtype column's bold navy competed with the italic teal Gene link for "what is this row." The header is now taller with 13px letter-spaced labels, and the Subtype cell drops to regular weight while keeping its `#174777` navy, so Gene leads and Subtype supports, matching this table's gene-first design. On the mobile card view, where the subtype is the card's title, it stays semibold.
   - assets/css/variant-mechanism.css
 
-- **Variant Mechanisms Filter: All Four Corners Rounded (`variant-mechanism.css`)**
-  - The filter card's top-right corner was square (`28px 0 28px 28px`, matching the Genes DB filter's notch). This filter is now a full 28px on all four corners; the Genes DB filter keeps its notch, so the two intentionally differ.
-  - assets/css/variant-mechanism.css
+- **Genes DB Hero: Separate Mobile Fade and Editor Mask Preview, at Parity With the New Var Mech Hero (`genes-hero-fields.php`, `genes-hero-shortcode.php`, `genes-hero.css`)**
+  - The Genes DB hero fade had been a single pair of Range sliders shared across every width, but the mobile crop reveals less of the image and needs the copy backed further. The hero now carries a second slider pair: the original sliders are relabeled "(Desktop)" and a new mobile start/end pair (defaulting to 55% / 100%) drives a mobile-only fade gradient. The shortcode emits the mobile values as their own CSS custom properties, and `genes-hero.css` adds the mobile `::after` that reads them. This brings the Genes DB hero to the same footing as the new Variant Mechanisms hero, which ships with the mobile fade and the live mask preview built in.
+  - inc/acf/genes-hero-fields.php
+  - inc/shortcodes/genes-hero-shortcode.php
+  - assets/css/genes-hero.css
 
 ### Fixed
 
@@ -69,6 +89,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Page Template: Removed a Stray `/header` Paragraph (`page.html`)**
   - A leftover block-editor paragraph, `<p>/header</p>`, was baked into the page template, most likely from typing `/header` to insert a template part via the slash command and having it land as literal text. It rendered "/header" in the page body on every page using this template, including once it shipped to production. Removed. If a Site Editor customization of the Page template overrides the file, clearing that customization reverts to the corrected file.
   - templates/page.html
+
+- **Both Browser Tools: Mobile Dialing Pass (`variant-mechanism.css`, `variant-mechanism-hero.css`, `genes-hero.css`, `genes-filters.css`)**
+  - A round of mobile adjustments shared across the Genes DB and Variant Mechanisms tools. Both hero titles are boosted past the global mobile font floor (`body * { font-size: 18px !important }`), which would otherwise flatten a heading to body size, so each title reads as a title on phones. The top two corners of both filter bars are squared at 600px and below so each filter meets its hero's flat bottom edge cleanly while the bottom corners stay rounded. A gap is opened between each filter and its first result. And the Variant Mechanisms tool now keeps its full-viewport breakout on phones, matching the Genes DB, instead of sitting inset at content width.
+  - assets/css/variant-mechanism.css
+  - assets/css/variant-mechanism-hero.css
+  - assets/css/genes-hero.css
+  - assets/css/genes-filters.css
+
+- **Genes DB: Pagination Controls Wrap and Center (`main.css`)**
+  - The Genes DB pager's Previous, page-number, and Next controls could run past their row and sit flush left on narrow widths. The pagination list is now a centered flex row that wraps, with non-shrinking items and non-wrapping labels, so the controls stay centered and legible at every width.
+  - assets/css/main.css
 
 ### Removed
 

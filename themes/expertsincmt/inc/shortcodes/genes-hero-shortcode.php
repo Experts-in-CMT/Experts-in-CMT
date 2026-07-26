@@ -12,17 +12,20 @@
  *    intro copy, and a static two-item stats line.
  *  - Image is output as a CSS custom property; the left-side
  *    fade is a live CSS mask-image driven by two ACF Range
- *    fields (genes_hero_fade_start / genes_hero_fade_end), so
- *    no Photoshop masking is required on the source image.
+ *    fields (genes_hero_fade_start / genes_hero_fade_end), with
+ *    a separate mobile pair for <= 600px, so no Photoshop
+ *    masking is required on the source image.
  *
  *  Fields (page 1819, group_eic_genes_hero):
- *    genes_hero_image           (image, array)
- *    genes_hero_title           (text)
- *    genes_hero_intro           (textarea)
- *    genes_hero_fade_start      (range, 0-100)
- *    genes_hero_fade_end        (range, 0-100)
- *    genes_hero_subtypes_count  (number)
- *    genes_hero_genes_count     (number)
+ *    genes_hero_image                (image, array)
+ *    genes_hero_title                (text)
+ *    genes_hero_intro                (textarea)
+ *    genes_hero_fade_start           (range, 0-100)
+ *    genes_hero_fade_end             (range, 0-100)
+ *    genes_hero_fade_start_mobile    (range, 0-100)
+ *    genes_hero_fade_end_mobile      (range, 0-100)
+ *    genes_hero_subtypes_count       (number)
+ *    genes_hero_genes_count          (number)
  *
  *  Note:
  *  - Title renders as a plain H2 with no custom styling (inherits
@@ -57,6 +60,11 @@ add_shortcode("genes_hero", function () {
     $fade_start = is_numeric($fade_start) ? (float) $fade_start : 0;
     $fade_end = is_numeric($fade_end) ? (float) $fade_end : 45;
 
+    $fade_start_m = get_field("genes_hero_fade_start_mobile", $post_id);
+    $fade_end_m = get_field("genes_hero_fade_end_mobile", $post_id);
+    $fade_start_m = is_numeric($fade_start_m) ? (float) $fade_start_m : 55;
+    $fade_end_m = is_numeric($fade_end_m) ? (float) $fade_end_m : 100;
+
     $subtypes_count = get_field("genes_hero_subtypes_count", $post_id);
     $genes_count = get_field("genes_hero_genes_count", $post_id);
     $subtypes_count = is_numeric($subtypes_count) ? (int) $subtypes_count : null;
@@ -72,6 +80,8 @@ add_shortcode("genes_hero", function () {
     }
     $style .= "--genes-hero-fade-start:" . $fade_start . "%;";
     $style .= "--genes-hero-fade-end:" . $fade_end . "%;";
+    $style .= "--genes-hero-fade-start-mobile:" . $fade_start_m . "%;";
+    $style .= "--genes-hero-fade-end-mobile:" . $fade_end_m . "%;";
 
     ob_start();
     ?>

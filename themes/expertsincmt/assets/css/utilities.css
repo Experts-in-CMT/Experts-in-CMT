@@ -1,0 +1,25 @@
+/*!
+ * Copyright (c) 2026 Kenneth Raymond
+ * All rights reserved.
+ *
+ * Part of the expertsincmt WordPress theme.
+ * Do not copy, modify, or redistribute without permission.
+ *
+ * ------------------------------------------------------------
+ * UTILITIES — small, reusable, opt-in helpers
+ * ------------------------------------------------------------
+ * Add the class to a block's "Advanced -> Additional CSS class(es)"
+ * field in the editor. Nothing here applies unless a block opts in.
+ * ------------------------------------------------------------
+ */
+
+/* Collapse a Spacer block (or any element) to zero height on phones, so a
+   desktop breathing-room spacer does not leave a tall empty band on mobile.
+   The !important overrides the Spacer block's inline height. */
+@media (max-width: 600px) {
+  .eic-collapse-mobile {
+    height: 0 !important;
+    min-height: 0 !important;
+    margin-block: 0 !important;
+  }
+}

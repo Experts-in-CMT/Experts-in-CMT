@@ -355,7 +355,9 @@
 
   .genesdb-filter-wrap .genes-filter__bar {
     padding: 1rem;
-    border-radius: 22px;
+    /* Top corners squared so the filter meets the hero's flat bottom edge
+       cleanly on mobile; bottom stays rounded. */
+    border-radius: 0 0 22px 22px;
   }
 
   .genesdb-filter-wrap .genes-filter__row {

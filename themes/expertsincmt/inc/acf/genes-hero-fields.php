@@ -40,7 +40,7 @@ function eic_acf_genes_hero_fields()
             ],
             [
                 "key" => "field_eic_genes_hero_fade_start",
-                "label" => "Fade Start %",
+                "label" => "Fade Start % (Desktop)",
                 "name" => "genes_hero_fade_start",
                 "type" => "range",
                 "instructions" =>
@@ -54,13 +54,41 @@ function eic_acf_genes_hero_fields()
             ],
             [
                 "key" => "field_eic_genes_hero_fade_end",
-                "label" => "Fade End %",
+                "label" => "Fade End % (Desktop)",
                 "name" => "genes_hero_fade_end",
                 "type" => "range",
                 "instructions" =>
                     "Percent from the left edge where the image reaches full opacity.",
                 "required" => 0,
                 "default_value" => 45,
+                "min" => 0,
+                "max" => 100,
+                "step" => 1,
+                "wrapper" => ["width" => "50"],
+            ],
+            [
+                "key" => "field_eic_genes_hero_fade_start_mobile",
+                "label" => "Fade Start % (Mobile)",
+                "name" => "genes_hero_fade_start_mobile",
+                "type" => "range",
+                "instructions" =>
+                    "Mobile-only fade start (<= 600px). The image is cropped tighter and the text spans full width there, so a later start keeps the copy readable.",
+                "required" => 0,
+                "default_value" => 55,
+                "min" => 0,
+                "max" => 100,
+                "step" => 1,
+                "wrapper" => ["width" => "50"],
+            ],
+            [
+                "key" => "field_eic_genes_hero_fade_end_mobile",
+                "label" => "Fade End % (Mobile)",
+                "name" => "genes_hero_fade_end_mobile",
+                "type" => "range",
+                "instructions" =>
+                    "Mobile-only fade end (<= 600px). Percent from the left edge where the image reaches full opacity.",
+                "required" => 0,
+                "default_value" => 100,
                 "min" => 0,
                 "max" => 100,
                 "step" => 1,

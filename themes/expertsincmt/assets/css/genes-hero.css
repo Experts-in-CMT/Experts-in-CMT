@@ -11,7 +11,8 @@
  * Overlay hero: background image + live CSS mask-image fade,
  * driven by --genes-hero-fade-start / --genes-hero-fade-end
  * (set inline by the [genes_hero] shortcode from ACF Range
- * fields). No image editing required to adjust the fade.
+ * fields), with a separate mobile pair below 600px. No image
+ * editing required to adjust the fade.
  *
  * Scope:
  *   .genes-hero
@@ -114,6 +115,13 @@
     border-radius: 22px 22px 0 0;
   }
 
+  /* Boost the title past the global mobile font floor (body * { font-size:
+     18px !important }), which would otherwise flatten this heading to body
+     size. The class + !important clears that floor. */
+  .genes-hero__title {
+    font-size: 1.75rem !important;
+  }
+
   .genes-hero::before {
     background-position: 78% center;
     border-radius: 22px 22px 0 0;
@@ -121,6 +129,14 @@
 
   .genes-hero::after {
     border-radius: 22px 22px 0 0;
+    /* Mobile uses its own fade pair: the image is cropped tighter and the text
+       spans full width here, so the copy needs more solid backdrop. */
+    background: linear-gradient(
+      to right,
+      var(--bg, #fff) 0%,
+      var(--bg, #fff) var(--genes-hero-fade-start-mobile, 55%),
+      transparent var(--genes-hero-fade-end-mobile, 100%)
+    );
   }
 
   .genes-hero__inner {

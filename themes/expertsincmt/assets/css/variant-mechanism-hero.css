@@ -1,0 +1,211 @@
+/*!
+ * Copyright (c) 2026 Kenneth Raymond
+ * All rights reserved.
+ *
+ * Part of the expertsincmt WordPress theme.
+ * Do not copy, modify, or redistribute without permission.
+ *
+ * ------------------------------------------------------------
+ * VARIANT MECHANISM BROWSER — APP HERO
+ * ------------------------------------------------------------
+ * Overlay hero (sibling of the Genes DB app hero): background
+ * image + left-side fade gradient, driven by
+ * --vmech-hero-fade-start / --vmech-hero-fade-end (set inline by
+ * the [variant_mechanism_hero] shortcode from ACF Range fields).
+ *
+ * Held at content width (not a 100vw breakout) so it aligns with
+ * the filter/table below it; the filter card is pulled up to
+ * overlap the hero's flat bottom edge with a plain negative
+ * margin, clear of the table's sticky machinery.
+ *
+ * Scope:
+ *   .vmech-hero  (the hero)
+ *   .has-vmech-hero  (body class, added when the page places it)
+ * ------------------------------------------------------------
+ */
+
+.vmech-hero {
+  position: relative;
+  left: 50%;
+  width: 100vw;
+  max-width: 1180px;
+  transform: translateX(-50%);
+  overflow: hidden;
+  padding-inline: 12px;
+  background: var(--bg, #fff);
+  min-height: clamp(190px, 22vw, 260px);
+  border-radius: 28px 28px 0 0;
+}
+
+.vmech-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0 12px;
+  border-radius: 28px 28px 0 0;
+  background-image: var(--vmech-hero-img);
+  background-size: cover;
+  background-position: right center;
+}
+
+.vmech-hero::after {
+  content: "";
+  position: absolute;
+  inset: 0 12px;
+  border-radius: 28px 28px 0 0;
+  background: linear-gradient(
+    to right,
+    var(--bg, #fff) 0%,
+    var(--bg, #fff) var(--vmech-hero-fade-start),
+    transparent var(--vmech-hero-fade-end)
+  );
+}
+
+.vmech-hero__inner {
+  position: relative;
+  z-index: 1;
+  max-width: min(560px, 55%);
+  height: 100%;
+  padding: 1.75rem 2.5rem 4.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Match the Genes DB hero title exactly: an H2 carrying only a size, so it
+   inherits the theme's navy heading color, weight, and family. */
+.vmech-hero__title {
+  font-size: 2rem;
+}
+
+.vmech-hero__intro {
+  margin: 0 0 1.5rem;
+  max-width: 46ch;
+  color: var(--text);
+  line-height: 1.5;
+}
+
+/* One line: size the row to its content and let it run past the (narrower)
+   intro block rather than wrap, so the text column stays tight and the image
+   keeps its reveal. */
+.vmech-hero__stats {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  align-self: flex-start;
+  width: max-content;
+  max-width: none;
+  margin-top: 1.5rem; /* an extra line of space above the stats, below the intro */
+  gap: 0.6rem;
+}
+
+.vmech-hero__stat {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  color: var(--text);
+}
+
+.vmech-hero__stat-icon {
+  display: inline-flex;
+  color: var(--primary);
+}
+
+.vmech-hero__stat-text strong {
+  font-weight: 600;
+}
+
+.vmech-hero__stat-divider {
+  width: 1px;
+  height: 1.2em;
+  background: rgb(85 85 85 / 30%);
+}
+
+/* ---- Page integration ----
+   The hero carries the visible title (H2); the theme's post-title stays as the
+   page's real H1 but is made screen-reader-only, so the heading order holds
+   without a second visible title above the hero. The filter/table section
+   breaks out to the same centered width as the hero and is pulled up to overlap
+   its flat bottom edge, the same "app" seam the Genes DB uses. */
+.has-vmech-hero .wp-block-post-title {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.has-vmech-hero .vmech {
+  position: relative;
+  left: 50%;
+  z-index: 2;
+  width: 100vw;
+  max-width: 1180px;
+  transform: translateX(-50%);
+  margin-top: -32px;
+  padding-inline: 12px;
+}
+
+/* =========================================================
+   Mobile: crop tighter, shallower overlap
+   ========================================================= */
+@media (max-width: 600px) {
+  /* Keep the 100vw breakout on phones, matching the Genes DB hero, so this tool
+     runs edge to edge instead of sitting inset at content width. */
+  .vmech-hero {
+    min-height: clamp(220px, 46vw, 300px);
+    border-radius: 22px 22px 0 0;
+  }
+
+  /* Boost the title past the global mobile font floor (body * { font-size:
+     18px !important }), which would otherwise flatten this heading to body
+     size. The class + !important clears that floor. */
+  .vmech-hero__title {
+    font-size: 1.75rem !important;
+  }
+
+  .vmech-hero::before {
+    inset: 0 12px;
+    background-position: 78% center;
+    border-radius: 22px 22px 0 0;
+  }
+
+  .vmech-hero::after {
+    inset: 0 12px;
+    border-radius: 22px 22px 0 0;
+    /* Mobile uses its own fade: the image is cropped tighter and the text spans
+       full width here, so the copy needs more solid backdrop. */
+    background: linear-gradient(
+      to right,
+      var(--bg, #fff) 0%,
+      var(--bg, #fff) var(--vmech-hero-fade-start-mobile, 55%),
+      transparent var(--vmech-hero-fade-end-mobile, 100%)
+    );
+  }
+
+  .vmech-hero__inner {
+    max-width: 100%;
+    padding: 1.5rem 1.75rem 4rem;
+  }
+
+  .vmech-hero__stats {
+    flex-direction: column;
+    align-items: flex-start;
+    width: auto;
+    gap: 0.5rem;
+  }
+
+  .vmech-hero__stat-divider {
+    display: none;
+  }
+
+  .has-vmech-hero .vmech {
+    padding-inline: 0;
+    margin-top: -20px;
+  }
+}
