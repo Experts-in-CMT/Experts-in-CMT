@@ -70,6 +70,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - inc/shortcodes/genes-hero-shortcode.php
   - assets/css/genes-hero.css
 
+- **Variant Mechanism Browser Hero: Evergreen Stat Counts (`variant-mechanism-hero-shortcode.php`, `variant-mechanism-hero-fields.php`)**
+  - The hero's classified-subtypes and resolved-mechanism stats read as exact counts, which drift out of date as calls are revised. The shortcode now appends a "+" to those two stats on output, matching the Genes DB hero, so the editor enters a plain number and the line renders as an evergreen floor ("170+ classified subtypes", "150+ with a resolved mechanism"). The mechanism-categories stat stays exact. The count fields remain numeric; the "+" is added template-side, which also resolves the earlier problem where typing "+" into a Number field saved an empty value.
+  - inc/shortcodes/variant-mechanism-hero-shortcode.php
+  - inc/acf/variant-mechanism-hero-fields.php
+
 ### Fixed
 
 - **Variant Mechanisms: Filter and Header Pin and Release as One Sticky Unit (`variant-mechanism.css`, `variant-mechanism-table.php`)**
@@ -104,6 +109,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Genes DB: Pagination Controls Wrap and Center (`main.css`)**
   - The Genes DB pager's Previous, page-number, and Next controls could run past their row and sit flush left on narrow widths. The pagination list is now a centered flex row that wraps, with non-shrinking items and non-wrapping labels, so the controls stay centered and legible at every width.
   - assets/css/main.css
+
+- **Variant Mechanisms Table: Italicize Named Partner and Alias Genes (`variant-mechanism-table.php`)**
+  - The gene-symbol italic pass covered each subtype's own causative gene but not the partner and alias genes named within a prediction or rationale, so a gene such as *MFN1*, cited beside *MFN2* in the CMT2A row, rendered upright. The curated extras list now also carries the secondary genes named in the prose (*MFN1*, *HDAC6*, *CHCHD2*, *CHCHD4* / *MIA40*, *VAC14*, *PIKFYVE*, *HSJ1*, and the *LITAF* alias *SIMPLE*), so every named human gene italicizes consistently in both the browser and the single subtype pages. Subtype codes, amino-acid substitutions, and protein or complex names are deliberately left roman.
+  - inc/shortcodes/variant-mechanism-table.php
 
 ### Removed
 

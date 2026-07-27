@@ -131,7 +131,7 @@ add_shortcode("variant_mechanism_hero", function () {
         <span class="vmech-hero__stat-icon" aria-hidden="true"><?php echo $icon_subtypes; ?></span>
         <span class="vmech-hero__stat-text"><strong><?php echo esc_html(
             $subtypes_count
-        ); ?></strong> classified subtypes</span>
+        ); ?>+</strong> classified subtypes</span>
       </div>
       <?php $stats_rendered++; ?>
       <?php endif; ?>
@@ -153,7 +153,7 @@ add_shortcode("variant_mechanism_hero", function () {
         <span class="vmech-hero__stat-icon" aria-hidden="true"><?php echo $icon_resolved; ?></span>
         <span class="vmech-hero__stat-text"><strong><?php echo esc_html(
             $resolved_count
-        ); ?></strong> with a resolved mechanism</span>
+        ); ?>+</strong> with a resolved mechanism</span>
       </div>
       <?php $stats_rendered++; ?>
       <?php endif; ?>

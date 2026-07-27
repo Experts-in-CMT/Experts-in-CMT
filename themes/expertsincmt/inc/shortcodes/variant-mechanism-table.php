@@ -60,6 +60,15 @@ if (!function_exists("eic_vmech_extra_gene_symbols")) {
             "CADM4", // CMT2FF (CADM3-CADM4 complex partner)
             "FCP1", // CTDP1 alias
             "GANP", // MCM3AP alias
+            "MFN1", // CMT2A / HMSN-6A (MFN2 fusion partner)
+            "HDAC6", // CMT2F, dHMN-2B (HSPB1 tubulin-acetylation partner)
+            "CHCHD2", // CMT-CHCHD10 (CHCHD10 paralog)
+            "CHCHD4", // CMTX4 (AIFM1 mitochondrial-import partner)
+            "MIA40", // CMTX4 (CHCHD4 alias)
+            "VAC14", // CMT4J (FIG4 complex partner)
+            "PIKFYVE", // CMT4J (FIG4 complex partner)
+            "HSJ1", // dSMA-5 (DNAJB2 alias)
+            "SIMPLE", // CMT1C (LITAF alias)
         ];
     }
 }
@@ -482,9 +491,9 @@ add_shortcode("variant_mechanism_table", function ($atts = []) {
               <?php if ($r["url"]): ?>
                 <p class="vmech-detail__link"><a href="<?php echo esc_url(
                     $r["url"]
-                ); ?>">View <?php echo esc_html(
+                ); ?>">Learn more about <?php echo esc_html(
     $r["code"]
-); ?> subtype page</a></p>
+); ?> <span class="vmech-detail__arrow" aria-hidden="true">&rarr;</span></a></p>
               <?php endif; ?>
             </div>
           </td>

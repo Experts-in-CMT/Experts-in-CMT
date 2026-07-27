@@ -175,7 +175,7 @@ function eic_acf_vmech_hero_fields()
                 "name" => "vmech_hero_subtypes_count",
                 "type" => "number",
                 "instructions" =>
-                    'Rendered as "{value} classified subtypes" in the stats line. Leave empty to hide this stat.',
+                    'Rendered as "{value}+ classified subtypes" in the stats line (the + is added automatically; enter a plain number). Leave empty to hide this stat.',
                 "required" => 0,
                 "default_value" => 174,
                 "min" => 0,
@@ -201,7 +201,7 @@ function eic_acf_vmech_hero_fields()
                 "name" => "vmech_hero_resolved_count",
                 "type" => "number",
                 "instructions" =>
-                    'Rendered as "{value} with a resolved mechanism" in the stats line. Leave empty to hide this stat.',
+                    'Rendered as "{value}+ with a resolved mechanism" in the stats line (the + is added automatically; enter a plain number). Leave empty to hide this stat.',
                 "required" => 0,
                 "default_value" => 154,
                 "min" => 0,
