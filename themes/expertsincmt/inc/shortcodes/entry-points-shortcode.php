@@ -14,6 +14,9 @@
  *
  *   [eic_entry_points set="home"]      four "Where to start?" cards (default)
  *   [eic_entry_points set="genetics"]  four cards mirroring the Genetics nav
+ *   [eic_entry_points set="learn"]     three cards mirroring the Learn nav
+ *   [eic_entry_points set="platform"]  five cards spanning the whole platform
+ *                                      (for the 404 "Explore The Platform")
  *
  * Each card is a clickable panel. The card title carries the real link and a
  * stretched ::after overlays the whole card, so the entire panel is a click
@@ -87,13 +90,38 @@ add_shortcode("eic_entry_points", function ($atts) {
         '<path d="M6 3c0 6 12 6 12 12M18 21c0-6-12-6-12-12M7 6h10M7 18h10" ' .
         'stroke-linecap="round"/>'
     );
+    // Breath / airflow: exhale lines with a curl, for CMT and Breathing.
+    $icon_breath = $svg(
+        '<path d="M3 8h12a2.5 2.5 0 1 0-2.5-2.5" stroke-linecap="round" ' .
+        'stroke-linejoin="round"/>' .
+        '<path d="M3 13h8a2 2 0 1 1-2 2" stroke-linecap="round" ' .
+        'stroke-linejoin="round"/>' .
+        '<path d="M3 18h5" stroke-linecap="round"/>'
+    );
+    // Nerve impulse: a signal spike, echoing The Dorsal Root's impulse hero.
+    $icon_impulse = $svg(
+        '<path d="M2 12h4l2.2-7 3.6 14 2.4-9 1.8 4H22" ' .
+        'stroke-linecap="round" stroke-linejoin="round"/>'
+    );
+    // Glossary: a term-and-definition list. Distinct from the book so the
+    // Glossary and CMT Classifications never both read as books in one grid.
+    $icon_glossary = $svg(
+        '<circle cx="5" cy="7" r="1.3" fill="currentColor" stroke="none"/>' .
+        '<circle cx="5" cy="12" r="1.3" fill="currentColor" stroke="none"/>' .
+        '<circle cx="5" cy="17" r="1.3" fill="currentColor" stroke="none"/>' .
+        '<path d="M9 7h11M9 12h11M9 17h8" stroke-linecap="round"/>'
+    );
 
     // ---- Card sets --------------------------------------------------------
     // "lead" on a set is the default label above every card's list. A card may
-    // carry its own "lead" to override it (or "" to hide it).
+    // carry its own "lead" to override it (or "" to hide it). "cols" is the
+    // desktop column count; every set is 3-up for parity with the rest of the
+    // site, and the grid centers an incomplete final row (4 cards -> 3 + 1,
+    // 5 cards -> 3 + 2).
     $sets = [
         "home" => [
             "lead" => "Start here if:",
+            "cols" => 3,
             "cards" => [
                 [
                     "title" => "What Is CMT?",
@@ -151,6 +179,7 @@ add_shortcode("eic_entry_points", function ($atts) {
         // own tagline lead instead of the shared "Start here if:".
         "genetics" => [
             "lead" => "",
+            "cols" => 3,
             "cards" => [
                 [
                     "title" => "CMT Classifications",
@@ -179,7 +208,7 @@ add_shortcode("eic_entry_points", function ($atts) {
                     ],
                 ],
                 [
-                    "title" => "Variant Mechanisms",
+                    "title" => "CMT Variant Mechanisms",
                     "url"   => home_url("/genetics/cmt-variant-mechanisms-browser/"),
                     "icon"  => $icon_branch,
                     "lead"  => "The how, not the what",
@@ -192,7 +221,7 @@ add_shortcode("eic_entry_points", function ($atts) {
                     ],
                 ],
                 [
-                    "title"   => "Genetic Testing",
+                    "title"   => "CMT Genetic Testing",
                     "url"     => home_url("/genetic-testing/"),
                     "icon"    => $icon_dna,
                     "icon_lg" => true,
@@ -207,16 +236,132 @@ add_shortcode("eic_entry_points", function ($atts) {
                 ],
             ],
         ],
+
+        // Mirrors the Learn nav dropdown: What Is CMT?, CMT and Breathing, CMT
+        // Glossary. Three cards, so it renders 3-up on desktop. Each card
+        // carries its own tagline lead.
+        "learn" => [
+            "lead" => "",
+            "cols" => 3,
+            "cards" => [
+                [
+                    "title" => "What Is CMT?",
+                    "url"   => home_url("/what-is-cmt/"),
+                    "icon"  => $icon_info,
+                    "lead"  => "CMT: Unpacked and Unfiltered",
+                    "items" => [
+                        "Signs and symptoms",
+                        "Diagnosing",
+                        "The different types",
+                    ],
+                ],
+                [
+                    "title" => "CMT and Breathing",
+                    "url"   => home_url("/cmt-and-breathing/"),
+                    "icon"  => $icon_breath,
+                    "lead"  => "Answers to Difficult Questions",
+                    "items" => [
+                        "What to look for",
+                        "The breathing muscles",
+                        "The breathing nerves",
+                    ],
+                ],
+                [
+                    "title" => "CMT Glossary",
+                    "url"   => home_url("/cmt-words/"),
+                    "icon"  => $icon_glossary,
+                    "lead"  => "CMT Words: Found",
+                    "items" => [
+                        "Medical terms defined",
+                        "Hard to find definitions",
+                        "Easily searchable",
+                        "Dictionary sources included",
+                    ],
+                ],
+            ],
+        ],
+
+        // A whole-platform cross-section for the 404 "Explore The Platform"
+        // block: one card per section (learn, tool, reference, editorial,
+        // look-up), so a lost visitor sees the range. Renders 3-up (3 + 2).
+        "platform" => [
+            "lead" => "",
+            "cols" => 3,
+            "cards" => [
+                [
+                    "title" => "What Is CMT?",
+                    "url"   => home_url("/what-is-cmt/"),
+                    "icon"  => $icon_info,
+                    "lead"  => "CMT: Unpacked and Unfiltered",
+                    "items" => [
+                        "Signs and symptoms",
+                        "Diagnosing",
+                        "The different types",
+                    ],
+                ],
+                [
+                    "title" => "CMT Genetics Database",
+                    "url"   => home_url("/cmt-genetics-database/"),
+                    "icon"  => $icon_search,
+                    "lead"  => "CMT. Curated.",
+                    "items" => [
+                        "CMT genes and subtypes",
+                        "Easy to use",
+                        "Subtype-specific symptoms",
+                        "Core genetic data",
+                        "Reference publications",
+                    ],
+                ],
+                [
+                    "title" => "CMT Classifications",
+                    "url"   => home_url("/cmt-classifications/"),
+                    "icon"  => $icon_book,
+                    "lead"  => "What’s in a name?",
+                    "items" => [
+                        "The classifications defined",
+                        "From historic to current",
+                        "Roussy-Lévy",
+                        "HNPP",
+                        "Dejerine-Sottas",
+                    ],
+                ],
+                [
+                    "title" => "The Dorsal Root",
+                    "url"   => home_url("/dorsal-root/"),
+                    "icon"  => $icon_impulse,
+                    "lead"  => "Nerves talk. We listen.",
+                    "items" => [
+                        "Stories and science",
+                        "Living with CMT",
+                        "The sensory side",
+                        "Fresh reads",
+                    ],
+                ],
+                [
+                    "title" => "CMT Glossary",
+                    "url"   => home_url("/cmt-words/"),
+                    "icon"  => $icon_glossary,
+                    "lead"  => "CMT Words: Found",
+                    "items" => [
+                        "Medical terms defined",
+                        "Hard to find definitions",
+                        "Easily searchable",
+                        "Dictionary sources included",
+                    ],
+                ],
+            ],
+        ],
     ];
 
     $key = isset($sets[$atts["set"]]) ? $atts["set"] : "home";
     $set = $sets[$key];
     $default_lead = $set["lead"];
     $entries = $set["cards"];
+    $cols = isset($set["cols"]) ? (int) $set["cols"] : 2;
 
     ob_start();
     ?>
-    <section class="eic-entry-points"<?php echo $atts["heading"] !== ""
+    <section class="eic-entry-points eic-entry-points--cols-<?php echo $cols; ?>"<?php echo $atts["heading"] !== ""
         ? ' aria-labelledby="eic-ep-heading"'
         : ' aria-label="Entry points"'; ?>>
       <?php if ($atts["heading"] !== ""): ?>

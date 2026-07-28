@@ -50,6 +50,28 @@
   }
 }
 
+/* Three-card set (Learn): wider cap and 3-up on desktop. Below 900px it
+   falls back to the shared two-column (then single-column) layout. */
+.eic-entry-points--cols-3 {
+  max-width: 1120px;
+}
+
+/* Three-up on desktop as a centered flex row, so an incomplete final row (the
+   five-card platform set's trailing two) centers under the row of three, the
+   same way the Dorsal Root loops center a partial last row. Below 900px it
+   falls back to the shared two-column, then single-column, grid. */
+@media (min-width: 900px) {
+  .eic-entry-points--cols-3 .eic-entry-points__grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .eic-entry-points--cols-3 .eic-ep-card {
+    box-sizing: border-box;
+    flex: 0 1 calc((100% - 3rem) / 3 - 1px);
+  }
+}
+
 /* ---- Card (shares the genes/subtype card tokens) ---- */
 
 .eic-ep-card {
