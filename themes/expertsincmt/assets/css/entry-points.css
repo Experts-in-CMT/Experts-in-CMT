@@ -1,0 +1,232 @@
+/*!
+ * Copyright (c) 2026 Kenneth Raymond
+ * All rights reserved.
+ *
+ * Part of the expertsincmt WordPress theme.
+ * Do not copy, modify, or redistribute without permission.
+ *
+ * ------------------------------------------------------------
+ * ENTRY POINTS — "Where to start?" clickable panels
+ * ------------------------------------------------------------
+ * Rendered by the [eic_entry_points] shortcode. Each card is a clickable
+ * panel: the title carries the real link, and .eic-ep-card__link::after
+ * stretches over the whole card so the entire panel is a target while a
+ * screen reader announces one link per card. The bottom CTA is a decorative
+ * cue.
+ *
+ * Styling reuses the shared card tokens from genes-loop.css (radius, shadow,
+ * speed, ease), so these cards read as part of the same system as the
+ * subtype and glossary cards: 22px radius, the navy-tinted shadow, a gentle
+ * hover (deeper shadow + a primary-light border, no lift), a light-weight
+ * navy title, tiny uppercase labels, bare navy icons, and a navy "Explore"
+ * CTA whose arrow slides on hover.
+ *
+ * Grid: 1 column on phones, 2 by 2 above 600px, width-capped so the cards
+ * keep a comfortable width rather than stretching wide and sparse.
+ *
+ * Scope: .eic-entry-points
+ * ------------------------------------------------------------
+ */
+
+.eic-entry-points {
+  max-width: 820px;
+  margin: 2.5rem auto;
+}
+
+.eic-entry-points__heading {
+  margin: 0 0 1.5rem;
+  color: var(--primary);
+}
+
+.eic-entry-points__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+@media (min-width: 600px) {
+  .eic-entry-points__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ---- Card (shares the genes/subtype card tokens) ---- */
+
+.eic-ep-card {
+  position: relative; /* anchor for the stretched title link */
+  display: flex;
+  flex-direction: column;
+  padding: var(--gl-card-padding, 1.75rem);
+  background: var(--gl-card-bg, var(--bg, #fff));
+  border: 1px solid var(--gl-card-border, var(--border, #e5e7eb));
+  border-radius: var(--gl-card-radius, 22px);
+  box-shadow: var(--gl-card-shadow, 0 8px 24px rgb(14 42 84 / 5%));
+  transition: box-shadow var(--gl-speed, 800ms)
+      var(--gl-ease, cubic-bezier(0.02, 0.9, 0.15, 1)),
+    border-color var(--gl-speed, 800ms)
+      var(--gl-ease, cubic-bezier(0.02, 0.9, 0.15, 1)),
+    transform var(--gl-speed, 800ms)
+      var(--gl-ease, cubic-bezier(0.02, 0.9, 0.15, 1));
+}
+
+.eic-ep-card:hover,
+.eic-ep-card:focus-within {
+  box-shadow: var(--gl-card-hover-shadow, 0 14px 34px rgb(14 42 84 / 5%));
+  border-color: var(--primary-light, #5ea0c9);
+  transform: scale(1.01);
+}
+
+.eic-ep-card:focus-within {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+}
+
+/* ---- Head: icon + title + arrow, matching the subtype card head ---- */
+
+.eic-ep-card__head {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  margin-bottom: 1.15rem;
+}
+
+.eic-ep-card__icon {
+  flex: 0 0 auto;
+  display: inline-flex;
+  margin-top: 2px;
+  color: var(--primary);
+}
+
+.eic-ep-card__icon svg {
+  width: 28px;
+  height: 28px;
+}
+
+/* The DNA helix reads soft at 28px, so give it a touch more room. */
+.eic-ep-card__icon--lg {
+  margin-top: 0;
+}
+
+.eic-ep-card__icon--lg svg {
+  width: 34px;
+  height: 34px;
+}
+
+.eic-ep-card__title {
+  flex: 1 1 auto;
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 400; /* light navy heading, per the card system */
+  line-height: 1.15;
+  color: var(--primary);
+}
+
+.eic-ep-card__link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.eic-ep-card__link:hover,
+.eic-ep-card__link:focus {
+  text-decoration: none;
+  transform: none;
+  opacity: 1;
+}
+
+/* Stretch the title link across the whole card. */
+.eic-ep-card__link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.eic-ep-card__link:focus-visible {
+  outline: none;
+}
+
+/* ---- Body ---- */
+
+.eic-ep-card__lead {
+  margin: 0 0 0.85rem;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #9aa2ac; /* the card system's caption gray */
+}
+
+.eic-ep-card__list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  margin: 0;
+  padding: 0;
+  color: var(--text, #333);
+}
+
+.eic-ep-card__list li {
+  position: relative;
+  padding-left: 1.25rem;
+  line-height: 1.4;
+}
+
+.eic-ep-card__list li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.55em;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--primary-light, #5ea0c9);
+}
+
+/* ---- CTA: bottom "Explore ->" cue, pinned to the card foot ---- */
+
+.eic-ep-card__cta {
+  margin-top: auto; /* push to the bottom, filling card whitespace */
+  padding-top: 1.35rem;
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.eic-ep-card__cta-arrow {
+  display: inline-block;
+  transition: transform var(--gl-speed, 800ms)
+    var(--gl-ease, cubic-bezier(0.02, 0.9, 0.15, 1));
+}
+
+.eic-ep-card:hover .eic-ep-card__cta-arrow,
+.eic-ep-card:focus-within .eic-ep-card__cta-arrow {
+  transform: translateX(4px);
+}
+
+@media (max-width: 600px) {
+  .eic-ep-card__title {
+    font-size: 1.3rem !important;
+  }
+  .eic-ep-card__lead {
+    font-size: 13px !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .eic-ep-card,
+  .eic-ep-card__cta-arrow {
+    transition: none;
+  }
+  .eic-ep-card:hover,
+  .eic-ep-card:focus-within {
+    transform: none;
+  }
+  .eic-ep-card:hover .eic-ep-card__cta-arrow,
+  .eic-ep-card:focus-within .eic-ep-card__cta-arrow {
+    transform: none;
+  }
+}
