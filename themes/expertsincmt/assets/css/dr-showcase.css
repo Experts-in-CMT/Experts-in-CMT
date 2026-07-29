@@ -1,0 +1,254 @@
+/*!
+ * Copyright (c) 2026 Kenneth Raymond
+ * All rights reserved.
+ *
+ * Part of the expertsincmt WordPress theme.
+ * Do not copy, modify, or redistribute without permission.
+ *
+ * ------------------------------------------------------------
+ * DORSAL ROOT SHOWCASE — Featured Subtype spotlight
+ * ------------------------------------------------------------
+ * Styles the [dr_showcase] featured-subtype spotlight only. The
+ * showcase's Dorsal Root rows reuse the shared .dr-list / .dr-list__*
+ * system in dr-loop.css; this file adds just the labeled subtype
+ * callout, echoing the genes/subtype card tokens (radius, shadow,
+ * navy title, teal italic gene) and set apart by its "Featured
+ * Subtype" label rather than a distinct frame.
+ *
+ * Scope: .eic-dr-spotlight
+ * ------------------------------------------------------------
+ */
+
+.eic-dr-spotlight {
+  position: relative; /* anchor for the stretched title link */
+  max-width: 900px; /* align with the .dr-list column */
+  margin: 0 auto 2rem;
+  padding: 1.5rem 1.75rem;
+  background: var(--gl-card-bg, var(--bg, #fff));
+  border: 1px solid var(--gl-card-border, var(--border, #e5e7eb));
+  border-radius: var(--gl-card-radius, 22px);
+  box-shadow: var(--gl-card-shadow, 0 8px 24px rgb(14 42 84 / 5%));
+  transition: box-shadow var(--gl-speed, 800ms)
+      var(--gl-ease, cubic-bezier(0.02, 0.9, 0.15, 1)),
+    border-color var(--gl-speed, 800ms)
+      var(--gl-ease, cubic-bezier(0.02, 0.9, 0.15, 1)),
+    transform var(--gl-speed, 800ms)
+      var(--gl-ease, cubic-bezier(0.02, 0.9, 0.15, 1));
+}
+
+.eic-dr-spotlight:hover,
+.eic-dr-spotlight:focus-within {
+  box-shadow: var(--gl-card-hover-shadow, 0 14px 34px rgb(14 42 84 / 5%));
+  border-color: var(--primary-light, #5ea0c9);
+  transform: scale(1.01);
+}
+
+.eic-dr-spotlight:focus-within {
+  outline: 2px solid var(--primary, #174777);
+  outline-offset: 3px;
+}
+
+/* ---- Two-column layout: facts on the left, summary on the right ---- */
+
+.eic-dr-spotlight__alias {
+  margin: -0.5rem 0 0.9rem;
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+
+.eic-dr-spotlight__summary {
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--gl-card-border, var(--border, #e5e7eb));
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.1rem;
+}
+
+.eic-dr-spotlight__summary-body {
+  width: 100%;
+}
+
+.eic-dr-spotlight__summary-title {
+  margin: 0 0 0.4rem;
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.25;
+  color: var(--primary, #174777);
+}
+
+.eic-dr-spotlight__summary-text {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--text, #333);
+}
+
+@media (min-width: 720px) {
+  .eic-dr-spotlight {
+    display: flex;
+    gap: 2.25rem;
+    align-items: stretch;
+  }
+  .eic-dr-spotlight__main {
+    flex: 1 1 54%;
+    min-width: 0;
+  }
+  .eic-dr-spotlight__summary {
+    flex: 1 1 46%;
+    min-width: 0;
+    margin-top: 0;
+    padding-top: 0;
+    padding-left: 2.25rem;
+    border-top: 0;
+    border-left: 1px solid var(--gl-card-border, var(--border, #e5e7eb));
+    justify-content: center;
+  }
+}
+
+.eic-dr-spotlight__eyebrow {
+  margin: 0 0 0.6rem;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--primary-light, #5ea0c9);
+}
+
+.eic-dr-spotlight__head {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-bottom: 0.9rem;
+}
+
+.eic-dr-spotlight__dot {
+  flex: 0 0 auto;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--primary, #174777);
+}
+
+.eic-dr-spotlight__title {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 400; /* light navy heading, per the card system */
+  line-height: 1.1;
+  color: var(--primary, #174777);
+}
+
+.eic-dr-spotlight__link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.eic-dr-spotlight__link:hover,
+.eic-dr-spotlight__link:focus {
+  text-decoration: none;
+  transform: none;
+  opacity: 1;
+}
+
+/* Stretch the title link across the whole spotlight. */
+.eic-dr-spotlight__link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.eic-dr-spotlight__link:focus-visible {
+  outline: none;
+}
+
+.eic-dr-spotlight__attrs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.75rem;
+  margin-bottom: 1rem;
+}
+
+.eic-dr-spotlight__attr {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.eic-dr-spotlight__label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #9aa2ac; /* the card system's caption gray */
+}
+
+.eic-dr-spotlight__value {
+  font-size: 1rem;
+  color: var(--text, #333);
+}
+
+/* Gene symbols italicize (roman for "Unknown"), matching site convention. */
+.eic-dr-spotlight__gene.is-gene {
+  font-style: italic;
+  font-weight: 500;
+  color: var(--accent, #2f8f7a);
+}
+
+.eic-dr-spotlight__cta {
+  align-self: flex-end;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--primary, #174777);
+}
+
+.eic-dr-spotlight__cta-arrow {
+  display: inline-block;
+  transition: transform var(--gl-speed, 800ms)
+    var(--gl-ease, cubic-bezier(0.02, 0.9, 0.15, 1));
+}
+
+.eic-dr-spotlight:hover .eic-dr-spotlight__cta-arrow,
+.eic-dr-spotlight:focus-within .eic-dr-spotlight__cta-arrow {
+  transform: translateX(4px);
+}
+
+/* Escape the global mobile font floor (body * { font-size: 18px !important }). */
+@media (max-width: 600px) {
+  .eic-dr-spotlight__title {
+    font-size: 1.5rem !important;
+  }
+  .eic-dr-spotlight__eyebrow {
+    font-size: 12px !important;
+  }
+  .eic-dr-spotlight__label {
+    font-size: 11px !important;
+  }
+  .eic-dr-spotlight__alias {
+    font-size: 0.9rem !important;
+  }
+  .eic-dr-spotlight__summary-title {
+    font-size: 1rem !important;
+  }
+  .eic-dr-spotlight__summary-text {
+    font-size: 0.9rem !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .eic-dr-spotlight,
+  .eic-dr-spotlight__cta-arrow {
+    transition: none;
+  }
+  .eic-dr-spotlight:hover,
+  .eic-dr-spotlight:focus-within {
+    transform: none;
+  }
+  .eic-dr-spotlight:hover .eic-dr-spotlight__cta-arrow,
+  .eic-dr-spotlight:focus-within .eic-dr-spotlight__cta-arrow {
+    transform: none;
+  }
+}
