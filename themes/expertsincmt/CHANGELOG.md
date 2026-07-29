@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.1.0] - 2026-07-29
+
 ### Added
 
 - **Dorsal Root Showcase: Curated Post List Driven by an ACF Options Page (`dr-showcase-fields.php`, `dr-showcase-shortcode.php`)**
