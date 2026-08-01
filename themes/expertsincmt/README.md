@@ -7,7 +7,7 @@
 Custom WordPress block theme that powers [expertsincmt.org](https://expertsincmt.org), the Experts in CMT platform. Built on the TwentyTwentyFive (TT25) full-site-editing architecture, then forked to its own slug and extended with a database-driven genes catalog, custom post types, AJAX-filtered loops, structured data, and a set of admin maintenance tools.
 
 - **Slug / folder:** `expertsincmt`
-- **Current version:** 3.0.0 (see `style.css`)
+- **Current version:** 3.1.0 (see `style.css`)
 - **Base architecture:** WordPress block theme (FSE), forked from TwentyTwentyFive
 - **Production:** [expertsincmt.org](https://expertsincmt.org), hosted on Ionos, deployed by SFTP
 - **Local:** `cmt-genes-clean` (Local by Flywheel)

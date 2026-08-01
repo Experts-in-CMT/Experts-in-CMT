@@ -4,8 +4,7 @@ Contributors: Kenneth Raymond
 Requires at least: 7.0
 Tested up to: 7.0
 Requires PHP: 5.7
-License: GPLv2 or later
-License URI: http://www.gnu.org/licenses/gpl-2.0.html
+License: All rights reserved.
 
 
 == Description ==
@@ -15,25 +14,15 @@ Custom block theme for the Experts in CMT platform, built on the TwentyTwentyFiv
 
 == Changelog ==
 
-= 1.0.0 =
-* Initial release
+See CHANGELOG.md for the full version history. Current version: 3.1.0.
 
 
 == Copyright ==
 
-expertsincmt WordPress Theme, (C) 2026 Kenneth Raymond
-expertsincmt is distributed under the terms of the GNU GPL.
+Copyright (c) 2025-2026 Kenneth Raymond
+All rights reserved.
 
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 2 of the License, or
-(at your option) any later version.
+Part of the Experts in CMT platform.
+Do not copy, modify, or redistribute without permission.
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-GNU General Public License for more details.
-
-
-expertsincmt is based on Experts in CMT (https://expertsincmt.com), (C) Kenneth Raymond, [GPLv2 or later](http://www.gnu.org/licenses/gpl-2.0.html)
-
+Built on Twenty Twenty-Five (https://wordpress.org/themes/twentytwentyfive/), (C) the WordPress contributors, originally licensed GPLv2 or later (http://www.gnu.org/licenses/gpl-2.0.html).
