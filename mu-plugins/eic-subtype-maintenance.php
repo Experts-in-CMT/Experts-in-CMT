@@ -1,15 +1,17 @@
 <?php
 /**
+ * Copyright (c) 2025-2026 Kenneth Raymond
+ * All rights reserved.
+ *
+ * Part of the Experts in CMT platform.
+ * Do not copy, modify, or redistribute without permission.
+ */
+
+/**
  * Plugin Name: EIC Subtype Maintenance
  * Description: Scans the Subtype database for known data inconsistencies and applies targeted, reversible fixes. Scan-first, apply per-check. Designed as an ongoing maintenance tool.
  * Version: 1.0.0
  * Author: Kenneth Raymond
- *
- * Copyright (c) 2025 Kenneth Raymond
- * All rights reserved.
- *
- * Part of the Experts in CMT platform (mu-plugin).
- * Do not copy, modify, or redistribute without permission.
  *
  * ------------------------------------------------------------
  * Subtype Maintenance — Consistency Scanner & Fixer

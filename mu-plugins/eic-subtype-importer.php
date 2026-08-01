@@ -1,12 +1,13 @@
 <?php
-
-/*
- * Copyright (c) 2026 Kenneth Raymond
+/**
+ * Copyright (c) 2025-2026 Kenneth Raymond
  * All rights reserved.
  *
- * Part of the Experts in CMT WordPress build.
+ * Part of the Experts in CMT platform.
  * Do not copy, modify, or redistribute without permission.
- *
+ */
+
+/*
  * ------------------------------------------------------------
  * MU Plugin: EIC Subtype Importer (run-once)
  * ------------------------------------------------------------

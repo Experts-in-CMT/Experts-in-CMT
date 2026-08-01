@@ -1,10 +1,12 @@
-/*!
- * Copyright (c) 2025 Kenneth Raymond
+/**
+ * Copyright (c) 2025-2026 Kenneth Raymond
  * All rights reserved.
  *
- * Part of the expertsincmt WordPress theme.
+ * Part of the Experts in CMT platform.
  * Do not copy, modify, or redistribute without permission.
- *
+ */
+
+/*!
  * ------------------------------------------------------------
  * PLATFORM SEARCH — RESULTS UI
  * ------------------------------------------------------------
@@ -139,14 +141,14 @@
     margin-top: 2.5rem;
     padding-left: 4rem;
     text-align: left;
-    
+
 }
 
 .ps-no-results-title {
     font-size: 1.15rem;
     font-weight: 500;
     color: #174777;
-    
+
 }
 
 .ps-no-results-subtitle {
@@ -156,7 +158,7 @@
     text-align: left;
     line-height: 1.4;
     margin-top: -1rem;
-    
+
 }
 
 

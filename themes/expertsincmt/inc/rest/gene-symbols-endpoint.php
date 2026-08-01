@@ -1,11 +1,13 @@
 <?php
 /**
- * Copyright (c) 2025 Kenneth Raymond
+ * Copyright (c) 2025-2026 Kenneth Raymond
  * All rights reserved.
  *
- * Part of the expertsincmt WordPress theme.
+ * Part of the Experts in CMT platform.
  * Do not copy, modify, or redistribute without permission.
- *
+ */
+
+/**
  * EIC REST API — Gene Symbols Endpoint
  * Lightweight endpoint for AWS Lambda to read gene_symbol
  * values from all published Subtype records.

@@ -11,6 +11,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Whitespace hygiene and copyright-header normalization across first-party source (`themes/expertsincmt/`, `mu-plugins/`)**
+  - Formatting-only pass over every first-party `.php`, `.css`, and `.js` file: no behavior changes. Verified by comparing the code-only PHP token stream (comments and whitespace stripped) before and after — every file's executable tokens are byte-identical, the sole exception being trailing-space removal inside one inline-HTML line.
+  - Applied the standard copyright block verbatim as the first thing in each in-scope file (immediately after `<?php` for PHP; at the very top for CSS/JS), replacing the prior mix of header variants (long `Copyright (c)` form, condensed `©` form, and the `Do not copy` line being present or absent) and normalizing the year range to `2025-2026`. Where a descriptive docblock followed, it was preserved verbatim as its own block one blank line below the copyright. WordPress `Plugin Name`/`Version`/`Author` metadata blocks in mu-plugins were preserved.
+  - Stripped trailing whitespace from every line (outside heredocs, multi-line strings, and inline HTML, which were protected via the PHP tokenizer), collapsed runs of 3+ blank lines to one, normalized all line endings to LF, and ensured a single trailing newline. Files are UTF-8 with no BOM; non-ASCII characters (bullets, em-dashes, curly quotes) preserved byte-identical.
+  - Skipped vendor / host-dropped files: the 100 stock Twenty Twenty-Five `patterns/*.php`, the stock `assets/css/editor-style.css`, and the host mu-plugins (`automation-by-installatron.php`, `endurance-page-cache.php`, `woocommerce-analytics-proxy-speed-module.php`). `style.css` received whitespace normalization only, with its WordPress theme header left intact and no copyright block added.
+  - `templates/glossary-fields-template.php` intentionally retains no trailing newline (its `/* no trailing newline */` marker guards template output), overriding the single-trailing-newline rule for that one file.
+
 ## [3.1.0] - 2026-07-29
 
 ### Added

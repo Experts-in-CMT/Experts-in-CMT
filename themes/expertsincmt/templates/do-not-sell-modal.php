@@ -1,9 +1,13 @@
 <?php
 /**
- * © 2025 Kenneth Raymond — All rights reserved.
- * Part of the Experts in CMT WordPress theme.
- * Do not copy, modify, or redistribute without permission.
+ * Copyright (c) 2025-2026 Kenneth Raymond
+ * All rights reserved.
  *
+ * Part of the Experts in CMT platform.
+ * Do not copy, modify, or redistribute without permission.
+ */
+
+/**
  * ============================================================
  *  TEMPLATE: Do Not Sell My Information Modal
  * ------------------------------------------------------------

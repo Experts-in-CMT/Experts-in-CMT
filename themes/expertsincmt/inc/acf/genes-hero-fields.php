@@ -1,9 +1,13 @@
 <?php
 /**
- * © 2025 Kenneth Raymond — All rights reserved.
- * Part of the expertsincmt WordPress theme.
- * Do not copy, modify, or redistribute without permission.
+ * Copyright (c) 2025-2026 Kenneth Raymond
+ * All rights reserved.
  *
+ * Part of the Experts in CMT platform.
+ * Do not copy, modify, or redistribute without permission.
+ */
+
+/**
  * File: ACF — Genes DB App Hero Fields
  * Purpose: Registers the field group for the Genes & Subtypes Database
  *          app hero (background image, title, intro copy). Rendered as

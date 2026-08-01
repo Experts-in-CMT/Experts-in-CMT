@@ -1,15 +1,17 @@
 <?php
 /**
+ * Copyright (c) 2025-2026 Kenneth Raymond
+ * All rights reserved.
+ *
+ * Part of the Experts in CMT platform.
+ * Do not copy, modify, or redistribute without permission.
+ */
+
+/**
  * Plugin Name: EIC Subtype Exporter
  * Description: Exports the entire Subtype database (full record data set) as a single lossless JSON file.
  * Version: 1.0.0
  * Author: Kenneth Raymond
- *
- * Copyright (c) 2025 Kenneth Raymond
- * All rights reserved.
- *
- * Part of the Experts in CMT platform (mu-plugin).
- * Do not copy, modify, or redistribute without permission.
  *
  * ------------------------------------------------------------
  * Subtype Database — Full Export

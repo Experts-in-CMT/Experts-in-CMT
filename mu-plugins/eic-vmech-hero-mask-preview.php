@@ -1,15 +1,17 @@
 <?php
 /**
+ * Copyright (c) 2025-2026 Kenneth Raymond
+ * All rights reserved.
+ *
+ * Part of the Experts in CMT platform.
+ * Do not copy, modify, or redistribute without permission.
+ */
+
+/**
  * Plugin Name: EIC Variant Mechanism Hero Mask Preview
  * Description: Live fade/mask preview on the Variant Mechanism Browser hero image thumbnail in the ACF meta box. Drag the Desktop and Mobile "Fade Start %" / "Fade End %" sliders and watch each mask move, matching the front-end hero ::after gradient at that breakpoint. Editor-only; renders no front-end output.
  * Version: 1.0.0
  * Author: Kenneth Raymond
- *
- * Copyright (c) 2026 Kenneth Raymond
- * All rights reserved.
- *
- * Part of the Experts in CMT platform (mu-plugin).
- * Do not copy, modify, or redistribute without permission.
  *
  * ------------------------------------------------------------
  * Variant Mechanism Hero — Editor Mask Preview

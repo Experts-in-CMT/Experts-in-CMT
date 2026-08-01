@@ -1,15 +1,17 @@
 <?php
 /**
+ * Copyright (c) 2025-2026 Kenneth Raymond
+ * All rights reserved.
+ *
+ * Part of the Experts in CMT platform.
+ * Do not copy, modify, or redistribute without permission.
+ */
+
+/**
  * Plugin Name: EIC Glossary Importer
  * Description: Imports authored glossary terms (JSON) into the `glossary` post type. Dry-run then commit, upsert by canonical term.
  * Version: 1.0.0
  * Author: Kenneth Raymond
- *
- * Copyright (c) 2026 Kenneth Raymond
- * All rights reserved.
- *
- * Part of the Experts in CMT platform (mu-plugin).
- * Do not copy, modify, or redistribute without permission.
  *
  * ------------------------------------------------------------
  * Glossary Importer (mirrors the Subtype Importer)
