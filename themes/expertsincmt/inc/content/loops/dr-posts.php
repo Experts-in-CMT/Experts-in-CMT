@@ -168,6 +168,22 @@ if (!function_exists("eic_dr_apply_search_filters")) {
             ];
         }
 
+        // Hide specific Dorsal Root posts from the loop and its AJAX endpoint.
+        $hidden = [4891];
+        if (!empty($args["post__in"])) {
+            $args["post__in"] = array_values(
+                array_diff($args["post__in"], $hidden)
+            );
+            if (empty($args["post__in"])) {
+                $args["post__in"] = [0];
+            }
+        } else {
+            $args["post__not_in"] = array_merge(
+                isset($args["post__not_in"]) ? (array) $args["post__not_in"] : [],
+                $hidden
+            );
+        }
+
         return $args;
     }
 }

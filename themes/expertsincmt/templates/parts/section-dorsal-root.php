@@ -29,11 +29,15 @@
 
 $count = isset($args["count"]) ? intval($args["count"]) : 3;
 
+/* Posts to keep out of the homepage teaser (e.g. pw-protected articles in review) */
+$dr_hidden = [4891];
+
 /* Try featured first */
 $featured_q = new WP_Query([
     "post_type" => "post",
     "post_status" => "publish",
     "posts_per_page" => $count,
+    "post__not_in" => $dr_hidden,
     "meta_query" => [
         [
             "key" => "_is_featured",
@@ -50,6 +54,7 @@ $q = $featured_q->have_posts()
         "post_type" => "post",
         "post_status" => "publish",
         "posts_per_page" => $count,
+        "post__not_in" => $dr_hidden,
         "no_found_rows" => true,
     ]);
 ?>
