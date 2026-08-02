@@ -48,6 +48,15 @@ $fade_end = get_field("banner_fade_end", $post_id);
 $fade_start = is_numeric($fade_start) ? (float) $fade_start : 33;
 $fade_end = is_numeric($fade_end) ? (float) $fade_end : 66;
 
+$fade_start_mobile = get_field("banner_fade_start_mobile", $post_id);
+$fade_end_mobile = get_field("banner_fade_end_mobile", $post_id);
+$fade_start_mobile = is_numeric($fade_start_mobile)
+    ? (float) $fade_start_mobile
+    : 55;
+$fade_end_mobile = is_numeric($fade_end_mobile)
+    ? (float) $fade_end_mobile
+    : 100;
+
 if (!$img && $title === "" && $intro === "") {
     return; // nothing to render
 }
@@ -58,6 +67,8 @@ if ($img && is_array($img) && !empty($img["url"])) {
 }
 $style .= "--banner-fade-start:" . $fade_start . "%;";
 $style .= "--banner-fade-end:" . $fade_end . "%;";
+$style .= "--banner-fade-start-mobile:" . $fade_start_mobile . "%;";
+$style .= "--banner-fade-end-mobile:" . $fade_end_mobile . "%;";
 ?>
 <section class="header-banner header-banner--overlay" style="<?php echo esc_attr(
     $style
