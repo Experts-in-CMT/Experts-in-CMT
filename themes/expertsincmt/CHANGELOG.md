@@ -11,14 +11,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Changed
+### Added
 
-- **Whitespace hygiene and copyright-header normalization across first-party source (`themes/expertsincmt/`, `mu-plugins/`)**
-  - Formatting-only pass over every first-party `.php`, `.css`, and `.js` file: no behavior changes. Verified by comparing the code-only PHP token stream (comments and whitespace stripped) before and after — every file's executable tokens are byte-identical, the sole exception being trailing-space removal inside one inline-HTML line.
-  - Applied the standard copyright block verbatim as the first thing in each in-scope file (immediately after `<?php` for PHP; at the very top for CSS/JS), replacing the prior mix of header variants (long `Copyright (c)` form, condensed `©` form, and the `Do not copy` line being present or absent) and normalizing the year range to `2025-2026`. Where a descriptive docblock followed, it was preserved verbatim as its own block one blank line below the copyright. WordPress `Plugin Name`/`Version`/`Author` metadata blocks in mu-plugins were preserved.
-  - Stripped trailing whitespace from every line (outside heredocs, multi-line strings, and inline HTML, which were protected via the PHP tokenizer), collapsed runs of 3+ blank lines to one, normalized all line endings to LF, and ensured a single trailing newline. Files are UTF-8 with no BOM; non-ASCII characters (bullets, em-dashes, curly quotes) preserved byte-identical.
-  - Skipped vendor / host-dropped files: the 100 stock Twenty Twenty-Five `patterns/*.php`, the stock `assets/css/editor-style.css`, and the host mu-plugins (`automation-by-installatron.php`, `endurance-page-cache.php`, `woocommerce-analytics-proxy-speed-module.php`). `style.css` received whitespace normalization only, with its WordPress theme header left intact and no copyright block added.
-  - `templates/glossary-fields-template.php` intentionally retains no trailing newline (its `/* no trailing newline */` marker guards template output), overriding the single-trailing-newline rule for that one file.
+- **Dorsal Root Visibility: Per-Post Hide Toggles for the List and the Teaser (`dr-visibility-fields.php`, `dr-posts.php`, `section-dorsal-root.php`)**
+  - Keeping an individual Dorsal Root post out of the front-facing surfaces (for example a co-authored article that is password-protected while its co-author reviews it) had meant hardcoding that post's ID into an array in the query files and redeploying, then editing the code again to bring it back once cleared. Two per-post checkboxes replace that entirely: a new "Dorsal Root Visibility" panel in the post editor sidebar carries "Hide From Page" and "Hide From Teaser," each an ACF true/false toggle, so an author hides or restores a post with a click and no code change.
+  - "Hide From Page" drops the post from the `[dr_posts]` list on `/dorsal-root`. Because the exclusion lives inside the shared `eic_dr_apply_search_filters()`, it applies to the page-load render and the AJAX/live-search endpoint together, so a hidden post cannot slip back in through search. "Hide From Teaser" drops the post from the homepage "The Dorsal Root" teaser cards, covering both the featured query and the latest-posts fallback.
+  - A small per-request-cached reader, `eic_dr_hidden_ids($meta_key)`, returns the IDs of posts whose given box is ticked, and both query files feed those IDs to the same `post__not_in` / `array_diff` paths that had held the hardcoded ID, so the surrounding query logic is unchanged and the old `[4891]` literal is gone. The reader and the two fields live in one file, and both consumers call the reader, so there is a single source of truth. The field group and reader auto-load via the existing `inc/acf/*.php` glob, so no functions.php edit. The Dorsal Root Showcase is deliberately left alone: a hand-picked showcase post is explicit curation and is not filtered by these toggles.
+  - The toggle values are per-post postmeta, not theme files, so they do not travel with a theme deploy and are set per environment.
+  - inc/acf/dr-visibility-fields.php
+  - inc/content/loops/dr-posts.php
+  - templates/parts/section-dorsal-root.php
+
+### Fixed
+
+- **Header Banner: Mobile Fade Sliders Had No Effect on the Rendered Page (`header-banner.php`)**
+  - The `<=600px` fade mask reads `--banner-fade-start-mobile` / `--banner-fade-end-mobile`, but the template emitted only the desktop fade custom properties, so the mobile gradient always fell back to the CSS default stops (55% / 100%) regardless of what the "(Mobile)" ACF sliders were set to. The admin mask preview reads the ACF fields directly, so it repainted correctly and masked the gap, which is why the fields looked live in the editor but did nothing on the front end. The template now reads `banner_fade_start_mobile` / `banner_fade_end_mobile` and prints both mobile custom properties inline alongside the desktop pair, with 55 / 100 fallbacks matching the field defaults, so the mobile sliders drive the rendered fade.
+  - templates/header-banner.php
 
 ## [3.1.0] - 2026-07-29
 

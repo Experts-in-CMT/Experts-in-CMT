@@ -1,9 +1,10 @@
 <?php
+
 /**
- * Copyright (c) 2025-2026 Kenneth Raymond
+ * Copyright (c) 2025 Kenneth Raymond
  * All rights reserved.
  *
- * Part of the Experts in CMT platform.
+ * Part of the expertsincmt WordPress theme.
  * Do not copy, modify, or redistribute without permission.
  */
 
@@ -167,8 +168,12 @@ if (!function_exists("eic_dr_apply_search_filters")) {
             ];
         }
 
-        // Hide specific Dorsal Root posts from the loop and its AJAX endpoint.
-        $hidden = [4891];
+        // Hide posts flagged "Hide From Page" (ACF dr_hide_from_page) from the
+        // loop and its AJAX endpoint. Per-post toggle; see
+        // inc/acf/dr-visibility-fields.php for the field and eic_dr_hidden_ids().
+        $hidden = function_exists("eic_dr_hidden_ids")
+            ? eic_dr_hidden_ids("dr_hide_from_page")
+            : [];
         if (!empty($args["post__in"])) {
             $args["post__in"] = array_values(
                 array_diff($args["post__in"], $hidden)
@@ -176,7 +181,7 @@ if (!function_exists("eic_dr_apply_search_filters")) {
             if (empty($args["post__in"])) {
                 $args["post__in"] = [0];
             }
-        } else {
+        } elseif (!empty($hidden)) {
             $args["post__not_in"] = array_merge(
                 isset($args["post__not_in"]) ? (array) $args["post__not_in"] : [],
                 $hidden

@@ -31,8 +31,11 @@
 
 $count = isset($args["count"]) ? intval($args["count"]) : 3;
 
-/* Posts to keep out of the homepage teaser (e.g. pw-protected articles in review) */
-$dr_hidden = [4891];
+/* Posts flagged "Hide From Teaser" (ACF dr_hide_from_teaser) stay out of this
+   homepage teaser. Per-post toggle; see inc/acf/dr-visibility-fields.php. */
+$dr_hidden = function_exists("eic_dr_hidden_ids")
+    ? eic_dr_hidden_ids("dr_hide_from_teaser")
+    : [];
 
 /* Try featured first */
 $featured_q = new WP_Query([
