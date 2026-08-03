@@ -38,7 +38,7 @@
   overflow: hidden;
   padding-inline: 12px;
   background: var(--bg, #fff);
-  min-height: clamp(260px, 30vw, 380px);
+  min-height: clamp(320px, 35vw, 460px);
   border-radius: 28px;
   display: flex;
   align-items: center;
