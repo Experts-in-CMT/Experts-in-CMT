@@ -58,6 +58,17 @@ $subtype_alias = get_field("subtype_alias");
 $omim_subtype = trim((string) get_field("omim_subtype"));
 $omim_gene = trim((string) get_field("omim_gene"));
 
+/* CMTX3's cause is an identified structural rearrangement, not a gene. It is
+   intentionally NOT flagged unknown_gene, since the cause is known, so the
+   unknown-gene guards below do not catch it. This flag does two jobs:
+     1. Suppresses the gene OMIM block, which has nothing to resolve to.
+     2. Relabels the gene symbol and full name fields, whose values follow
+        ISCN (the cytogenetic nomenclature standard) rather than HGNC.
+   Note ISCN is a standard the notation conforms to, not a registry that
+   approves individual designations, so the label says "ISCN Notation" and
+   never "ISCN-Approved". */
+$is_cmtx3 = get_the_title() === "CMTX3";
+
 /* More Info — CTA buttons */
 $research_url = trim((string) get_field("research_url"));
 $research_label = trim((string) get_field("research_label"));
@@ -181,14 +192,18 @@ $pub_heading =
 
       <?php if ($gene_symbol): ?>
         <div class="eic-fact">
-          <dt>HGNC-Approved Gene Symbol</dt>
+          <dt><?php echo $is_cmtx3
+              ? "ISCN Notation"
+              : "HGNC-Approved Gene Symbol"; ?></dt>
           <dd><?php echo esc_html($gene_symbol); ?></dd>
         </div>
       <?php endif; ?>
 
       <?php if ($full_gene_name): ?>
         <div class="eic-fact">
-          <dt>Gene Full Name</dt>
+          <dt><?php echo $is_cmtx3
+              ? "Rearrangement Description"
+              : "Gene Full Name"; ?></dt>
           <dd><?php echo esc_html($full_gene_name); ?></dd>
         </div>
       <?php endif; ?>
@@ -392,8 +407,10 @@ $pub_heading =
 
 <?php // A gene OMIM entry is meaningless when the gene is unknown, and the
       // label would read from the "Gene is Unknown at This Time" placeholder.
-      // Suppress the whole block in that case; the subtype OMIM entry remains. ?>
-<?php if (!empty($omim_gene) && !$unknown_gene): ?>
+      // The same holds for CMTX3, whose cause is a structural rearrangement
+      // rather than a gene. Suppress the whole block in either case; the
+      // subtype OMIM entry above still renders. ?>
+<?php if (!empty($omim_gene) && !$unknown_gene && !$is_cmtx3): ?>
   <?php $omim_gene_no_entry =
       (bool) preg_match('/^\s*no[\s\-]?entry\s*$/i', $omim_gene) ||
       (bool) preg_match('/^\s*none\s*$/i', $omim_gene); ?>
