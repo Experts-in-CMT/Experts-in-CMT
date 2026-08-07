@@ -152,6 +152,17 @@ function eic_genes_facet_base_ids($qs)
         return get_posts($args);
     }
 
+    // Exact-identifier precedence — mirrors the loop fragment. When the
+    // term is an exact subtype/gene/full-name match, the result set is
+    // that ID list only (see eic_genes_search_exact_ids()), so the facet
+    // counts are computed against the same set the loop renders.
+    if (function_exists("eic_genes_search_exact_ids")) {
+        $exact_ids = eic_genes_search_exact_ids($qs);
+        if (!empty($exact_ids)) {
+            return $exact_ids;
+        }
+    }
+
     // --- Kept in lockstep with the fragment's search branch ---
     $exact_fields = ["subtype", "gene_symbol", "full_gene_name"];
     $fuzzy_fields = [

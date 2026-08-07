@@ -78,6 +78,26 @@ if (!empty($qs)) {
 
     /**
      * ------------------------------------------------------------
+     *  EXACT-IDENTIFIER PRECEDENCE
+     *  A query that exactly matches a subtype name, gene symbol, or
+     *  full gene name resolves to those posts ONLY. This stops short
+     *  gene symbols (e.g. "MME" → CMT2T) from substring-matching
+     *  author surnames ("Timmerman") through the fuzzy LIKE net below.
+     *  Shared with the facet counts via eic_genes_search_exact_ids().
+     * ------------------------------------------------------------
+     */
+    $eic_exact_ids = function_exists("eic_genes_search_exact_ids")
+        ? eic_genes_search_exact_ids($qs)
+        : [];
+
+    if (!empty($eic_exact_ids)) {
+        $args["post__in"] = $eic_exact_ids;
+        // The ID set is authoritative — clear any inherited search
+        // meta/tax constraints so nothing widens it back out.
+        unset($args["meta_query"], $args["tax_query"]);
+    } else {
+        /**
+     * ------------------------------------------------------------
      *  EXACT MATCH FIELDS
      *  These are single-value identifiers that must match precisely.
      *  Use '=' to prevent substring collisions (e.g., PMP2 ≠ PMP22).
@@ -164,6 +184,7 @@ if (!empty($qs)) {
             "operator" => "LIKE",
         ],
     ];
+    }
 }
 
 // ============================================================

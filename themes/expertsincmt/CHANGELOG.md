@@ -24,6 +24,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Genes DB Search: Short Gene Symbols Matched Author Surnames, Returning Dozens of Unrelated Subtypes (`terms-helpers.php`, `fragment-loop-genes-loop.php`, `genes-facet-counts.php`)**
+  - A search for a short gene symbol returned far more than it should: `MME` (the gene for CMT2T) surfaced 24 subtypes instead of the single CMT2T. The search branch matched exact identifier fields (`subtype`, `gene_symbol`, `full_gene_name`) with `=`, but then also ran a fuzzy `LIKE` net over the authors fields, and the substring "mme" is inside author surnames like "Ti**mme**rman" and "Zi**mme**rmann," so every subtype citing those authors matched too. The facet counts ran the same widened query, so the count line ("24 Subtypes | 21 Genes") agreed with the wrong result set and the bug was self-consistent.
+  - A query that exactly matches a canonical identifier now resolves to those posts only. A new shared helper, `eic_genes_search_exact_ids($qs)`, returns the published `subtype` IDs whose `subtype`, `gene_symbol`, or `full_gene_name` equals the query; when it returns any, the loop fragment restricts to that ID set (via `post__in`) and clears the inherited search meta/tax constraints so nothing widens it back out, and the facet counts short-circuit to the same set. Only when there is no exact identifier match does the fuzzy author/alias `LIKE` net run, so partial and author-name searches are unchanged. Both consumers call the one helper, so their exact-match behavior cannot drift.
+  - inc/content/filters/terms-helpers.php
+  - inc/content/loops/partials/fragment-loop-genes-loop.php
+  - inc/content/filters/genes-facet-counts.php
+
 - **Header Banner: Mobile Fade Sliders Had No Effect on the Rendered Page (`header-banner.php`)**
   - The `<=600px` fade mask reads `--banner-fade-start-mobile` / `--banner-fade-end-mobile`, but the template emitted only the desktop fade custom properties, so the mobile gradient always fell back to the CSS default stops (55% / 100%) regardless of what the "(Mobile)" ACF sliders were set to. The admin mask preview reads the ACF fields directly, so it repainted correctly and masked the gap, which is why the fields looked live in the editor but did nothing on the front end. The template now reads `banner_fade_start_mobile` / `banner_fade_end_mobile` and prints both mobile custom properties inline alongside the desktop pair, with 55 / 100 fallbacks matching the field defaults, so the mobile sliders drive the rendered fade.
   - templates/header-banner.php

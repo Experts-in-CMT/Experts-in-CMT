@@ -91,3 +91,45 @@ function eicmt_terms_options_html($taxonomy, $selected = "", $placeholder = "")
 
     return $html;
 }
+
+/**
+ * Genes DB search — exact-identifier match.
+ *
+ * Returns the published `subtype` post IDs whose canonical identifier —
+ * subtype name, gene symbol, or full gene name — is EXACTLY the query.
+ *
+ * When any exist, both the loop fragment and the facet counts restrict to
+ * this set and skip the fuzzy LIKE net. Without this precedence a short
+ * gene symbol such as "MME" (the gene for CMT2T) also substring-matches
+ * author surnames like "Ti-mme-rman" / "Zi-mme-rmann" through the fuzzy
+ * `authors`/`alt_authors` fields, returning dozens of unrelated subtypes.
+ *
+ * This is the single source of truth for the exact-match rule; both
+ * consumers call it so their behavior cannot drift.
+ *
+ * @param string $qs Search term (already sanitized upstream).
+ * @return int[] Matching subtype IDs; empty when the term is blank or
+ *               matches no exact identifier.
+ */
+function eic_genes_search_exact_ids($qs)
+{
+    $qs = trim((string) $qs);
+    if ($qs === "") {
+        return [];
+    }
+
+    $exact_fields = ["subtype", "gene_symbol", "full_gene_name"];
+    $meta_query = ["relation" => "OR"];
+    foreach ($exact_fields as $field) {
+        $meta_query[] = ["key" => $field, "value" => $qs, "compare" => "="];
+    }
+
+    return get_posts([
+        "post_type" => "subtype",
+        "post_status" => "publish",
+        "fields" => "ids",
+        "posts_per_page" => -1,
+        "no_found_rows" => true,
+        "meta_query" => $meta_query,
+    ]);
+}
