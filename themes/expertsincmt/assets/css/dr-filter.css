@@ -225,5 +225,12 @@ form.site-search[data-loop="dr"] .site-search__reset:focus {
   form.site-search[data-loop="dr"] .site-search__btn,
   form.site-search[data-loop="dr"] .site-search__reset {
     flex: 1 1 0;
+    /* Split into two equal columns, each label ("SEARCH"/"RESET") gets
+       roughly half the ~270px bar. With the default 1.5em side padding
+       the last letter of SEARCH wrapped to a second line on narrow
+       phones (iPhone 14 Pro Max, etc.). Keep each label on one line and
+       trim the side padding so the text clears the padding at ≤360px. */
+    white-space: nowrap;
+    padding-inline: 1em;
   }
 }
