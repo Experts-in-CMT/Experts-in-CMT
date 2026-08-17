@@ -324,6 +324,9 @@ final class EIC_Subtype_Importer
                 }
             }
 
+            // Strip a leading UTF-8 BOM (common from Windows editors) so a
+            // BOM-prefixed upload does not fail json_decode with a syntax error.
+            $raw = preg_replace('/^\xEF\xBB\xBF/', "", (string) $raw);
             $json = json_decode($raw, true);
             if (json_last_error() !== JSON_ERROR_NONE) {
                 echo '<div class="notice notice-error"><p>JSON parse error: ' .
@@ -793,6 +796,12 @@ final class EIC_Subtype_Importer
     /** Seed the shared HGNC cache so the URL builders reuse the symbol. */
     private static function seed_hgnc_cache(string $symbol): void
     {
+        // Honor the dry-run contract: preview must not touch the DB. Every other
+        // setter guards on self::$preview; this one did not, so a dry run of a
+        // normal record was mutating the shared HGNC cache option.
+        if (self::$preview) {
+            return;
+        }
         $symbol = trim($symbol);
         if ($symbol === "") {
             return;

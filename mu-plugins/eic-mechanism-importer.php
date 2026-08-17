@@ -250,6 +250,9 @@ final class EIC_Mechanism_Importer
                 }
             }
 
+            // Strip a leading UTF-8 BOM (common from Windows editors) so a
+            // BOM-prefixed upload does not fail json_decode with a syntax error.
+            $raw = preg_replace('/^\xEF\xBB\xBF/', "", (string) $raw);
             $json = json_decode($raw, true);
             if (json_last_error() !== JSON_ERROR_NONE) {
                 echo '<div class="notice notice-error"><p>JSON parse error: ' .
@@ -292,7 +295,7 @@ final class EIC_Mechanism_Importer
         echo "<h2>Dry run &mdash; " . count($records) . " record(s)</h2>";
 
         foreach ($records as $i => $r) {
-            $code = esc_html($r["code"] ?? ("record " . ($i + 1)));
+            $code = esc_html(is_array($r) && isset($r["code"]) ? $r["code"] : "record " . ($i + 1));
             [$errors, $plan] = self::analyze(is_array($r) ? $r : []);
 
             echo '<div style="margin:14px 0;padding:12px 16px;border:1px solid #dcdcde;background:#fff;border-radius:6px">';
@@ -361,7 +364,7 @@ final class EIC_Mechanism_Importer
         echo "<h2>Commit</h2><ul>";
 
         foreach ($records as $i => $r) {
-            $code = esc_html($r["code"] ?? ("record " . ($i + 1)));
+            $code = esc_html(is_array($r) && isset($r["code"]) ? $r["code"] : "record " . ($i + 1));
             [$errors, $plan] = self::analyze(is_array($r) ? $r : []);
             if ($errors) {
                 echo "<li><strong>{$code}</strong>: invalid, skipped (" .

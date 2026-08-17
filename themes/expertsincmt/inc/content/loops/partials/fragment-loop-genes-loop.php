@@ -362,6 +362,31 @@ if ($use_canonical_sort) {
     $args["eic_genes_custom_sort"] = true;
 }
 
+/**
+ * ============================================================
+ *  [SECTION: CANDIDATE GENE EXCLUSION]
+ *  Candidate gene associations (candidate_gene = true) are not
+ *  classified subtypes: surfaced only in the Gene Browser, never
+ *  here. ANDed in last so it survives every meta_query branch
+ *  above and feeds the filter-aware totals. NOT EXISTS keeps
+ *  ordinary subtypes, whose meta row may be absent or "0".
+ * ============================================================
+ */
+$eic_candidate_exclude = [
+    "relation" => "OR",
+    ["key" => "candidate_gene", "value" => "1", "compare" => "!="],
+    ["key" => "candidate_gene", "compare" => "NOT EXISTS"],
+];
+if (!empty($args["meta_query"])) {
+    $args["meta_query"] = [
+        "relation" => "AND",
+        $args["meta_query"],
+        $eic_candidate_exclude,
+    ];
+} else {
+    $args["meta_query"] = $eic_candidate_exclude;
+}
+
 $q = new WP_Query($args);
 
 /* ============================================================

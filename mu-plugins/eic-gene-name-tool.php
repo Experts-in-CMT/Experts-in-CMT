@@ -45,6 +45,49 @@ final class EIC_Gene_Name_Tool
     const NONCE        = "eic_gene_name_tool";
     const HGNC_OPTION  = "eic_hgnc_cache";
 
+    /**
+     * Max live (uncached) HGNC lookups per run. Each uncached symbol costs up to
+     * two remote calls, so a whole-store cold run can exceed PHP's
+     * max_execution_time. Capping per run keeps it bounded; the shared HGNC cache
+     * persists, so re-running resumes with the previously fetched genes free.
+     */
+    const BATCH = 40;
+
+    /**
+     * In-request memo for the shared HGNC cache option, with a single deferred
+     * write at shutdown (was read + re-written on every uncached name — O(n^2)).
+     */
+    private static $cache_mem = null;
+    private static $cache_dirty = false;
+    private static $last_deferred = 0;
+
+    private static function cache_map(): array
+    {
+        if (self::$cache_mem === null) {
+            $c = get_option(self::HGNC_OPTION, []);
+            self::$cache_mem = is_array($c) ? $c : [];
+        }
+        return self::$cache_mem;
+    }
+
+    private static function cache_put(string $symbol, array $entry): void
+    {
+        self::cache_map();
+        self::$cache_mem[$symbol] = $entry;
+        if (!self::$cache_dirty) {
+            self::$cache_dirty = true;
+            add_action("shutdown", [__CLASS__, "flush_cache"]);
+        }
+    }
+
+    public static function flush_cache(): void
+    {
+        if (self::$cache_dirty) {
+            update_option(self::HGNC_OPTION, self::$cache_mem, false);
+            self::$cache_dirty = false;
+        }
+    }
+
     /* Words kept lowercase in Title Case (unless first word). */
     private static $minor = ["and","or","of","the","in","to","for","a","an","with","at"];
 
@@ -141,15 +184,30 @@ final class EIC_Gene_Name_Tool
     }
 
     /* ---- HGNC approved name (cached) ---- */
+
+    /** Cached HGNC-approved name for a symbol, or null if not cached (no remote). */
+    private static function hgnc_name_cached(string $symbol): ?string
+    {
+        $symbol = trim($symbol);
+        if ($symbol === "") {
+            return null;
+        }
+        $cache = self::cache_map();
+        if (isset($cache[$symbol]) && is_array($cache[$symbol]) && !empty($cache[$symbol]["name"])) {
+            return $cache[$symbol]["name"];
+        }
+        return null;
+    }
+
     private static function hgnc_name(string $symbol): ?string
     {
         $symbol = trim($symbol);
         if ($symbol === "") {
             return null;
         }
-        $cache = get_option(self::HGNC_OPTION, []);
-        if (isset($cache[$symbol]) && is_array($cache[$symbol]) && !empty($cache[$symbol]["name"])) {
-            return $cache[$symbol]["name"];
+        $hit = self::hgnc_name_cached($symbol);
+        if ($hit !== null) {
+            return $hit;
         }
         $resp = wp_remote_get(
             "https://rest.genenames.org/fetch/symbol/" . rawurlencode($symbol),
@@ -173,11 +231,11 @@ final class EIC_Gene_Name_Tool
         if ($name === "") {
             return null;
         }
+        $cache = self::cache_map();
         $existing = is_array($cache[$symbol] ?? null) ? $cache[$symbol] : [];
         $existing["approved"] = $approved_symbol;
         $existing["name"] = $name;
-        $cache[$symbol] = $existing;
-        update_option(self::HGNC_OPTION, $cache, false);
+        self::cache_put($symbol, $existing);
         return $name;
     }
 
@@ -224,7 +282,7 @@ final class EIC_Gene_Name_Tool
             '<option value="differs"' . selected($scope, "differs", false) . '>Only records that differ or are empty</option>' .
             '<option value="all"' . selected($scope, "all", false) . '>All records with a gene</option>' .
             '</select></p>';
-        echo '<p><button class="button button-primary" name="eic_action" value="dryrun">Dry run (no writes)</button></p>';
+        echo '<p><button class="button button-primary" name="eic_action" value="dryrun">Dry run (no subtype writes)</button></p>';
         echo '<p><label><input type="checkbox" name="confirm" value="1"> Backed up and reviewed the dry run.</label></p>';
         echo '<button class="button button-primary" name="eic_action" value="commit">Commit</button>';
         echo "</form>";
@@ -239,6 +297,8 @@ final class EIC_Gene_Name_Tool
         }
         $ids = self::collect();
         $set = 0; $skip = 0; $unresolved = [];
+        $budget = self::BATCH;
+        self::$last_deferred = 0;
         echo "<h2>" . ($commit ? "Commit" : "Dry run") . "</h2>";
         echo '<table class="widefat striped"><thead><tr><th>Subtype</th><th>Gene</th><th>Current</th><th>Proposed (Title Case)</th><th>Action</th></tr></thead><tbody>';
 
@@ -254,7 +314,21 @@ final class EIC_Gene_Name_Tool
                 continue;
             }
 
-            $raw = self::hgnc_name($symbol);
+            // Cache-first, then spend the per-run live-lookup budget on misses;
+            // defer the rest to the next run to stay under the PHP time limit.
+            $cachedName = self::hgnc_name_cached($symbol);
+            if ($cachedName !== null) {
+                $raw = $cachedName;
+            } elseif ($budget > 0) {
+                $budget--;
+                $raw = self::hgnc_name($symbol);
+            } else {
+                self::$last_deferred++;
+                echo "<tr><td><strong>" . esc_html(get_the_title($id)) . "</strong></td><td>" .
+                    esc_html($symbol) . "</td><td>" . esc_html($current ?: "(empty)") .
+                    "</td><td><em>deferred &mdash; run again</em></td><td>deferred</td></tr>";
+                continue;
+            }
             if ($raw === null) {
                 $unresolved[] = $symbol;
                 echo "<tr><td><strong>" . esc_html(get_the_title($id)) . "</strong></td><td>" .
@@ -276,11 +350,18 @@ final class EIC_Gene_Name_Tool
                 "</td><td>" . esc_html($proposed) . "</td><td>" . esc_html($act) . "</td></tr>";
 
             if ($commit && $will) {
-                update_field("full_gene_name", $proposed, $id);
+                // Write by field key (not name) for reliable ACF resolution,
+                // matching the HGNC identifiers tool and the CLAUDE.md convention.
+                update_field("field_full_gene_name", $proposed, $id);
                 $set++;
             }
         }
         echo "</tbody></table>";
+        if (self::$last_deferred > 0) {
+            echo '<div class="notice notice-warning"><p><strong>Cold cache — batch limit reached.</strong> ' .
+                (int) self::$last_deferred . " gene(s) were deferred this run (live-lookup cap of " .
+                (int) self::BATCH . " per run). Cached lookups persist, so run again to continue.</p></div>";
+        }
         if ($commit) {
             echo '<div class="notice notice-success"><p><strong>Done.</strong> Wrote ' . $set . ' name(s).' .
                 ($unresolved ? " Unresolved: " . esc_html(implode(", ", array_unique($unresolved))) . "." : "") .

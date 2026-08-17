@@ -21,19 +21,12 @@
   color: var(--text, #1c2530);
 }
 
-/* ---- Sticky unit: filter + header ride together ----
-   The filter card and the column-header bar share one sticky wrapper, so they
-   pin and release as a single element. Because .vmech-stick's containing block
-   is .vmech (which the data table fills), the unit stays pinned through the
-   whole table and releases cleanly at the bottom, letting the page scroll on
-   into the footer. Its white background backs the gap between the two bars and
-   the filter's rounded corner notches, so no scrolling row shows through. */
-.vmech-stick {
-  position: sticky;
-  top: var(--vm-top, 0px);
-  z-index: 30;
-  background: #fff;
-}
+/* ---- Sticky column header (mirrors the gene browser) ----
+   Only the column-header bar (.vmech-headtable, styled below) is sticky; the
+   filter card scrolls away above it. The header's containing block is .vmech
+   (which the data table fills), so it pins below the admin bar through the whole
+   table and releases cleanly at the bottom, letting the page scroll into the
+   footer. */
 
 /* ---- Filter card (matches the Genes DB filter aesthetic) ---- */
 .vmech-filter {
@@ -54,6 +47,9 @@
    Inset 1px on each side so its columns sit over the data table, which lives
    inside the tablewrap's 1px left/right border. */
 .vmech-headtable {
+  position: sticky;
+  top: var(--vm-top, 0px);
+  z-index: 30;
   width: calc(100% - 2px);
   margin: 20px 1px 0; /* 20px = the resting gap below the filter */
   table-layout: fixed;
@@ -100,12 +96,21 @@
 
 .vmech-search {
   width: 100%;
-  padding: 0.7rem 0.9rem;
+  padding: 0.7rem 0.9rem 0.7rem 2.8rem;
   font-size: 15px;
   color: var(--text, #1c2530);
-  background: #fff;
+  background: #fff
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%239aa2ac' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E")
+    no-repeat 0.9rem center;
+  background-size: 18px;
   border: 1px solid var(--border, #e2e6ea);
   border-radius: 10px;
+}
+
+/* Outrank the theme's global input[type=search] padding (main.css) so the text
+   clears the search icon. */
+.vmech .vmech-search {
+  padding-left: 2.8rem;
 }
 
 .vmech-search:focus-visible {
@@ -159,11 +164,15 @@
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary, #174777) 20%, transparent);
 }
 
+/* Full-width action row, left-aligned, with the count right after Reset —
+   matching the gene browser's .gbx-actions placement. */
 .vmech-filter__actions {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 0.9rem;
-  margin-left: auto;
+  flex-basis: 100%;
+  width: 100%;
 }
 
 .vmech-reset,
@@ -189,11 +198,16 @@
   white-space: nowrap;
 }
 
+/* Bold the number dark against the muted line, as the gene browser does. */
+.vmech-count b {
+  color: var(--text, #1c2530);
+}
+
 /* ---- Accordion table ---- */
 .vmech-tablewrap {
   margin-top: 0;
   border: 1px solid var(--border, #e2e6ea);
-  /* No top border: the navy header bar (in .vmech-stick, directly above) owns
+  /* No top border: the navy header bar (.vmech-headtable, directly above) owns
      the top edge and its rounded top corners. Only the bottom corners round
      here. */
   border-top: 0;
@@ -286,7 +300,9 @@
 }
 
 .vmech-row:focus-visible {
-  outline: 2px solid var(--primary-light, #5ea0c9);
+  /* --primary (not --primary-light) keeps the ring >=3:1 against white per
+     WCAG 2.4.11 non-text contrast. */
+  outline: 2px solid var(--primary, #174777);
   outline-offset: -2px;
 }
 
@@ -296,7 +312,9 @@
 }
 
 .vmech-gene em {
-  color: var(--primary-light, #5ea0c9);
+  /* Darkened from --primary-light (#5ea0c9 = 2.85:1 on white, fails AA) to a
+     blue that clears 4.5:1 while staying an accent, not the navy primary. */
+  color: #26719c;
   font-weight: 600;
   font-style: italic;
 }
@@ -334,7 +352,7 @@
 }
 
 .vmech-conf--high { color: #137333; }
-.vmech-conf--medium { color: #a06a00; }
+.vmech-conf--medium { color: #8a5a00; }
 .vmech-conf--low { color: #b02a2a; }
 .vmech-conf--none { font-weight: 400; }
 
@@ -357,6 +375,12 @@
   transform: rotate(45deg);
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .vmech-plus::before {
+    transition: none;
+  }
+}
+
 /* Detail panel */
 .vmech-detail > td {
   padding: 0;
@@ -364,7 +388,7 @@
 }
 
 .vmech-detail__body {
-  padding: 4px 18px 20px;
+  padding: 6px 18px 20px;
   background: color-mix(in srgb, var(--primary-light, #5ea0c9) 12%, #fff);
   border-bottom: 1px solid var(--border, #e2e6ea);
 }
@@ -378,9 +402,16 @@
   color: var(--text, #1c2530);
 }
 
+/* Labels read in one voice with the "Mechanistic basis" label above and with the
+   gene browser's section labels: uppercase, letter-spaced, muted, bold. The prose
+   after each label is unchanged. */
 .vmech-detail__predlabel,
 .vmech-detail__ratlabel {
-  font-weight: 500;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 11px;
+  color: var(--muted, #6b7480);
 }
 
 /* Stack the detail paragraphs (basis, prediction, rationale, link) evenly. */
@@ -426,12 +457,6 @@
 }
 
 @media (max-width: 640px) {
-  /* On a phone the filter card is tall enough that pinning it would eat most
-     of the screen, so let the whole unit scroll normally at this width. */
-  .vmech-stick {
-    position: static;
-    background: transparent;
-  }
   .vmech-filter {
     padding: 1rem;
     /* Top corners squared so the filter meets the hero's flat bottom edge

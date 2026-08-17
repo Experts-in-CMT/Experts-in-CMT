@@ -586,6 +586,7 @@ endif;
    <!-- ========================================================
        BLOCK 4: KEY PUBLICATION(S)
        ======================================================== -->
+  <?php if ($has_primary_pub): ?>
   <section class="eic-block eic-block--publication">
     <h2 class="eic-block-title"><?php echo esc_html($pub_heading); ?></h2>
     <dl class="eic-facts">
@@ -651,6 +652,7 @@ endif;
 
     </dl>
   </section> <!-- /eic-block--publication -->
+  <?php endif; ?>
 
 
   <?php if ($has_alt_pub): ?>

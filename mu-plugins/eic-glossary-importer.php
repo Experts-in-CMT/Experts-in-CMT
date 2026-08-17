@@ -135,6 +135,9 @@ final class EIC_Glossary_Importer
                 }
             }
 
+            // Strip a leading UTF-8 BOM (common from Windows editors) so a
+            // BOM-prefixed upload does not fail json_decode with a syntax error.
+            $raw = preg_replace('/^\xEF\xBB\xBF/', "", (string) $raw);
             $json = json_decode($raw, true);
             if (json_last_error() !== JSON_ERROR_NONE) {
                 echo '<div class="notice notice-error"><p>JSON parse error: ' .

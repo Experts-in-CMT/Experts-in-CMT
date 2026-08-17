@@ -53,6 +53,41 @@ final class EIC_ClinVar_URL_Tool
     const HGNC_OPTION = "eic_hgnc_cache"; // shared with the importer
 
     /**
+     * In-request memo for the shared HGNC cache option, flushed once at shutdown.
+     * The cache was previously read and re-written on every uncached gene during a
+     * bulk backfill (O(n^2) option I/O).
+     */
+    private static $cache_mem = null;
+    private static $cache_dirty = false;
+
+    private static function cache_map(): array
+    {
+        if (self::$cache_mem === null) {
+            $c = get_option(self::HGNC_OPTION, []);
+            self::$cache_mem = is_array($c) ? $c : [];
+        }
+        return self::$cache_mem;
+    }
+
+    private static function cache_put(string $symbol, array $entry): void
+    {
+        self::cache_map();
+        self::$cache_mem[$symbol] = $entry;
+        if (!self::$cache_dirty) {
+            self::$cache_dirty = true;
+            add_action("shutdown", [__CLASS__, "flush_cache"]);
+        }
+    }
+
+    public static function flush_cache(): void
+    {
+        if (self::$cache_dirty) {
+            update_option(self::HGNC_OPTION, self::$cache_mem, false);
+            self::$cache_dirty = false;
+        }
+    }
+
+    /**
      * Build the canonical P/LP ClinVar URL for a gene symbol.
      * Returns "" for an empty symbol.
      */
@@ -78,7 +113,7 @@ final class EIC_ClinVar_URL_Tool
         if ($symbol === "") {
             return null;
         }
-        $cache = get_option(self::HGNC_OPTION, []);
+        $cache = self::cache_map();
         // Only short-circuit on a cache entry that this tool wrote (has
         // the "approved" key). Other EIC tools share HGNC_OPTION and may
         // have stored a different shape (e.g. ["omim" => ...]); those
@@ -103,9 +138,11 @@ final class EIC_ClinVar_URL_Tool
         $body = json_decode(wp_remote_retrieve_body($resp), true);
         $docs = $body["response"]["docs"] ?? [];
         $approved = !empty($docs) ? ($docs[0]["symbol"] ?? "") : "";
-        // Store in the same shape the importer uses (approved key at minimum).
-        $cache[$symbol] = ["approved" => $approved];
-        update_option(self::HGNC_OPTION, $cache, false);
+        // Store in the same shape the importer uses (approved key at minimum),
+        // preserving any keys other EIC tools set on this shared cache entry.
+        $entry = isset($cache[$symbol]) && is_array($cache[$symbol]) ? $cache[$symbol] : [];
+        $entry["approved"] = $approved;
+        self::cache_put($symbol, $entry);
         return $approved !== "" ? $approved : null;
     }
 

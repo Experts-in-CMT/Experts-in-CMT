@@ -194,6 +194,14 @@ add_shortcode("variant_mechanism_table", function ($atts = []) {
         "no_found_rows" => true,
         "orderby" => "title",
         "order" => "ASC",
+        // Candidate gene associations (candidate_gene = true) are not
+        // classified subtypes: excluded here, as in the Genes DB loop and the
+        // homepage totals. NOT EXISTS keeps ordinary subtypes (meta absent/"0").
+        "meta_query" => [
+            "relation" => "OR",
+            ["key" => "candidate_gene", "value" => "1", "compare" => "!="],
+            ["key" => "candidate_gene", "compare" => "NOT EXISTS"],
+        ],
     ]);
 
     // Public display labels for the single mechanism call.
@@ -313,7 +321,7 @@ add_shortcode("variant_mechanism_table", function ($atts = []) {
     ];
 
     $inh_abbr = [
-        "autosomal dominant or autosomal recessive" => "AD / AR",
+        "autosomal dominant or autosomal recessive" => "AD, AR",
         "autosomal dominant" => "AD",
         "autosomal recessive" => "AR",
         "x-linked recessive" => "XLR",
@@ -324,8 +332,6 @@ add_shortcode("variant_mechanism_table", function ($atts = []) {
     ob_start();
     ?>
 <div class="vmech" data-total="<?php echo (int) $total; ?>">
-
-  <div class="vmech-stick">
 
   <div class="vmech-filter" role="search">
     <label class="vmech-filter__search">
@@ -375,14 +381,14 @@ add_shortcode("variant_mechanism_table", function ($atts = []) {
     <div class="vmech-filter__actions">
       <button type="button" class="vmech-collapse">Close all</button>
       <button type="button" class="vmech-reset">Reset</button>
-      <span class="vmech-count" aria-live="polite"><?php echo (int) $total; ?> of <?php echo (int) $total; ?></span>
+      <span class="vmech-count" aria-live="polite">Showing <b><?php echo (int) $total; ?></b> subtypes</span>
     </div>
   </div>
 
     <?php // Header bar: a standalone table that shares the data table's
-    // colgroup so its columns track the body automatically. It rides inside
-    // .vmech-stick alongside the filter, so the pair pins and releases as one
-    // unit -- no independent sticky ranges to diverge at end of scroll. It is
+    // colgroup so its columns track the body automatically. It alone is sticky
+    // (mirroring the gene browser): the filter scrolls away and this column
+    // header pins below the admin bar through the whole table. It is
     // aria-hidden; the data table below keeps its own (visually hidden) thead
     // for screen readers. ?>
     <table class="vmech-headtable" aria-hidden="true">
@@ -405,7 +411,6 @@ add_shortcode("variant_mechanism_table", function ($atts = []) {
         </tr>
       </thead>
     </table>
-  </div>
 
   <div class="vmech-tablewrap">
     <table class="vmech-table">
@@ -448,6 +453,7 @@ add_shortcode("variant_mechanism_table", function ($atts = []) {
         <tr class="vmech-row" id="<?php echo esc_attr(
             eic_vmech_row_id($r["code"])
         ); ?>" tabindex="0" role="button" aria-expanded="false"
+            aria-controls="<?php echo esc_attr(eic_vmech_row_id($r["code"]) . "-detail"); ?>"
             data-call="<?php echo esc_attr($r["call"]); ?>"
             data-conf="<?php echo esc_attr($r["confidence"]); ?>"
             data-text="<?php echo esc_attr($haystack); ?>">
@@ -470,7 +476,7 @@ add_shortcode("variant_mechanism_table", function ($atts = []) {
           ); ?>"><?php echo $conf_label[$r["confidence"]]; ?></td>
           <td class="vmech-toggle"><span class="vmech-plus" aria-hidden="true"></span></td>
         </tr>
-        <tr class="vmech-detail" hidden>
+        <tr class="vmech-detail" id="<?php echo esc_attr(eic_vmech_row_id($r["code"]) . "-detail"); ?>" hidden>
           <td colspan="6">
             <div class="vmech-detail__body">
               <?php if ($r["flavor_label"] !== ""): ?>
@@ -522,18 +528,18 @@ function eicVmechInit(root) {
   var filter = root.querySelector('.vmech-filter');
   var total = rows.length;
 
-  // The filter and the column header ride together inside .vmech-stick, which
-  // is the single sticky element. We only need to offset it below the WP admin
-  // bar (present when a logged-in user views the front end), and tell a
-  // deep-linked row how far to clear the pinned unit.
+  // Only the column header is sticky (mirroring the gene browser); the filter
+  // scrolls away. Offset the header below the WP admin bar (present when a
+  // logged-in user views the front end), and tell a deep-linked row how far to
+  // clear the pinned header.
   function stickyTops() {
     var bar = document.getElementById('wpadminbar');
     var barH = bar ? bar.offsetHeight : 0;
-    var stick = root.querySelector('.vmech-stick');
-    var stickH = stick ? stick.offsetHeight : 0;
+    var head = root.querySelector('.vmech-headtable');
+    var headH = head ? head.offsetHeight : 0;
     root.style.setProperty('--vm-top', barH + 'px');
-    // Where a deep-linked row should land: clear of the whole pinned unit.
-    root.style.setProperty('--vm-row-top', (barH + stickH) + 'px');
+    // Where a deep-linked row should land: clear of the pinned header.
+    root.style.setProperty('--vm-row-top', (barH + headH) + 'px');
   }
   stickyTops();
   window.addEventListener('resize', stickyTops);
@@ -579,7 +585,14 @@ function eicVmechInit(root) {
     });
 
     if (empty) { empty.hidden = shown !== 0; }
-    if (countEl) { countEl.textContent = shown + ' of ' + total; }
+    if (countEl) {
+      // Prefaced like the gene browser: total at rest, shown-of-total when a
+      // facet or search is active.
+      var filtered = !!(calls || confs || q);
+      countEl.innerHTML = filtered
+        ? 'Showing <b>' + shown + '</b> of ' + total + ' subtypes'
+        : 'Showing <b>' + total + '</b> subtypes';
+    }
   }
 
   rows.forEach(function (row) {

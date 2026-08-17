@@ -27,6 +27,12 @@
  *    - Queries ONLY:
  *        1) Post type: `subtype`
  *        2) Field: `gene_symbol`
+ *
+ *  Candidate genes:
+ *    - Records carrying `candidate_gene = true` are candidate gene
+ *      associations, not classified subtypes. They are excluded
+ *      from both totals here (they surface only in the Gene
+ *      Browser).
  * ============================================================
  */
 
@@ -41,13 +47,20 @@ if (!defined("ABSPATH")) {
  */
 function eic_genes_totals_inline_shortcode() {
 
-    // Query all published subtype posts
+    // Query all published subtype posts, excluding candidate gene
+    // associations (candidate_gene = true). The NOT EXISTS arm keeps
+    // ordinary subtypes, whose meta row may be absent or "0".
     $q = new WP_Query([
         "post_type"      => "subtype",
         "post_status"    => "publish",
         "posts_per_page" => -1,
         "fields"         => "ids",
         "no_found_rows"  => true,
+        "meta_query"     => [
+            "relation" => "OR",
+            ["key" => "candidate_gene", "value" => "1", "compare" => "!="],
+            ["key" => "candidate_gene", "compare" => "NOT EXISTS"],
+        ],
     ]);
 
     if (empty($q->posts)) {

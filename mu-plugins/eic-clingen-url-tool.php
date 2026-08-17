@@ -55,6 +55,41 @@ final class EIC_ClinGen_URL_Tool
     const HGNC_OPTION = "eic_hgnc_cache"; // shared with the other tools
 
     /**
+     * In-request memo for the shared HGNC cache option, flushed once at shutdown.
+     * The cache was previously read and re-written on every uncached gene during a
+     * bulk backfill (O(n^2) option I/O).
+     */
+    private static $cache_mem = null;
+    private static $cache_dirty = false;
+
+    private static function cache_map(): array
+    {
+        if (self::$cache_mem === null) {
+            $c = get_option(self::HGNC_OPTION, []);
+            self::$cache_mem = is_array($c) ? $c : [];
+        }
+        return self::$cache_mem;
+    }
+
+    private static function cache_put(string $symbol, array $entry): void
+    {
+        self::cache_map();
+        self::$cache_mem[$symbol] = $entry;
+        if (!self::$cache_dirty) {
+            self::$cache_dirty = true;
+            add_action("shutdown", [__CLASS__, "flush_cache"]);
+        }
+    }
+
+    public static function flush_cache(): void
+    {
+        if (self::$cache_dirty) {
+            update_option(self::HGNC_OPTION, self::$cache_mem, false);
+            self::$cache_dirty = false;
+        }
+    }
+
+    /**
      * Harvested ClinGen CMT GCEP curations.
      * SYMBOL => [ [url, mondo, classification], ... ]
      */
@@ -67,15 +102,15 @@ final class EIC_ClinGen_URL_Tool
             "ARHGEF10" => [["https://search.clinicalgenome.org/CCID:004165", "MONDO:0011998", "Limited"]],
             "ATL1" => [["https://search.clinicalgenome.org/CCID:004200", "MONDO:0013381", "Definitive"]],
             "ATL3" => [["https://search.clinicalgenome.org/CCID:004201", "MONDO:0014286", "Moderate"]],
-            "ATP1A1" => [["https://search.clinicalgenome.org/CCID:004208", "MONDO:0054833", "Moderate"]],
+            "ATP1A1" => [["https://search.clinicalgenome.org/CCID:004208", "MONDO:0054833", "Definitive"]],
             "ATP7A" => [["https://search.clinicalgenome.org/CCID:004216", "MONDO:0010338", "Moderate"]],
             "BSCL2" => [["https://search.clinicalgenome.org/CCID:004292", "MONDO:0018894", "Definitive"]],
             "CADM3" => [["https://search.clinicalgenome.org/CCID:009251", "MONDO:0030433", "Moderate"]],
             "COQ7" => [["https://search.clinicalgenome.org/CCID:009252", "MONDO:0018894", "Strong"]],
-            "DNAJB2" => [["https://search.clinicalgenome.org/CCID:004677", "MONDO:0014866", "Definitive"]],
+            "DNAJB2" => [["https://search.clinicalgenome.org/CCID:004677", "MONDO:0013947", "Definitive"]],
             "DNM2" => [["https://search.clinicalgenome.org/CCID:004687", "MONDO:0015626", "Definitive"]],
             "DST" => [["https://search.clinicalgenome.org/CCID:004708", "MONDO:0013839", "Definitive"]],
-            "DYNC1H1" => [["https://search.clinicalgenome.org/CCID:004713", "MONDO:0000075", "Definitive"]],
+            "DYNC1H1" => [["https://search.clinicalgenome.org/CCID:004713", "MONDO:0018894", "Definitive"]],
             "EGR2" => [["https://search.clinicalgenome.org/CCID:004734", "MONDO:0015626", "Definitive"]],
             "ELP1" => [["https://search.clinicalgenome.org/CCID:009357", "MONDO:0009131", "Moderate"]],
             "FBLN5" => [["https://search.clinicalgenome.org/CCID:004821", "MONDO:0018776", "Moderate"]],
@@ -95,13 +130,13 @@ final class EIC_ClinGen_URL_Tool
             "ITPR3" => [["https://search.clinicalgenome.org/CCID:009253", "MONDO:0859311", "Definitive"]],
             "KIF1B" => [["https://search.clinicalgenome.org/CCID:005229", "MONDO:0007308", "Limited"]],
             "KIF5A" => [["https://search.clinicalgenome.org/CCID:005232", "MONDO:0024237", "Definitive"]],
-            "LITAF" => [["https://search.clinicalgenome.org/CCID:005288", "MONDO:0015626", "Moderate"]],
+            "LITAF" => [["https://search.clinicalgenome.org/CCID:005288", "MONDO:0015626", "Definitive"]],
             "LRSAM1" => [["https://search.clinicalgenome.org/CCID:005306", "MONDO:0013753", "Definitive"]],
             "MARS1" => [["https://search.clinicalgenome.org/CCID:005337", "MONDO:0015626", "Limited"]],
             "MCM3AP" => [["https://search.clinicalgenome.org/CCID:005352", "MONDO:0029131", "Definitive"]],
             "MED25" => [["https://search.clinicalgenome.org/CCID:005366", "MONDO:0011570", "Disputed"]],
-            "MFN2" => [["https://search.clinicalgenome.org/CCID:005380", "MONDO:0018775", "Definitive"]],
-            "MME" => [["https://search.clinicalgenome.org/CCID:005399", "MONDO:0014866", "Definitive"]],
+            "MFN2" => [["https://search.clinicalgenome.org/CCID:005380", "MONDO:0012231", "Definitive"]],
+            "MME" => [["https://search.clinicalgenome.org/CCID:005399", "MONDO:0044640", "Definitive"]],
             "MORC2" => [["https://search.clinicalgenome.org/CCID:005407", "MONDO:0014736", "Definitive"]],
             "MPZ" => [["https://search.clinicalgenome.org/CCID:005415", "MONDO:0015626", "Definitive"]],
             "MTMR2" => [["https://search.clinicalgenome.org/CCID:005499", "MONDO:0018776", "Definitive"]],
@@ -118,11 +153,11 @@ final class EIC_ClinGen_URL_Tool
             "RETREG1" => [["https://search.clinicalgenome.org/CCID:008315", "MONDO:0015364", "Definitive"]],
             "SBF1" => [["https://search.clinicalgenome.org/CCID:006058", "MONDO:0014117", "Moderate"]],
             "SBF2" => [["https://search.clinicalgenome.org/CCID:006059", "MONDO:0011475", "Definitive"]],
-            "SCN11A" => [["https://search.clinicalgenome.org/CCID:006062", "MONDO:0015365", "Definitive"]],
+            "SCN11A" => [["https://search.clinicalgenome.org/CCID:006062", "MONDO:0014244", "Definitive"]],
             "SCO2" => [["https://search.clinicalgenome.org/CCID:009336", "MONDO:0015626", "Moderate"]],
             "SEPTIN9" => [["https://search.clinicalgenome.org/CCID:006106", "MONDO:0017362", "Moderate"]],
             "SETX" => [["https://search.clinicalgenome.org/CCID:006121", "MONDO:0018894", "Definitive"]],
-            "SH3TC2" => [["https://search.clinicalgenome.org/CCID:006133", "MONDO:0015361", "Definitive"]],
+            "SH3TC2" => [["https://search.clinicalgenome.org/CCID:006133", "MONDO:0011113", "Definitive"]],
             "SLC25A46" => [["https://search.clinicalgenome.org/CCID:006171", "MONDO:0014671", "Definitive"]],
             "SLC5A7" => [["https://search.clinicalgenome.org/CCID:006195", "MONDO:0008024", "Moderate"]],
             "SORD" => [["https://search.clinicalgenome.org/CCID:006246", "MONDO:0015626", "Definitive"]],
@@ -177,7 +212,7 @@ final class EIC_ClinGen_URL_Tool
         if ($symbol === "") {
             return null;
         }
-        $cache = get_option(self::HGNC_OPTION, []);
+        $cache = self::cache_map();
         // Only short-circuit on a cache entry that this tool wrote (has
         // the "approved" key). Other EIC tools share HGNC_OPTION and may
         // have stored a different shape; those must fall through to a
@@ -202,8 +237,10 @@ final class EIC_ClinGen_URL_Tool
         $body = json_decode(wp_remote_retrieve_body($resp), true);
         $docs = $body["response"]["docs"] ?? [];
         $approved = !empty($docs) ? ($docs[0]["symbol"] ?? "") : "";
-        $cache[$symbol] = ["approved" => $approved];
-        update_option(self::HGNC_OPTION, $cache, false);
+        // Preserve any keys other EIC tools set on this shared cache entry.
+        $entry = isset($cache[$symbol]) && is_array($cache[$symbol]) ? $cache[$symbol] : [];
+        $entry["approved"] = $approved;
+        self::cache_put($symbol, $entry);
         return $approved !== "" ? $approved : null;
     }
 

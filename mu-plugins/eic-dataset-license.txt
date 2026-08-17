@@ -1,0 +1,149 @@
+Experts in CMT CMT Gene Browser
+© 2026, Experts in CMT, and its affiliates and assigns and licensors.
+Some rights reserved.
+
+expertsincmt.org is a website of Experts in CMT.
+
+LICENSE
+
+The Experts in CMT CMT Gene Browser dataset is licensed under a Creative
+Commons Attribution 4.0 International License (CC BY 4.0). You are free to
+share the dataset, copying and redistributing it in any medium or format, and
+to adapt it, remixing, transforming, and building upon it for any purpose,
+including commercial purposes. These freedoms are granted so long as you give
+appropriate credit to Experts in CMT, provide a link to the license, and
+indicate whether changes were made. You may do so in any reasonable manner,
+but not in any way that suggests Experts in CMT endorses you or your use. You
+may not apply legal terms or technological measures that legally restrict
+others from doing anything the license permits. The full license text is
+available at https://creativecommons.org/licenses/by/4.0/.
+
+ATTRIBUTION
+
+Experts in CMT. (2026). Experts in CMT CMT Gene Browser [Data set].
+Experts in CMT. https://expertsincmt.org. Licensed under CC BY 4.0.
+
+SCOPE OF LICENSE
+
+The CC BY 4.0 license applies to the curation, compilation, selection,
+arrangement, classifications, and original descriptive text authored by
+Experts in CMT, together with any database rights Experts in CMT holds in
+that compilation. It does not extend to any material Experts in CMT does not
+own.
+
+THIRD-PARTY CONTENT
+
+This dataset incorporates, references, and links to content owned by third
+parties, including gene nomenclature, variant records, curated gene-disease
+and dosage classifications, population frequency data, reference sequences,
+protein annotations, panel identifiers, discovery attributions, publication
+metadata, and cited literature. All such content remains the property of its
+respective owner and is subject to that owner's copyright, database rights,
+licenses, and terms of use. Third-party content is included under the terms
+made available by each owner, or as permitted by applicable law, and no
+rights in it are granted, transferred, or sublicensed by Experts in CMT.
+Names, marks, and logos of third parties are the property of their respective
+owners and their appearance does not imply affiliation with or endorsement by
+those owners. Users who reuse or redistribute this dataset are responsible
+for identifying and complying with the terms governing any third-party
+content it contains. If you believe material in this dataset is included in
+error or in a manner inconsistent with your rights, contact Experts in CMT at
+info@expertsincmt.org and the matter will be addressed promptly.
+
+SOURCES
+
+Records referenced in this dataset are drawn from HGNC (gene nomenclature),
+MANE (reference transcripts), UniProt (protein annotations), ClinVar (variant
+classifications), ClinGen (gene-disease validity and dosage sensitivity
+classifications), gnomAD (population frequency and constraint), OMIM (record
+identifiers only), Genomics England PanelApp (panel and entity identifiers
+only), and the Genesis Project Foundation (discovery attributions). All
+source data in this release was obtained on August 7, 2026. Each source
+remains subject to its own terms of use, as described above, and each is
+cited below. The GENESIS discovery flag carried by certain gene records
+indicates that the gene-disease association was identified through work
+conducted on the GENESIS platform, as published by the Genesis Project
+Foundation. No GENESIS platform data is included in this dataset.
+
+ClinGen
+    Curated content in this dataset was obtained from the Clinical Genome
+    Resource (www.clinicalgenome.org): Gene-Disease Validity classifications
+    and Gene Dosage Sensitivity classifications, accessed August 7, 2026.
+
+    Rehm HL, Berg JS, Brooks LD, Bustamante CD, Evans JP, Landrum MJ,
+    Ledbetter DH, Maglott DR, Martin CL, Nussbaum RL, Plon SE, Ramos EM,
+    Sherry ST, Watson MS. ClinGen: the Clinical Genome Resource. New England
+    Journal of Medicine. 2015;372(23):2235-2242. doi:10.1056/NEJMsr1406261
+
+    ClinGen Consortium. The Clinical Genome Resource (ClinGen): advancing
+    genomic knowledge through global curation. Genetics in Medicine.
+    2025;27(1):101228. doi:10.1016/j.gim.2024.101228
+
+ClinVar
+    Landrum MJ, Lee JM, Benson M, Brown GR, Chao C, Chitipiralla S, Gu B,
+    Hart J, Hoffman D, Jang W, Karapetyan K, Katz K, Liu C, Maddipatla Z,
+    Malheiro A, McDaniel K, Ovetsky M, Riley G, Zhou G, Holmes JB, Kattman
+    BL, Maglott DR. ClinVar: improving access to variant interpretations and
+    supporting evidence. Nucleic Acids Research. 2018;46(D1):D1062-D1067.
+    doi:10.1093/nar/gkx1153
+
+Genesis Project Foundation
+    Genesis Project Foundation. Discoveries.
+    https://www.tgp-foundation.org/d-i-s-c-o-v-e-r-i-e-s
+
+    M. Gonzalez, M. J. Falk, X. Gai, R. Postrel, R. Schüle, and S. Zuchner,
+    "Innovative Genomic Collaboration Using the GENESIS (GEM.app) Platform.,"
+    Hum. Mutat., vol. 36, no. 10, pp. 950-956, Oct. 2015.
+
+gnomAD
+    Chen S, Francioli LC, Goodrich JK, et al.; Genome Aggregation Database
+    Consortium. A genomic mutational constraint map using variation in
+    76,156 human genomes. Nature. 2024;625(7993):92-100.
+    doi:10.1038/s41586-023-06045-0
+
+    Karczewski KJ, Francioli LC, Tiao G, et al. The mutational constraint
+    spectrum quantified from variation in 141,456 humans. Nature.
+    2020;581(7809):434-443. doi:10.1038/s41586-020-2308-7
+
+HGNC
+    Seal RL, Braschi B, Gray K, McClay J, Tweedie S, Bruford EA.
+    Genenames.org: the HGNC and PGNC resources in 2026. Nucleic Acids
+    Research. 2026;54(D1):D1098-D1107. doi:10.1093/nar/gkaf1229
+
+    HGNC Database, HUGO Gene Nomenclature Committee (HGNC), Department of
+    Haematology, Long Road, Cambridge CB2 0PT, United Kingdom.
+    www.genenames.org. Data retrieved August 2026.
+
+MANE
+    Morales J, Pujar S, Loveland JE, et al. A joint NCBI and EMBL-EBI
+    transcript set for clinical genomics and research. Nature.
+    2022;604(7905):310-315. doi:10.1038/s41586-022-04558-8
+
+OMIM
+    Amberger JS, Bocchini CA, Schiettecatte F, Scott AF, Hamosh A. OMIM.org:
+    Online Mendelian Inheritance in Man (OMIM®), an online catalog of human
+    genes and genetic disorders. Nucleic Acids Research. 2015;43(D1):
+    D789-D798. doi:10.1093/nar/gku1205
+
+PanelApp
+    Martin AR, Williams E, Foulger RE, Leigh S, Daugherty LC, Niblock O,
+    Leong IUS, Smith KR, Gerasimenko O, Haraldsdottir E, Thomas E, Scott RH,
+    Baple E, Tucci A, Brittain H, de Burca A, Ibañez K, Kasperaviciute D,
+    Smedley D, Caulfield M, Rendon A, McDonagh EM. PanelApp crowdsources
+    expert knowledge to establish consensus diagnostic gene panels. Nature
+    Genetics. 2019;51(11):1560-1565. doi:10.1038/s41588-019-0528-2
+
+UniProt
+    The UniProt Consortium. UniProt: the Universal Protein Knowledgebase in
+    2025. Nucleic Acids Research. 2025;53(D1):D609-D617.
+    doi:10.1093/nar/gkae1010
+
+DISCLAIMER
+
+The dataset is offered as-is and as-available. Experts in CMT makes no
+representations or warranties of any kind concerning the dataset, express,
+implied, statutory, or otherwise, and disclaims all liability for damages
+arising from its use to the fullest extent permitted by law. The dataset is
+provided for informational and educational purposes and is not medical
+advice, and it is not a substitute for evaluation by a qualified clinician or
+genetic counselor.

@@ -14,7 +14,7 @@
  * Entry-point cards. Hardcoded, with named sets so different pages can show
  * different cards from the same file:
  *
- *   [eic_entry_points set="home"]      four "Where to start?" cards (default)
+ *   [eic_entry_points set="home"]      five "Where to start?" cards (default)
  *   [eic_entry_points set="genetics"]  four cards mirroring the Genetics nav
  *   [eic_entry_points set="learn"]     three cards mirroring the Learn nav
  *   [eic_entry_points set="platform"]  five cards spanning the whole platform
@@ -113,6 +113,26 @@ add_shortcode("eic_entry_points", function ($atts) {
         '<circle cx="5" cy="17" r="1.3" fill="currentColor" stroke="none"/>' .
         '<path d="M9 7h11M9 12h11M9 17h8" stroke-linecap="round"/>'
     );
+    // Lab test tube: the "get tested" glyph for Genetic Testing. Same hero line
+    // style (viewBox 24, stroke-width 2, currentColor) and standard icon size,
+    // so it sits and scales like its siblings. Frees the DNA helix for the Gene
+    // Browser, where the double-helix reads as "gene-resolved."
+    $icon_vial = $svg(
+        '<path d="M9 3h6" stroke-linecap="round"/>' .
+        '<path d="M10 3v13a2 2 0 0 0 4 0V3" stroke-linejoin="round"/>' .
+        '<path d="M10 11h4" stroke-linecap="round"/>'
+    );
+    // Dorsal root ganglion: two nerve roots on the left merging into the spinal
+    // nerve on the right, with the ganglion swelling on the dorsal (upper) root.
+    // Replaces the impulse waveform (which read like a vital sign) on The Dorsal
+    // Root card.
+    $icon_drg = $svg(
+        '<path d="M3 8h2.3" stroke-linecap="round"/>' .
+        '<ellipse cx="7.5" cy="8" rx="2.2" ry="1.6"/>' .
+        '<path d="M9.7 8q2.3 1 3.3 4" stroke-linecap="round"/>' .
+        '<path d="M3 16q7 0 10-4" stroke-linecap="round"/>' .
+        '<path d="M13 12h8" stroke-linecap="round"/>'
+    );
 
     // ---- Card sets --------------------------------------------------------
     // "lead" on a set is the default label above every card's list. A card may
@@ -138,19 +158,33 @@ add_shortcode("eic_entry_points", function ($atts) {
                     ],
                 ],
                 [
-                    "title" => "The Database",
+                    "title" => "CMT Subtype Browser",
                     "url"   => home_url("/cmt-genetics-database/"),
                     "icon"  => $icon_search,
                     "items" => [
-                        "You have a gene but no subtype",
+                        "You have a subtype, want the specifics",
+                        "You need subtype-specific symptoms",
                         "Your diagnosis is weird",
-                        "You need subtype symptoms",
                         "You want to dig deeper",
                         "You want details, not bloat",
                     ],
                 ],
                 [
-                    "title" => "Variant Mechanisms",
+                    // Clinician/scientist-forward: the gene-resolved lane
+                    // (external records, identifiers, coordinates, dataset).
+                    "title"   => "CMT Gene Browser",
+                    "url"     => home_url("/genetics/cmt-gene-browser/"),
+                    "icon"    => $icon_dna,
+                    "icon_lg" => true, // helix reads better a touch larger
+                    "items" => [
+                        "You’re a researcher/scientist and need details about CMT genes",
+                        "You have a CMT gene and need to know its function",
+                        "You have a gene, but don’t know if it’s implicated in CMT",
+                        "You like browsing gene tables",
+                    ],
+                ],
+                [
+                    "title" => "CMT Variant Mechanisms Browser",
                     "url"   => home_url("/genetics/cmt-variant-mechanisms-browser/"),
                     "icon"  => $icon_branch,
                     "items" => [
@@ -161,10 +195,9 @@ add_shortcode("eic_entry_points", function ($atts) {
                     ],
                 ],
                 [
-                    "title"   => "Genetic Testing",
-                    "url"     => home_url("/genetic-testing/"),
-                    "icon"    => $icon_dna,
-                    "icon_lg" => true, // helix reads better a touch larger
+                    "title" => "CMT Genetic Testing",
+                    "url"   => home_url("/genetic-testing/"),
+                    "icon"  => $icon_vial,
                     "items" => [
                         "Genetics came up",
                         "Testing was mentioned",
@@ -176,9 +209,9 @@ add_shortcode("eic_entry_points", function ($atts) {
             ],
         ],
 
-        // Mirrors the Genetics nav dropdown: Classifications, Genetics
-        // Database, Variant Mechanisms, Genetic Testing. Each card carries its
-        // own tagline lead instead of the shared "Start here if:".
+        // Mirrors the Genetics nav dropdown: Classifications, Subtype Browser,
+        // Gene Browser, Variant Mechanisms Browser, Genetic Testing. Each card
+        // carries its own tagline lead instead of the shared "Start here if:".
         "genetics" => [
             "lead" => "",
             "cols" => 3,
@@ -197,7 +230,7 @@ add_shortcode("eic_entry_points", function ($atts) {
                     ],
                 ],
                 [
-                    "title" => "CMT Genetics Database",
+                    "title" => "CMT Subtype Browser",
                     "url"   => home_url("/cmt-genetics-database/"),
                     "icon"  => $icon_search,
                     "lead"  => "CMT. Curated.",
@@ -210,7 +243,21 @@ add_shortcode("eic_entry_points", function ($atts) {
                     ],
                 ],
                 [
-                    "title" => "CMT Variant Mechanisms",
+                    // Clinician/scientist-forward: the gene-resolved lane.
+                    "title"   => "CMT Gene Browser",
+                    "url"     => home_url("/genetics/cmt-gene-browser/"),
+                    "icon"    => $icon_dna,
+                    "icon_lg" => true, // helix reads better a touch larger
+                    "lead"    => "The gene, resolved",
+                    "items" => [
+                        "You’re a researcher/scientist and need details about CMT genes",
+                        "You have a CMT gene and need to know its function",
+                        "You have a gene, but don’t know if it’s implicated in CMT",
+                        "You like browsing gene tables",
+                    ],
+                ],
+                [
+                    "title" => "CMT Variant Mechanisms Browser",
                     "url"   => home_url("/genetics/cmt-variant-mechanisms-browser/"),
                     "icon"  => $icon_branch,
                     "lead"  => "The how, not the what",
@@ -223,11 +270,10 @@ add_shortcode("eic_entry_points", function ($atts) {
                     ],
                 ],
                 [
-                    "title"   => "CMT Genetic Testing",
-                    "url"     => home_url("/genetic-testing/"),
-                    "icon"    => $icon_dna,
-                    "icon_lg" => true,
-                    "lead"    => "The info that matters",
+                    "title" => "CMT Genetic Testing",
+                    "url"   => home_url("/genetic-testing/"),
+                    "icon"  => $icon_vial,
+                    "lead"  => "The info that matters",
                     "items" => [
                         "Types of tests",
                         "When to test",
@@ -302,7 +348,7 @@ add_shortcode("eic_entry_points", function ($atts) {
                     ],
                 ],
                 [
-                    "title" => "CMT Genetics Database",
+                    "title" => "CMT Subtype Browser",
                     "url"   => home_url("/cmt-genetics-database/"),
                     "icon"  => $icon_search,
                     "lead"  => "CMT. Curated.",
@@ -330,7 +376,7 @@ add_shortcode("eic_entry_points", function ($atts) {
                 [
                     "title" => "The Dorsal Root",
                     "url"   => home_url("/dorsal-root/"),
-                    "icon"  => $icon_impulse,
+                    "icon"  => $icon_drg,
                     "lead"  => "Nerves talk. We listen.",
                     "items" => [
                         "Stories and science",
@@ -339,6 +385,22 @@ add_shortcode("eic_entry_points", function ($atts) {
                         "Fresh reads",
                     ],
                 ],
+                [
+                    "title"   => "CMT Gene Browser",
+                    "url"     => home_url("/genetics/cmt-gene-browser/"),
+                    "icon"    => $icon_dna,
+                    "icon_lg" => true, // helix reads better a touch larger
+                    "lead"    => "The gene, resolved",
+                    "items" => [
+                        "You’re a researcher/scientist and need details about CMT genes",
+                        "You have a CMT gene and need to know its function",
+                        "You have a gene, but don’t know if it’s implicated in CMT",
+                        "You like browsing gene tables",
+                    ],
+                ],
+                // Glossary swapped out for the Gene Browser on the 404. Kept
+                // here, commented, so it can be restored without rebuilding it.
+                /*
                 [
                     "title" => "CMT Glossary",
                     "url"   => home_url("/cmt-words/"),
@@ -351,6 +413,7 @@ add_shortcode("eic_entry_points", function ($atts) {
                         "Dictionary sources included",
                     ],
                 ],
+                */
             ],
         ],
     ];

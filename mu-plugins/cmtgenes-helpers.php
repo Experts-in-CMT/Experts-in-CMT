@@ -395,6 +395,11 @@ add_filter(
         } // honor other validation
         $value = trim((string) $value);
         if ($value === "") {
+            // Candidate gene associations legitimately carry no subtype code, so
+            // an empty subtype is valid when the candidate_gene flag is on.
+            if (!empty($_POST["acf"]["field_candidate_gene"])) {
+                return true;
+            }
             return "Subtype is required.";
         }
 

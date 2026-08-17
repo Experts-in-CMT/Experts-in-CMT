@@ -192,16 +192,29 @@ function eic_maint_render_page()
         <?php endif; ?>
 
         <?php
-        foreach (eic_maint_checks() as $id => $check) {
-            // The glossary link check is dormant while its map is empty:
-            // hide it entirely until a bad slug is added to eic_maint_bad_links().
-            if ($id === "glossary" && !eic_maint_bad_links()) {
-                continue;
+        // Scans are N+1 over every subtype across six checks, so run them only on
+        // an explicit request rather than on every page load. Auto-scan right
+        // after an apply so the updated state is shown without a second click.
+        $do_scan = (isset($_GET["scan"]) && $_GET["scan"] === "1") || $applied !== "";
+        $scan_url = esc_url(add_query_arg("scan", "1", remove_query_arg(["applied", "n"])));
+        if (!$do_scan): ?>
+            <p style="margin:18px 0;">
+                <a href="<?php echo $scan_url; ?>" class="button button-primary">Run scan</a>
+                <span style="color:#646970;margin-left:8px;">Scans all subtype records across every check; this can take a few seconds.</span>
+            </p>
+        <?php else:
+            foreach (eic_maint_checks() as $id => $check) {
+                // The glossary link check is dormant while its map is empty:
+                // hide it entirely until a bad slug is added to eic_maint_bad_links().
+                if ($id === "glossary" && !eic_maint_bad_links()) {
+                    continue;
+                }
+                $findings = call_user_func($check["scan"]);
+                eic_maint_render_check($id, $check["label"], $findings);
             }
-            $findings = call_user_func($check["scan"]);
-            eic_maint_render_check($id, $check["label"], $findings);
-        }
-        ?>
+            ?>
+            <p style="margin:18px 0;"><a href="<?php echo $scan_url; ?>" class="button">Re-run scan</a></p>
+        <?php endif; ?>
     <?php eic_admin_tool_close(); ?>
     <?php
 }

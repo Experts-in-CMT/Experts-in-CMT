@@ -11,32 +11,158 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.0.0] - 2026-08-16
+
+The CMT Gene Browser release: a new gene-resolved public surface, its data model, the admin tooling that populates it, and the versioned open dataset behind it. This is a major bump because the subtype record's long-required core fields (subtype, chromosome, inheritance, neuropathy, zygosity, type classification, year of discovery, and the full publication set) are now optional, so the store can hold candidate gene associations and structural records that are not classified subtypes. Also folds in the Dorsal Root visibility, header banner, and genes-search work committed since 3.1.0.
+
 ### Added
+
+- **CMT Gene Browser: Gene-Resolved Table (`gene-browser-table.php`)**
+  - A new `[gene_browser]` shortcode renders a live, database-driven table of the CMT disease genes, one row per gene, resolved from the subtype store by grouping a `WP_Query` over published subtypes on `gene_symbol`. Every gene ships in the server-rendered HTML; search, facets, sort, A-Z jump, and row expand are client-side over that small catalog. Each row expands to the gene's external records, stored identifiers, and its subtype list.
+  - inc/shortcodes/gene-browser-table.php
+
+- **CMT Gene Browser: App Hero (`gene-browser-hero-shortcode.php`, `gene-browser-hero-fields.php`, `eic-gbx-hero-mask-preview.php`)**
+  - A `[gene_browser_hero]` shortcode gives the Gene Browser the same app-hero treatment as the Genes DB and Variant Mechanisms tools: a background image output as a CSS custom property, a left-side fade driven by desktop and mobile ACF Range slider pairs, a navy title, intro copy, and a three-item stats line (genes cataloged, classified subtypes, chromosomes). Each stat self-trims if empty, and the counts render exactly with no evergreen "+", since these are exact totals.
+  - The ACF field group locates itself to whichever page hosts `[gene_browser]` (cached, self-healing on a miss) so there is no hard-coded page ID. An editor-only mask-preview mu-plugin paints the desktop and mobile fade live onto the hero thumbnail in the meta box, a sibling of the Variant Mechanisms hero preview under its own class namespace.
+  - inc/shortcodes/gene-browser-hero-shortcode.php
+  - inc/acf/gene-browser-hero-fields.php
+  - mu-plugins/eic-gbx-hero-mask-preview.php
+
+- **CMT Gene Browser: Subtype Data Model for Genes (`subtype-fields.php`)**
+  - The subtype record gains the fields the gene-resolved surface reads. Candidate-gene fields: `candidate_gene` (true/false), `candidate_since`, and a `candidate_note` for a downgrade's KOL rationale. A `genesis_discovery` true/false flag. Eleven external-record fields: `clingen_classification`, `clingen_disease`, `clingen_mondo`, `clingen_validity_url`, `panelapp_rating`, `panelapp_votes`, `panelapp_url`, `clingen_hi`, `clingen_ts`, `clingen_dosage_url`, and `orphanet_url`. Ten identifier fields: `hgnc_id`, `ensembl_gene_id`, `coords_grch38`, `coords_grch37`, `entrez_id`, `uniprot_id`, `refseq_accession`, `mane_select_refseq`, `mane_select_ensembl`, and `gene_function`.
+  - The "Advanced" tab is renamed "Identifiers" to match its new contents.
+  - inc/acf/subtype-fields.php
+
+- **CMT Dataset Export: Versioned DLC Generator (`eic-dataset-export.php`)**
+  - Builds the public, versioned download of the gene-resolved CMT dataset as JSON and CSV from the live subtype store, applies the redistribution license filter, stamps a provenance and license manifest, and writes versioned files plus a bundled zip (JSON, CSV, README, license) to uploads/eic-datasets/. The license filter passes IDs, URLs, ClinGen values, and the attributed UniProt gene function, omits the PanelApp rating value pending a Genomics England reuse license, and emits no GeneReviews or OMIM text. The artefact is a pinned file, never a live endpoint, so a cited version is fixed and reproducible; the data version is independent of the theme version.
+  - mu-plugins/eic-dataset-export.php
+
+- **CMT Dataset Download: Ungated Button (`dataset-download.php`)**
+  - An `[eic_dataset_download]` shortcode links the newest zip produced by the export tool as a direct, ungated download, matching the open CC BY 4.0 release: no email capture, no gate. Renders nothing until a build exists; styles print once inline.
+  - inc/shortcodes/dataset-download.php
+
+- **HGNC Identifiers Tool (`eic-hgnc-identifiers-tool.php`)**
+  - Fills the gene-level identifier fields on a subtype from a single live HGNC lookup keyed on `gene_symbol` (full gene name, HGNC ID, Ensembl gene ID, Entrez ID, OMIM gene, UniProt accession, RefSeq, MANE Select RefSeq and Ensembl, chromosome, and the UniProt function summary). Delivered as an editor button under the gene symbol field and a bulk backfill under Tools > HGNC Identifiers with dry-run and commit. Only an Approved HGNC record is accepted, so a withdrawn entry is rejected and the structural record (CMTX3) is skipped safely. Live lookups are capped per run against the PHP time limit; the shared cache persists so a re-run resumes for free.
+  - mu-plugins/eic-hgnc-identifiers-tool.php
+
+- **External Records Backfill (`eic-external-records-backfill.php`)**
+  - Writes the external-record fields onto subtypes from a signed cross-reference of EIC genes against five sources: GeneReviews (gene chapter), ClinGen gene-disease validity (CMT GCEP only), Genomics England PanelApp 846 (rating, votes, URL), ClinGen dosage sensitivity (HI/TS where evidence exists), and Orphanet. Matches on `gene_symbol`; non-destructive and re-runnable, writing only when a source has a value that differs from what is stored and never clearing a field.
+  - mu-plugins/eic-external-records-backfill.php
+
+- **GENESIS Discovery Backfill (`eic-genesis-discovery-backfill.php`)**
+  - Sets the gene-level `genesis_discovery` flag on subtypes whose CMT disease-gene relationship was discovered or supported through the GENESIS platform, sourced from the Genesis Project Foundation's public discoveries list. The Gene Browser surfaces a "GENESIS discovery" chip in the External Records row. Non-destructive and re-runnable: it sets the flag on matched records that lack it and never unsets a non-listed gene. Refresh the embedded list and re-run as TGP publishes new discoveries.
+  - mu-plugins/eic-genesis-discovery-backfill.php
+
+- **Candidate Genes Importer (`eic-candidate-genes-importer.php`)**
+  - Creates candidate gene-association records from JSON, each a published `subtype` post carrying `candidate_gene = true`, which hides it from the subtype/genes loop and surfaces it in the Gene Browser. Candidates are not subtypes, so they get a namespaced slug (candidate-{gene}, or candidate-{former subtype} for a downgrade) and a redirect off their single URL. Upsert by slug, so a re-run updates in place rather than duplicating; run the HGNC Identifiers backfill afterward to pull each candidate's identifiers.
+  - mu-plugins/eic-candidate-genes-importer.php
+
+- **Authoritative Resources Shortcode (`authoritative-resources-shortcode.php`)**
+  - An `[eic_authoritative_resources]` shortcode renders a compact strip of outbound links to primary CMT references, giving answer engines on-page evidence that the site's claims are anchored to recognized sources. Seeded from the same references declared as the CMT MedicalCondition `sameAs` set, and filterable so the list can be curated without editing the file.
+  - inc/shortcodes/authoritative-resources-shortcode.php
+
+- **Front Page MedicalWebPage JSON-LD (`frontpage-jsonld.php`)**
+  - Emits one additive MedicalWebPage node for the static front page, attributing authorship and publishing to the Experts in CMT organization by @id (Yoast's node, so the graph stays connected) and anchoring the page to the CMT MedicalCondition entity. It defers to pages-jsonld.php: if the front page ever gets a medical specialty selected, that file emits the fuller block and this one bails to avoid a duplicate. Additive; does not touch Yoast's WebPage schema.
+  - inc/acf/frontpage-jsonld.php
 
 - **Dorsal Root Visibility: Per-Post Hide Toggles for the List and the Teaser (`dr-visibility-fields.php`, `dr-posts.php`, `section-dorsal-root.php`)**
   - Keeping an individual Dorsal Root post out of the front-facing surfaces (for example a co-authored article that is password-protected while its co-author reviews it) had meant hardcoding that post's ID into an array in the query files and redeploying, then editing the code again to bring it back once cleared. Two per-post checkboxes replace that entirely: a new "Dorsal Root Visibility" panel in the post editor sidebar carries "Hide From Page" and "Hide From Teaser," each an ACF true/false toggle, so an author hides or restores a post with a click and no code change.
   - "Hide From Page" drops the post from the `[dr_posts]` list on `/dorsal-root`. Because the exclusion lives inside the shared `eic_dr_apply_search_filters()`, it applies to the page-load render and the AJAX/live-search endpoint together, so a hidden post cannot slip back in through search. "Hide From Teaser" drops the post from the homepage "The Dorsal Root" teaser cards, covering both the featured query and the latest-posts fallback.
-  - A small per-request-cached reader, `eic_dr_hidden_ids($meta_key)`, returns the IDs of posts whose given box is ticked, and both query files feed those IDs to the same `post__not_in` / `array_diff` paths that had held the hardcoded ID, so the surrounding query logic is unchanged and the old `[4891]` literal is gone. The reader and the two fields live in one file, and both consumers call the reader, so there is a single source of truth. The field group and reader auto-load via the existing `inc/acf/*.php` glob, so no functions.php edit. The Dorsal Root Showcase is deliberately left alone: a hand-picked showcase post is explicit curation and is not filtered by these toggles.
-  - The toggle values are per-post postmeta, not theme files, so they do not travel with a theme deploy and are set per environment.
+  - A small per-request-cached reader, `eic_dr_hidden_ids($meta_key)`, returns the IDs of posts whose given box is ticked, and both query files feed those IDs to the same `post__not_in` / `array_diff` paths that had held the hardcoded ID, so the surrounding query logic is unchanged and the old `[4891]` literal is gone. The Dorsal Root Showcase is deliberately left alone: a hand-picked showcase post is explicit curation and is not filtered by these toggles.
   - inc/acf/dr-visibility-fields.php
   - inc/content/loops/dr-posts.php
   - templates/parts/section-dorsal-root.php
 
+### Changed
+
+- **Subtype Record: Core Fields Relaxed to Optional (`subtype-fields.php`)**
+  - Eleven fields that were required are now optional (with the selects allowing null): type classification, subtype, chromosome, neuropathy, zygosity, inheritance, year of discovery, publication title, publication date, authors, and DOI. A candidate gene association and a structural record are real rows that legitimately carry no subtype code, no classified inheritance, and no establishing publication, so the required constraints could not hold once the store admitted them. This is the structural change behind the major bump.
+  - inc/acf/subtype-fields.php
+
+- **Candidate Genes Excluded from the Subtype Surfaces (`fragment-loop-genes-loop.php`, `genes-totals-inline.php`, `variant-mechanism-table.php`)**
+  - Candidate gene associations (`candidate_gene = true`) are not classified subtypes, so they are removed from the Genes DB loop, the homepage totals, and the Variant Mechanisms table, and surface only in the Gene Browser. The same OR clause is used in all three: exclude `candidate_gene = 1`, keep everything else via `NOT EXISTS` so ordinary subtypes (meta absent or "0") are retained. In the genes loop it is ANDed in last so it survives every meta_query branch and feeds the filter-aware totals.
+  - inc/content/loops/partials/fragment-loop-genes-loop.php
+  - inc/shortcodes/genes-totals-inline.php
+  - inc/shortcodes/variant-mechanism-table.php
+
+- **Entry-Point Cards: Gene Browser Added Across the Card Sets (`entry-points-shortcode.php`)**
+  - The home, genetics, and platform (404) sets gain a "CMT Gene Browser" card ("The gene, resolved") aimed at researchers and clinicians, so the home set is now five cards. The database card is renamed "CMT Subtype Browser" and the variant card "CMT Variant Mechanisms Browser," matching the production nav labels. The DNA double-helix icon moves from Genetic Testing to the Gene Browser (where it reads as gene-resolved), Genetic Testing takes a new lab-vial glyph, and The Dorsal Root card takes a new dorsal-root-ganglion glyph in place of the impulse waveform. On the 404 set the Glossary card is swapped out for the Gene Browser and kept commented for easy restore.
+  - inc/shortcodes/entry-points-shortcode.php
+
+- **Variant Mechanisms Table: Sticky Header, Count, and Accessibility Now Mirror the Gene Browser (`variant-mechanism.css`, `variant-mechanism-table.php`)**
+  - The filter card and column header no longer ride together in one sticky wrapper; only the column header is sticky, and the filter scrolls away above it, matching the Gene Browser. The filter action row goes full-width and left-aligned with the count beside Reset, the search field gains an inline magnifier icon, and the count line reads "Showing N subtypes" at rest and "Showing N of total subtypes" when filtered. Accessibility: the row toggle gains `aria-controls` pointing at its detail row; the focus ring and the italic gene accent are darkened to clear WCAG contrast (the gene accent from #5ea0c9 to #26719c, the focus ring to `--primary`); the plus animation respects `prefers-reduced-motion`; and the detail labels adopt the uppercase muted section-label style. The AD/AR inheritance abbreviation renders as "AD, AR".
+  - assets/css/variant-mechanism.css
+  - inc/shortcodes/variant-mechanism-table.php
+
+- **Shared HGNC Cache: In-Request Memo with a Single Deferred Write (`eic-clingen-url-tool.php`, `eic-clinvar-url-tool.php`, `eic-omim-tool.php`, `eic-gene-name-tool.php`)**
+  - The shared `eic_hgnc_cache` option was read and re-written on every uncached gene during a bulk backfill, order n-squared option I/O. The four tools now memoize the option in-request and flush once at shutdown, and each preserves any keys the other tools set on a shared cache entry instead of overwriting the whole entry.
+  - mu-plugins/eic-clingen-url-tool.php
+  - mu-plugins/eic-clinvar-url-tool.php
+  - mu-plugins/eic-omim-tool.php
+  - mu-plugins/eic-gene-name-tool.php
+
+- **Gene Name Tool: Field-Key Writes and a Per-Run Live-Lookup Cap (`eic-gene-name-tool.php`)**
+  - The tool now writes `full_gene_name` by field key (`field_full_gene_name`) for reliable ACF resolution, matching the HGNC identifiers tool and the CLAUDE.md convention, and splits the HGNC lookup into a cache-only read plus a live fetch so a run spends a bounded budget (40) of live lookups and defers the rest with a "cold cache" notice, keeping a whole-store run under the PHP time limit.
+  - mu-plugins/eic-gene-name-tool.php
+
+- **Subtype Maintenance: Scans Run On Demand (`eic-subtype-maintenance.php`)**
+  - The maintenance checks are N+1 over every subtype across six checks, so they no longer run on every page load. A "Run scan" button triggers them, and a scan runs automatically right after an apply so the updated state shows without a second click.
+  - mu-plugins/eic-subtype-maintenance.php
+
+- **ClinGen Validity Map: MONDO and Classification Corrections (`eic-clingen-url-tool.php`)**
+  - The embedded ClinGen CMT GCEP map is reconciled to ClinGen's live surface: classification upgrades for ATP1A1, LITAF, and DNAJB2's disease term, and corrected MONDO identifiers for DNAJB2, DYNC1H1, MFN2, MME, SCN11A, and SH3TC2.
+  - mu-plugins/eic-clingen-url-tool.php
+
+- **Header Banner: Taller on Desktop (`header-banner.css`)**
+  - Increased the desktop header banner height for more presence at the top of the page. Mobile is unchanged.
+  - assets/css/header-banner.css
+
 ### Fixed
 
+- **Subtype Page: Publication Block Hidden When There Is No Publication (`subtype-fields-template.php`)**
+  - With the publication fields now optional, the Key Publication(s) block is gated on a present primary publication so a candidate or unmapped record no longer renders an empty publication section.
+  - templates/subtype-fields-template.php
+
+- **Subtype Page: CMTX3 Insertional Nomenclature (`subtype-fields-template.php`)**
+  - The structural CMTX3 record, whose cause is an interchromosomal insertion rather than a coding gene, is displayed in ISCN notation rather than being forced through the gene-symbol display path.
+  - templates/subtype-fields-template.php
+
+- **Candidate Records: Empty Subtype Allowed When Flagged Candidate (`cmtgenes-helpers.php`)**
+  - The duplicate-subtype ACF validation returned "Subtype is required" on an empty subtype, which blocked saving a candidate gene association (which legitimately has none). An empty subtype is now valid when the `candidate_gene` flag is on.
+  - mu-plugins/cmtgenes-helpers.php
+
+- **Importers: Strip a Leading UTF-8 BOM Before Parsing (`eic-subtype-importer.php`, `eic-mechanism-importer.php`, `eic-glossary-importer.php`)**
+  - A JSON upload saved by a Windows editor could carry a leading UTF-8 BOM, which failed `json_decode` with a syntax error. The three importers now strip a leading BOM before parsing.
+  - mu-plugins/eic-subtype-importer.php
+  - mu-plugins/eic-mechanism-importer.php
+  - mu-plugins/eic-glossary-importer.php
+
+- **Subtype Importer: Dry Run No Longer Mutates the Shared HGNC Cache (`eic-subtype-importer.php`)**
+  - `seed_hgnc_cache()` was writing to the shared HGNC cache option even during a dry run, breaking the preview-does-not-touch-the-DB contract that every other setter honors. It now returns early on a dry run.
+  - mu-plugins/eic-subtype-importer.php
+
+- **Mechanism Importer: Guard a Non-Array Record (`eic-mechanism-importer.php`)**
+  - A malformed record that is not an array no longer trips the code-extraction path; the code is read defensively before the record is analyzed.
+  - mu-plugins/eic-mechanism-importer.php
+
+- **Site References: Corrected .com to .org and Reconciled the Theme Readme (`footer.html`, `readme.txt`, `style.css`)**
+  - Stray expertsincmt.com references were corrected to .org in the footer and theme headers, and the theme readme was reconciled.
+  - parts/footer.html
+  - readme.txt
+  - style.css
+
 - **Dorsal Root Filter: SEARCH Button Label Wrapped to Two Lines on Narrow Phones (`dr-filter.css`)**
-  - On the `/dorsal-root` search bar the SEARCH and RESET buttons share the actions row `flex: 1 1 0`, so each takes about half of the ~270px bar. With the default `1.5em` side padding, the SEARCH label (uppercase, `1.5px` letter-spacing) no longer cleared its own padding, so the last letter wrapped to a second line and the button grew from 48px to 60px tall — visible on iPhone 14 Pro Max and other narrow devices. The mobile button rule now sets `white-space: nowrap` so each label stays on one line, and trims the side padding to `1em` so the text still clears the padding down to ~360px-wide screens. Verified at 373 / 430 / 442px: the button holds a single 48px line and the page gains no horizontal overflow. Markup unchanged.
+  - On the `/dorsal-root` search bar the SEARCH label wrapped to a second line at narrow widths, growing the button from 48px to 60px. The mobile button rule now sets `white-space: nowrap` and trims the side padding so each label stays on one line down to ~360px-wide screens. Markup unchanged.
   - assets/css/dr-filter.css
 
 - **Genes DB Search: Short Gene Symbols Matched Author Surnames, Returning Dozens of Unrelated Subtypes (`terms-helpers.php`, `fragment-loop-genes-loop.php`, `genes-facet-counts.php`)**
-  - A search for a short gene symbol returned far more than it should: `MME` (the gene for CMT2T) surfaced 24 subtypes instead of the single CMT2T. The search branch matched exact identifier fields (`subtype`, `gene_symbol`, `full_gene_name`) with `=`, but then also ran a fuzzy `LIKE` net over the authors fields, and the substring "mme" is inside author surnames like "Ti**mme**rman" and "Zi**mme**rmann," so every subtype citing those authors matched too. The facet counts ran the same widened query, so the count line ("24 Subtypes | 21 Genes") agreed with the wrong result set and the bug was self-consistent.
-  - A query that exactly matches a canonical identifier now resolves to those posts only. A new shared helper, `eic_genes_search_exact_ids($qs)`, returns the published `subtype` IDs whose `subtype`, `gene_symbol`, or `full_gene_name` equals the query; when it returns any, the loop fragment restricts to that ID set (via `post__in`) and clears the inherited search meta/tax constraints so nothing widens it back out, and the facet counts short-circuit to the same set. Only when there is no exact identifier match does the fuzzy author/alias `LIKE` net run, so partial and author-name searches are unchanged. Both consumers call the one helper, so their exact-match behavior cannot drift.
+  - A search for a short gene symbol (for example `MME`) matched author surnames like "Timmerman" through the fuzzy author `LIKE` net, returning far too many subtypes, and the facet counts agreed with the wrong set. A query that exactly matches a canonical identifier now resolves to those posts only via a shared `eic_genes_search_exact_ids($qs)` helper, with the fuzzy author/alias net running only when there is no exact match. Both the loop and the facet counts call the one helper so they cannot drift.
   - inc/content/filters/terms-helpers.php
   - inc/content/loops/partials/fragment-loop-genes-loop.php
   - inc/content/filters/genes-facet-counts.php
 
 - **Header Banner: Mobile Fade Sliders Had No Effect on the Rendered Page (`header-banner.php`)**
-  - The `<=600px` fade mask reads `--banner-fade-start-mobile` / `--banner-fade-end-mobile`, but the template emitted only the desktop fade custom properties, so the mobile gradient always fell back to the CSS default stops (55% / 100%) regardless of what the "(Mobile)" ACF sliders were set to. The admin mask preview reads the ACF fields directly, so it repainted correctly and masked the gap, which is why the fields looked live in the editor but did nothing on the front end. The template now reads `banner_fade_start_mobile` / `banner_fade_end_mobile` and prints both mobile custom properties inline alongside the desktop pair, with 55 / 100 fallbacks matching the field defaults, so the mobile sliders drive the rendered fade.
+  - The template emitted only the desktop fade custom properties, so the mobile gradient always fell back to the CSS default stops regardless of the "(Mobile)" ACF sliders. The template now reads and prints the mobile custom properties inline alongside the desktop pair, so the mobile sliders drive the rendered fade.
   - templates/header-banner.php
 
 ## [3.1.0] - 2026-07-29
