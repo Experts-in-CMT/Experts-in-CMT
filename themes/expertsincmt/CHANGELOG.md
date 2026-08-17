@@ -11,6 +11,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Variant Mechanism: `mechanism_flavor` Renamed to `mechanism_mode`, and Its Vocabulary Rebuilt (`subtype-fields.php`, `subtype-jsonld.php`, `variant-mechanism-table.php`, `subtype-fields-template.php`)**
+  - The second-level mechanism field is renamed from `mechanism_flavor` to `mechanism_mode` (ACF key `field_mechanism_flavor` to `field_mechanism_mode`). "Flavor" read as a database column rather than science and appeared nowhere in the literature; "mode" pairs with `mechanism` and is native to genetics vocabulary. The public label is unchanged, since all three render paths already displayed it as "Mechanistic Basis," so nothing user-facing was renamed.
+  - The vocabulary changed with it, under one rule: the mode carries a mechanistic claim beyond what the class and Zygosity already state, or it is empty. Two values were pure restatement and are retired. `biallelic` sat on 76 rows, every one of which already declared two affected copies in `zygosity`; `dominant-negative` sat on 27 rows, all of which carry `mechanism = dominant_negative`. That was 103 of 174 rows where the field said nothing the record did not already say. `homoplasmic` is retired for the same reason, allele count belonging to `zygosity`, which already carries Heteroplasmic and Homoplasmic.
+  - `biallelic` is replaced by a distinction the literature makes constantly: `complete-loss` (42 rows), where the allele class abolishes the protein or its activity and homozygous true nulls are the typical disease genotype, and `hypomorphic` (35 rows), where residual partial activity is characteristic. The deciding test is whether two true null alleles would be compatible with the phenotype; where complete loss is embryonic-lethal or causes a more severe disease, the CMT alleles are necessarily the milder end. `dominant_negative` now takes an empty mode, because the literature recognizes no standard sub-mode of interference and inventing buckets would be manufacturing taxonomy rather than recording it. Both render sites already guarded on a non-empty value, so the 29 dominant-negative subtypes omit the line cleanly with no template change.
+  - The editor instructions on the field now state the axis rule and tell the curator to leave the mode empty for Dominant-negative. `subtype-jsonld.php` is included because it emits Mechanistic Basis as a schema.org `PropertyValue`, so a stale label map there would have put retired values into the structured data.
+  - inc/acf/subtype-fields.php
+  - inc/acf/subtype-jsonld.php
+  - inc/shortcodes/variant-mechanism-table.php
+  - templates/subtype-fields-template.php
+
+- **Mechanism Importer: Writes `mechanism_mode`, Accepts the Legacy Key, and Names Retired Values (`eic-mechanism-importer.php`)**
+  - The importer writes `mechanism_mode` and validates against the ten-value mode enum, accepting an empty mode as valid so a dominant-negative record round-trips. The record's canonical value key is `mode`, with `flavor` retained as an alias so an older hand-pasted record is still read rather than silently treated as absent.
+  - A retired value now fails with guidance instead of a bare rejection: `biallelic` reports that allele count belongs on zygosity and to use `complete-loss` or `hypomorphic`, `dominant-negative` reports that it restates the class and the mode should be left empty, and the three allele-count values report where they belong. This turns the most likely operator mistake into a self-explaining error.
+  - mu-plugins/eic-mechanism-importer.php
+
+- **Variant Mechanism Prose: All 174 Subtypes Rewritten (data, loaded through the Mechanism Importer)**
+  - Data rather than code, recorded here because it is the substance of what the Variant Mechanisms surfaces now render. The Prediction and Rationale fields had collapsed into a handful of sentence templates with the gene name swapped: 46 rows shared "so restored wild-type is predicted to rescue: a biallelic loss of function," 67 Predictions opened with the same eleven words, and the confidence-hedge clause was repeated 107 times. The defect is invisible row by row and unmistakable down a column, and the supplementation test had become a reflex applied to rows where nobody had proposed the alternative.
+  - Every row was rewritten to lead with what is true only of that row: the protein, what these alleles do to it, and the specific published evidence, whether a founder allele, a knockout mouse, an enzyme assay, a complementation result, or a parallel disease at the same locus. The most-repeated eight-word sequence in the Rationale field fell from 46 rows to 2. Also removed: seventeen rows of derivation commentary addressed to the grader rather than the reader, and twelve rows of conflation bookkeeping ("this subtype's own alleles"), which exists only to reassure a reviewer that a sibling subtype was not borrowed from.
+  - The confidence clause is now reserved for genuinely contested mechanisms. No high-confidence row carries a hedge.
+
+- **Variant Mechanism Calls: Five Changed on Researched Evidence (data)**
+  - `CMT-ARHGEF10` from Unknown to gain-of-function, overactivity, medium. The functional literature was unreachable under a nomenclature split: the sentinel publication reports p.Thr109Ile while the functional work numbers the same variant p.Thr332Ile (`NM_014629.4:c.995C>T`). The allele sits at the edge of an autoinhibitory region and behaves like its deletion, loading more GTP onto RhoA and shortening Schwann cell processes, which is what thin myelin with uniformly slowed conduction and no axon loss predicts.
+  - `dHMN-AARS1` from Complex to dominant-negative, medium, aligning it with `CMT2N`. The two are one gene and one broad allelic series, and the loss-plus-toxic profile the Complex grade described belongs to the CMT2N alleles rather than the dHMN allele, which tested negative on aminoacylation, conformation and novel binding.
+  - `CMT-CFAP276` from Complex to loss-of-function, haploinsufficiency, medium. Heterozygous null mice develop a dominant-intermediate CMT and AAV gene addition corrects nulls, while the second arm's aggregating allele was never shown toxic or neomorphic and its knock-in phenocopies the pure null.
+  - `CMT-CRYAB` from Complex to dominant-negative, low. Complex requires one subtype's own alleles to carry two mechanisms; this subtype has one allele, and what resembled two mechanisms was several groups disagreeing about it.
+  - `dHMN1-UBE3C` from loss-of-function to Unknown, unresolved, low. Haploinsufficiency is affirmatively contradicted, since biallelic UBE3C loss causes a separate recessive neurodevelopmental disease whose heterozygous carriers have no neuropathy.
+  - Two mode corrections followed from the same review: `CMT2P` and `CMT2T` keep `mixed`, which is correct and deliberate, as each subtype is genuinely defined across a dominant and a recessive allele class with its own sentinel publication for each.
+
+### Fixed
+
+- **Subtype Page: Duplicate GeneReviews Button (`subtype-fields-template.php`)**
+  - Every subtype carrying a `genereviews_url` rendered two identical GeneReviews buttons, from a byte-identical duplicate of the `eic-fact` block. Removed the second copy. Verified that `$genereviews_url` was the only variable guarded by more than one `!empty()` block in the file, and that the repeated Publication Title, Authors, Publication Date and DOI labels are not duplicates but the primary and alternate publication blocks.
+  - templates/subtype-fields-template.php
+
+- **Mechanism Importer: Silent Field Blanking on a Schema Mismatch (`eic-mechanism-importer.php`)**
+  - Loading a dataset built for a different schema passed validation without complaint and would have blanked the mechanism field on every matched subtype: the importer read a value key the dataset did not carry, the missing key validated as an empty string, and the empty string overwrote. The importer now carries a `SCHEMA` constant and refuses a dataset whose top-level `schema` marker names a different one, with an error stating both markers and the consequence. Unmarked input is still accepted so hand-pasted records keep working. Verified in all four directions across the two schema versions.
+  - mu-plugins/eic-mechanism-importer.php
+
 ## [4.0.0] - 2026-08-16
 
 The CMT Gene Browser release: a new gene-resolved public surface, its data model, the admin tooling that populates it, and the versioned open dataset behind it. This is a major bump because the subtype record's long-required core fields (subtype, chromosome, inheritance, neuropathy, zygosity, type classification, year of discovery, and the full publication set) are now optional, so the store can hold candidate gene associations and structural records that are not classified subtypes. Also folds in the Dorsal Root visibility, header banner, and genes-search work committed since 3.1.0.

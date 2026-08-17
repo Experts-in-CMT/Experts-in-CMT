@@ -58,8 +58,8 @@ add_action(
         $mechanism = strtolower(
             trim((string) get_field("mechanism", $post_id))
         );
-        $mechanism_flavor = trim(
-            (string) get_field("mechanism_flavor", $post_id)
+        $mechanism_mode = trim(
+            (string) get_field("mechanism_mode", $post_id)
         );
         $mechanism_labels = [
             "lof" => "Loss of Function (LoF)",
@@ -68,13 +68,13 @@ add_action(
             "complex" => "Complex",
             "unknown" => "Unknown",
         ];
-        $mechanism_flavor_labels = [
-            "biallelic" => "Biallelic",
+        $mechanism_mode_labels = [
             "haploinsufficiency" => "Haploinsufficiency",
-            "dosage" => "Dosage",
-            "dominant-negative" => "Dominant-negative",
-            "neomorphic" => "Neomorphic",
+            "complete-loss" => "Complete loss",
+            "hypomorphic" => "Hypomorphic",
             "overactivity" => "Overactivity",
+            "neomorphic" => "Neomorphic",
+            "dosage" => "Dosage",
             "repeat-expansion" => "Repeat expansion",
             "mixed" => "Mixed",
             "unresolved" => "Unresolved",
@@ -329,11 +329,11 @@ add_action(
                 "value" => $mechanism_labels[$mechanism],
             ];
         }
-        if (isset($mechanism_flavor_labels[$mechanism_flavor])) {
+        if (isset($mechanism_mode_labels[$mechanism_mode])) {
             $additional[] = [
                 "@type" => "PropertyValue",
                 "name" => "Mechanistic Basis",
-                "value" => $mechanism_flavor_labels[$mechanism_flavor],
+                "value" => $mechanism_mode_labels[$mechanism_mode],
             ];
         }
         if ($year_of_discovery) {

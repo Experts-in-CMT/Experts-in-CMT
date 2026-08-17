@@ -20,7 +20,10 @@
  *
  * Writes exactly five ACF fields on a matched subtype:
  *   mechanism            <- new_call   (mapped to the select key)
- *   mechanism_flavor     <- flavor     (verbatim; validated against the enum)
+ *   mechanism_mode       <- mode       (verbatim; validated against the enum)
+ *                                      Accepts the legacy "flavor" key as an alias.
+ *                                      An empty mode is valid: the dominant-negative
+ *                                      class is self-sufficient and carries no mode.
  *   mechanism_confidence <- confidence (verbatim; validated against the enum)
  *   mechanism_prediction <- prediction (textarea)
  *   mechanism_rationale  <- rationale  (textarea)
@@ -63,10 +66,23 @@ final class EIC_Mechanism_Importer
         ];
     }
 
-    private static $FLAVORS = [
-        "biallelic", "haploinsufficiency", "dosage", "dominant-negative",
-        "neomorphic", "overactivity", "repeat-expansion", "mixed",
+    /* mechanism_mode: each value must add a mechanistic claim beyond the
+       class and the zygosity field. Allele-count values (biallelic,
+       homoplasmic, heteroplasmic, hemizygous) belong on zygosity, and
+       "dominant-negative" restated the class, so both are retired here. */
+    private static $MODES = [
+        "haploinsufficiency", "complete-loss", "hypomorphic", "mixed",
+        "overactivity", "neomorphic", "dosage", "repeat-expansion",
         "unresolved", "no-gene",
+    ];
+
+    /* Retired values, reported with guidance instead of a bare rejection. */
+    private static $RETIRED_MODES = [
+        "biallelic"         => "allele count belongs on zygosity; use complete-loss or hypomorphic",
+        "homoplasmic"       => "allele count belongs on zygosity",
+        "heteroplasmic"     => "allele count belongs on zygosity",
+        "hemizygous"        => "allele count belongs on zygosity",
+        "dominant-negative" => "restates the mechanism class; leave the mode empty",
     ];
     private static $CONF = ["high", "medium", "low"];
 
@@ -85,6 +101,31 @@ final class EIC_Mechanism_Importer
             self::CAP,
             "eic-mechanism-importer",
             [__CLASS__, "render"]
+        );
+    }
+
+
+    /* ---- Schema guard ----
+     * The dataset carries a "schema" marker. Loading a dataset built for a
+     * different schema would silently blank fields (a record missing this
+     * schema's value key validates as an empty string and overwrites), so a
+     * mismatch is a hard stop rather than a warning. */
+    const SCHEMA = "mechanism-mode-v2";
+
+    private static function schema_error($json): string
+    {
+        if (!is_array($json) || !isset($json["schema"])) {
+            return ""; // unmarked input is allowed, for hand-pasted records
+        }
+        $got = trim((string) $json["schema"]);
+        if ($got === self::SCHEMA) {
+            return "";
+        }
+        return sprintf(
+            'This dataset is marked "%s" but this importer writes "%s". ' .
+            'Loading it would blank the mechanism fields on every matched subtype. ' .
+            'Use the importer that matches the dataset, or the dataset that matches this importer.',
+            $got, self::SCHEMA
         );
     }
 
@@ -192,9 +233,14 @@ final class EIC_Mechanism_Importer
             $errors[] = "unrecognized new_call: " . (string) $r["new_call"];
         }
 
-        $flavor = trim((string) ($r["flavor"] ?? ""));
-        if ($flavor !== "" && !in_array($flavor, self::$FLAVORS, true)) {
-            $errors[] = "invalid flavor: " . $flavor;
+        /* "mode" is canonical; "flavor" is accepted as a legacy alias. */
+        $mode = trim((string) ($r["mode"] ?? ($r["flavor"] ?? "")));
+        if ($mode !== "" && !in_array($mode, self::$MODES, true)) {
+            if (isset(self::$RETIRED_MODES[$mode])) {
+                $errors[] = "retired mode \"" . $mode . "\": " . self::$RETIRED_MODES[$mode];
+            } else {
+                $errors[] = "invalid mode: " . $mode;
+            }
         }
 
         $conf = trim((string) ($r["confidence"] ?? ""));
@@ -205,7 +251,7 @@ final class EIC_Mechanism_Importer
         $plan = [
             "code"                 => $code,
             "mechanism"            => $call,
-            "mechanism_flavor"     => $flavor,
+            "mechanism_mode"       => $mode,
             "mechanism_confidence" => $conf,
             "mechanism_prediction" => (string) ($r["prediction"] ?? ""),
             "mechanism_rationale"  => (string) ($r["rationale"] ?? ""),
@@ -231,7 +277,7 @@ final class EIC_Mechanism_Importer
         echo "<p>Loads the corrected variant-mechanism dataset onto <strong>existing</strong> " .
             "subtype records (paste JSON, or upload a <code>.json</code> file). " .
             "Update-only: it never creates a subtype. Writes only " .
-            "<code>mechanism</code>, <code>mechanism_flavor</code>, " .
+            "<code>mechanism</code>, <code>mechanism_mode</code>, " .
             "<code>mechanism_confidence</code>, <code>mechanism_prediction</code>, and " .
             "<code>mechanism_rationale</code>, diff-only. Dry-run first, then commit. " .
             "<strong>Take a database backup before committing.</strong></p>";
@@ -254,7 +300,13 @@ final class EIC_Mechanism_Importer
             // BOM-prefixed upload does not fail json_decode with a syntax error.
             $raw = preg_replace('/^\xEF\xBB\xBF/', "", (string) $raw);
             $json = json_decode($raw, true);
-            if (json_last_error() !== JSON_ERROR_NONE) {
+            $schema_error = (json_last_error() === JSON_ERROR_NONE)
+                ? self::schema_error($json)
+                : "";
+            if ($schema_error !== "") {
+                echo '<div class="notice notice-error"><p><strong>Schema mismatch.</strong> ' .
+                    esc_html($schema_error) . '</p></div>';
+            } elseif (json_last_error() !== JSON_ERROR_NONE) {
                 echo '<div class="notice notice-error"><p>JSON parse error: ' .
                     esc_html(json_last_error_msg()) . "</p></div>";
             } else {
@@ -406,7 +458,7 @@ final class EIC_Mechanism_Importer
     private static function write_record(int $post_id, array $plan): void
     {
         self::set_field("mechanism", $plan["mechanism"], $post_id);
-        self::set_field("mechanism_flavor", $plan["mechanism_flavor"], $post_id);
+        self::set_field("mechanism_mode", $plan["mechanism_mode"], $post_id);
         self::set_field("mechanism_confidence", $plan["mechanism_confidence"], $post_id);
         self::set_field("mechanism_prediction", $plan["mechanism_prediction"], $post_id);
         self::set_field("mechanism_rationale", $plan["mechanism_rationale"], $post_id);

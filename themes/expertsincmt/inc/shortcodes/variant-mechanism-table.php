@@ -213,14 +213,14 @@ add_shortcode("variant_mechanism_table", function ($atts = []) {
         "unknown" => "Unknown",
     ];
 
-    // Public display labels for the mechanistic basis (flavor).
-    $flavor_labels = [
-        "biallelic" => "Biallelic",
+    // Public display labels for the mechanistic basis (mechanism_mode).
+    $mode_labels = [
         "haploinsufficiency" => "Haploinsufficiency",
-        "dosage" => "Dosage",
-        "dominant-negative" => "Dominant-negative",
-        "neomorphic" => "Neomorphic",
+        "complete-loss" => "Complete loss",
+        "hypomorphic" => "Hypomorphic",
         "overactivity" => "Overactivity",
+        "neomorphic" => "Neomorphic",
+        "dosage" => "Dosage",
         "repeat-expansion" => "Repeat expansion",
         "mixed" => "Mixed",
         "unresolved" => "Unresolved",
@@ -269,8 +269,8 @@ add_shortcode("variant_mechanism_table", function ($atts = []) {
         $call_label = $call_labels[$call];
         $counts["call"][$call]++;
 
-        $flavor = trim((string) get_field("mechanism_flavor", $id));
-        $flavor_label = $flavor_labels[$flavor] ?? "";
+        $mode = trim((string) get_field("mechanism_mode", $id));
+        $mode_label = $mode_labels[$mode] ?? "";
 
         $conf = strtolower(trim((string) get_field("mechanism_confidence", $id)));
         if (!in_array($conf, ["high", "medium", "low"], true)) {
@@ -284,7 +284,7 @@ add_shortcode("variant_mechanism_table", function ($atts = []) {
             "inheritance" => $inheritance,
             "call" => $call,
             "call_label" => $call_label,
-            "flavor_label" => $flavor_label,
+            "mode_label" => $mode_label,
             "confidence" => $conf,
             "prediction" => trim(
                 (string) get_field("mechanism_prediction", $id)
@@ -443,7 +443,7 @@ add_shortcode("variant_mechanism_table", function ($atts = []) {
                     " " .
                     $r["call_label"] .
                     " " .
-                    $r["flavor_label"] .
+                    $r["mode_label"] .
                     " " .
                     $r["prediction"] .
                     " " .
@@ -479,9 +479,9 @@ add_shortcode("variant_mechanism_table", function ($atts = []) {
         <tr class="vmech-detail" id="<?php echo esc_attr(eic_vmech_row_id($r["code"]) . "-detail"); ?>" hidden>
           <td colspan="6">
             <div class="vmech-detail__body">
-              <?php if ($r["flavor_label"] !== ""): ?>
+              <?php if ($r["mode_label"] !== ""): ?>
                 <p class="vmech-detail__basis"><span class="vmech-detail__basislabel">Mechanistic basis:</span> <?php echo esc_html(
-    $r["flavor_label"]
+    $r["mode_label"]
 ); ?></p>
               <?php endif; ?>
               <?php if ($r["prediction"] !== ""): ?>

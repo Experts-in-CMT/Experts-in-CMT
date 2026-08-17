@@ -245,13 +245,13 @@ $pub_heading =
           "complex" => "Complex",
           "unknown" => "Unknown",
       ];
-      $eic_flavor_labels = [
-          "biallelic" => "Biallelic",
+      $eic_mode_labels = [
           "haploinsufficiency" => "Haploinsufficiency",
-          "dosage" => "Dosage",
-          "dominant-negative" => "Dominant-negative",
-          "neomorphic" => "Neomorphic",
+          "complete-loss" => "Complete loss",
+          "hypomorphic" => "Hypomorphic",
           "overactivity" => "Overactivity",
+          "neomorphic" => "Neomorphic",
+          "dosage" => "Dosage",
           "repeat-expansion" => "Repeat expansion",
           "mixed" => "Mixed",
           "unresolved" => "Unresolved",
@@ -261,8 +261,8 @@ $pub_heading =
       <?php if ($mechanism !== "" && isset($eic_call_labels[$mechanism])): ?>
   <?php
   $eic_vm_call = esc_html($eic_call_labels[$mechanism]);
-  $eic_vm_flavor = trim((string) get_field("mechanism_flavor"));
-  $eic_vm_basis = $eic_flavor_labels[$eic_vm_flavor] ?? "";
+  $eic_vm_mode = trim((string) get_field("mechanism_mode"));
+  $eic_vm_basis = $eic_mode_labels[$eic_vm_mode] ?? "";
   $eic_vm_conf = strtolower(trim((string) get_field("mechanism_confidence")));
   if (!in_array($eic_vm_conf, ["high", "medium", "low"], true)) {
       $eic_vm_conf = "";
@@ -369,20 +369,6 @@ $pub_heading =
         </dd>
       </div>
 <?php endif; ?>
-
-<?php if (!empty($genereviews_url)): ?>
-      <div class="eic-fact">
-        <dt>GeneReviews®</dt>
-        <dd>
-          <a class="dr-more"
-             href="<?php echo esc_url($genereviews_url); ?>"
-             target="_blank"
-             rel="noopener noreferrer">
-            <?php echo esc_html($subtype); ?> GeneReviews®
-          </a>
-        </dd>
-      </div>
-    <?php endif; ?>
 
   <?php if (!empty($omim_subtype)): ?>
   <?php $omim_subtype_no_entry =
