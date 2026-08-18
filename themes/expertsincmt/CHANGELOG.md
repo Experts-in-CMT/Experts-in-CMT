@@ -11,6 +11,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **GeneReviews Corrections: Subtype-Keyed Tool for `genereviews_url` (`eic-genereviews-corrections.php`)**
+  - A new Tools > GeneReviews Corrections admin page sets or clears `genereviews_url` one subtype at a time, from a JSON dataset, with the same dry-run and commit shape as the other importers. It exists because `genereviews_url` is subtype-specific and the only tool that wrote it was keyed on gene symbol, and because that tool structurally cannot clear a value: its write loop opens `if ($new === "") continue;`, so a stale URL already stored survives any change to its source. Matching runs `code` against the ACF `subtype` field, then post title, then slug, with a `candidate-{slug}` fallback for candidate records.
+  - URLs are validated against `#^https://www\.ncbi\.nlm\.nih\.gov/books/NBK\d+/$#`, and the tool refuses a dataset not marked `genereviews-v1`. That guard matters more here than on the mechanism importer: an empty value is a real instruction to clear, so a foreign dataset whose records lack the key would blank the field on every subtype it matched rather than merely skipping it.
+  - mu-plugins/eic-genereviews-corrections.php
+
 ### Changed
 
 - **Variant Mechanism: `mechanism_flavor` Renamed to `mechanism_mode`, and Its Vocabulary Rebuilt (`subtype-fields.php`, `subtype-jsonld.php`, `variant-mechanism-table.php`, `subtype-fields-template.php`)**
@@ -42,6 +49,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Two mode corrections followed from the same review: `CMT2P` and `CMT2T` keep `mixed`, which is correct and deliberate, as each subtype is genuinely defined across a dominant and a recessive allele class with its own sentinel publication for each.
 
 ### Fixed
+
+- **GeneReviews Links: 92 Subtypes Pointed at the Wrong Chapter, or at One They Should Not Have (data)**
+  - A subtype gets a GeneReviews link only where GeneReviews has a chapter for that subtype. No chapter, no link. GeneReviews is a flourish surfaced where available, not a field to be filled, so most subtypes carrying none is the correct state rather than a gap. Two things are disqualified by that rule and both were in use as if they were not: multi-gene overviews, which are about no single subtype, and a different disease at the same gene, however close, so Spastic Paraplegia 11 is not CMT2X's chapter and Leber optic neuropathy is not CMT-ATP6's.
+  - 121 records carried a link. 91 were cleared, 67 of them pointing at a multi-gene overview, 12 at a different disease at the same gene, 11 failing the per-subtype test on a gene-specific chapter, and 8 candidate-gene records cleared as policy. One was corrected rather than cleared: `CMT-RFC1` moves from the Hereditary Ataxia Overview to NBK564656, RFC1 CANVAS / Spectrum Disorder, on the KOL consensus that treats CANVAS as the RFC1 entity, that chapter being authored by Cortese, Reilly and Houlden. 29 links were already correct and are untouched, leaving 30 of 193 records carrying a link.
+  - All 19 chapters behind the retained links were verified live against NCBI, with three known retirements used as controls to prove the check worked rather than trusting a null result. Worth keeping for any re-check: four live chapters carry the literal string "RETIRED CHAPTER, FOR HISTORICAL REFERENCE ONLY" in their markup because NCBI's sidebar links out to retired chapters, so a naive grep condemns them wrongly. The reliable markers are the title suffix and the "HAS BEEN RETIRED" banner.
+  - The visible damage was compounded by the button label. `subtype-fields-template.php` renders "{subtype} GeneReviews®", so CMT2JJ's page carried a button reading "CMT2JJ GeneReviews®" pointing at a dilated cardiomyopathy chapter.
+
+- **External Records Backfill: GeneReviews Removed From a Gene-Keyed Tool (`eic-external-records-backfill.php`)**
+  - `genereviews_url` lives on a subtype record and is subtype-specific, and one gene's subtypes routinely need different answers. This tool is keyed on `gene_symbol` and writes one value to every subtype of that gene, taking whatever chapter names the gene without testing that the chapter is about the subtype. It structurally cannot express the right value, which is why it pointed BAG3 at Dilated Cardiomyopathy, TUBB3 at Congenital Fibrosis of the Extraocular Muscles, HK1 at Hyperinsulinism, JAG1 at Alagille Syndrome, and MYH14 at a Genetic Hearing Loss Overview that never names MYH14.
+  - GeneReviews is therefore removed from the tool rather than its map corrected entry by entry, since correcting the map would leave a gene-keyed mechanism in place for subtype-specific data, armed to break again the first time an entry was repopulated. `fields()` no longer lists `field_genereviews_url`; the write loop indexes `$row[$i]` off those keys, so dropping entry 0 makes it skip GeneReviews while indices 1 through 11 stay aligned. Slot 0 of all 149 data rows is emptied so the dead values cannot be resurrected by re-adding the field, and slots 1 through 11 are byte-identical to the original, verified row by row. The header docs, admin description and coverage counter no longer claim the tool writes GeneReviews.
+  - Every remaining field there is gene-level by nature: ClinGen gene-disease validity, ClinGen dosage sensitivity, PanelApp panel 846, and a gene-keyed Orphanet URL. GeneReviews was the sole exception. PMP22 stops being a special case as a result: HNPP keeps NBK1392 while CMT1A and CMT1E get nothing, because each record is now addressed individually rather than through its gene.
+  - mu-plugins/eic-external-records-backfill.php
 
 - **Subtype Page: Duplicate GeneReviews Button (`subtype-fields-template.php`)**
   - Every subtype carrying a `genereviews_url` rendered two identical GeneReviews buttons, from a byte-identical duplicate of the `eic-fact` block. Removed the second copy. Verified that `$genereviews_url` was the only variable guarded by more than one `!empty()` block in the file, and that the repeated Publication Title, Authors, Publication Date and DOI labels are not duplicates but the primary and alternate publication blocks.
