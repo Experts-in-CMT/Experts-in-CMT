@@ -333,7 +333,7 @@ add_shortcode("variant_mechanism_table", function ($atts = []) {
     ?>
 <div class="vmech" data-total="<?php echo (int) $total; ?>">
 
-  <div class="vmech-filter" role="search">
+  <div class="vmech-filter" id="vmech-filter" role="search">
     <label class="vmech-filter__search">
       <span class="vmech-filter__label">Search subtype, gene, or rationale</span>
       <input type="search" class="vmech-search"
@@ -356,9 +356,11 @@ add_shortcode("variant_mechanism_table", function ($atts = []) {
           <input type="checkbox" class="vmech-facet" data-facet="call" value="<?php echo esc_attr(
               $key
           ); ?>" />
-          <span><?php echo esc_html($label); ?> (<?php echo (int) $counts[
-    "call"
-][$key]; ?>)</span>
+          <span><?php echo esc_html(
+              $label
+          ); ?> <span class="vmech-ct">(<?php echo (int) $counts["call"][
+    $key
+]; ?>)</span></span>
         </label>
       <?php endforeach; ?>
     </fieldset>
@@ -371,9 +373,11 @@ add_shortcode("variant_mechanism_table", function ($atts = []) {
           <input type="checkbox" class="vmech-facet" data-facet="conf" value="<?php echo esc_attr(
               $key
           ); ?>" />
-          <span><?php echo esc_html($label); ?> (<?php echo (int) $counts[
-    "conf"
-][$key]; ?>)</span>
+          <span><?php echo esc_html(
+              $label
+          ); ?> <span class="vmech-ct">(<?php echo (int) $counts["conf"][
+    $key
+]; ?>)</span></span>
         </label>
       <?php endforeach; ?>
     </fieldset>
@@ -528,6 +532,70 @@ function eicVmechInit(root) {
   var filter = root.querySelector('.vmech-filter');
   var total = rows.length;
 
+  // ---- Shareable URL state --------------------------------------------
+  // Active search + facets are mirrored into the query string so a configured
+  // view can be copied and shared, and re-applied when that link is opened.
+  // Keys are prefixed `vm_` so they never collide with the gene-browser table
+  // or other page params. This is independent of the `#vmech-<code>` row
+  // deep-link (query string = filter view; hash = a specific subtype row).
+  var VM_URLKEYS = ['vm_q', 'vm_call', 'vm_conf'];
+
+  function vmFacetValues(facet) {
+    return facets
+      .filter(function (f) { return f.dataset.facet === facet && f.checked; })
+      .map(function (f) { return f.value; });
+  }
+
+  // Serialize the current UI state into the URL. Discrete filter actions push a
+  // new history entry (so Back/Forward step through filter states, matching the
+  // subtype browser); typing replaces instead, so a search term does not leave
+  // one entry per keystroke. The `#vmech-<code>` row hash is preserved untouched.
+  function syncUrl(push) {
+    var params = new URLSearchParams(window.location.search);
+    VM_URLKEYS.forEach(function (k) { params.delete(k); });
+
+    var q = search ? (search.value || '').trim() : '';
+    if (q) { params.set('vm_q', q); }
+    var call = vmFacetValues('call'); if (call.length) { params.set('vm_call', call.join(',')); }
+    var conf = vmFacetValues('conf'); if (conf.length) { params.set('vm_conf', conf.join(',')); }
+
+    var qs = params.toString();
+    var url = window.location.pathname + (qs ? '?' + qs : '') + window.location.hash;
+    var cur = window.location.pathname + window.location.search + window.location.hash;
+    try {
+      if (push && url !== cur) { window.history.pushState({ vmech: 1 }, '', url); }
+      else { window.history.replaceState({ vmech: 1 }, '', url); }
+    } catch (e) {}
+  }
+
+  // Apply the URL's state to the controls. Idempotent: a key that is absent
+  // resets its control to the default, so a Back/Forward step (popstate) that
+  // lands on a sparser or empty URL restores cleanly. Returns whether the URL
+  // carried any filter state, which decides the arrival scroll.
+  function readUrl() {
+    var params = new URLSearchParams(window.location.search);
+    var had = VM_URLKEYS.some(function (k) { return params.has(k); });
+
+    if (search) { search.value = params.get('vm_q') || ''; }
+    var call = (params.get('vm_call') || '').split(',').filter(Boolean);
+    var conf = (params.get('vm_conf') || '').split(',').filter(Boolean);
+    facets.forEach(function (f) {
+      if (f.dataset.facet === 'call') { f.checked = call.indexOf(f.value) !== -1; }
+      else if (f.dataset.facet === 'conf') { f.checked = conf.indexOf(f.value) !== -1; }
+    });
+    return had;
+  }
+
+  function scrollToFilter() {
+    var filterEl = root.querySelector('.vmech-filter');
+    if (!filterEl) { return; }
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var bar = document.getElementById('wpadminbar');
+    var offset = (bar ? bar.offsetHeight : 0) + 12;
+    var y = filterEl.getBoundingClientRect().top + window.pageYOffset - offset;
+    window.scrollTo({ top: y > 0 ? y : 0, behavior: reduce ? 'auto' : 'smooth' });
+  }
+
   // Only the column header is sticky (mirroring the gene browser); the filter
   // scrolls away. Offset the header below the WP admin bar (present when a
   // logged-in user views the front end), and tell a deep-linked row how far to
@@ -564,6 +632,45 @@ function eicVmechInit(root) {
     return Object.keys(out).length ? out : null;
   }
 
+  // Does a row pass every active filter EXCEPT the named facet group? Used for
+  // live facet counts: an option's count is "how many rows I would add if I
+  // ticked this", so the option's own group is neutralized while every other
+  // filter (the other group + search) still applies.
+  function passesExcept(row, exceptFacet) {
+    var q = (search.value || '').trim().toLowerCase();
+    if (q && row.dataset.text.indexOf(q) === -1) { return false; }
+    if (exceptFacet !== 'call') {
+      var calls = activeSet('call');
+      if (calls && !calls[row.dataset.call]) { return false; }
+    }
+    if (exceptFacet !== 'conf') {
+      var confs = activeSet('conf');
+      if (confs && !confs[row.dataset.conf || 'none']) { return false; }
+    }
+    return true;
+  }
+
+  // Rewrite every facet's count to its neutralized total and dim any that would
+  // return nothing. A checked facet is never disabled, so it can be turned off.
+  function recount() {
+    facets.forEach(function (f) {
+      var facet = f.dataset.facet, val = f.value, n = 0;
+      rows.forEach(function (row) {
+        if (!passesExcept(row, facet)) { return; }
+        var hit = facet === 'call'
+          ? row.dataset.call === val
+          : (row.dataset.conf || 'none') === val;
+        if (hit) { n++; }
+      });
+      var label = f.closest('.vmech-check');
+      var ct = label ? label.querySelector('.vmech-ct') : null;
+      if (ct) { ct.textContent = '(' + n + ')'; }
+      var disable = n === 0 && !f.checked;
+      f.disabled = disable;
+      if (label) { label.classList.toggle('is-disabled', disable); }
+    });
+  }
+
   function apply() {
     var calls = activeSet('call');
     var confs = activeSet('conf');
@@ -593,6 +700,7 @@ function eicVmechInit(root) {
         ? 'Showing <b>' + shown + '</b> of ' + total + ' subtypes'
         : 'Showing <b>' + total + '</b> subtypes';
     }
+    recount();
   }
 
   rows.forEach(function (row) {
@@ -608,8 +716,10 @@ function eicVmechInit(root) {
     });
   });
 
-  facets.forEach(function (f) { f.addEventListener('change', apply); });
-  if (search) { search.addEventListener('input', apply); }
+  // Discrete filter changes push a history entry; typing replaces so a search
+  // term does not leave one entry per keystroke.
+  facets.forEach(function (f) { f.addEventListener('change', function () { apply(); syncUrl(true); }); });
+  if (search) { search.addEventListener('input', function () { apply(); syncUrl(false); }); }
 
   var reset = root.querySelector('.vmech-reset');
   if (reset) {
@@ -617,7 +727,7 @@ function eicVmechInit(root) {
       facets.forEach(function (f) { f.checked = false; });
       if (search) { search.value = ''; }
       rows.forEach(function (row) { setOpen(row, false); });
-      apply();
+      apply(); syncUrl(true);
     });
   }
 
@@ -637,11 +747,14 @@ function eicVmechInit(root) {
     var target = document.getElementById(id);
     if (!target || !root.contains(target) ||
         !target.classList.contains('vmech-row')) { return; }
-    // A landing link should win over any leftover filter/search state.
+    // A landing link should win over any leftover filter/search state. Clearing
+    // the controls also strips the now-stale vm_ params from the URL (replace,
+    // so the row hash landing does not add its own history entry).
     if (target.hidden) {
       facets.forEach(function (f) { f.checked = false; });
       if (search) { search.value = ''; }
       apply();
+      syncUrl(false);
     }
     setOpen(target, true);
     try { target.focus({ preventScroll: true }); } catch (e) {}
@@ -651,9 +764,27 @@ function eicVmechInit(root) {
     target.classList.add('vmech-flash');
   }
   window.addEventListener('hashchange', openFromHash);
+
+  // Back/Forward: restore the controls and table to the URL of the history
+  // entry being revisited. No syncUrl here, so no new entry is created.
+  window.addEventListener('popstate', function () { readUrl(); apply(); });
+
+  // Hydrate filter/search state from a shared query-string link, then land the
+  // reader on the filter. A row deep-link (#vmech-<code>) still wins: openFromHash
+  // runs in the same frame and takes precedence over the filter scroll.
+  var vmFromUrl = readUrl();
+  if (vmFromUrl) { apply(); syncUrl(false); }
+  else { recount(); } // at rest: set the initial counts + any zero-count dimming
+  var vmHashId = (location.hash || '').slice(1);
+  var vmHashRow = !!(vmHashId && document.getElementById(vmHashId) &&
+      document.getElementById(vmHashId).classList.contains('vmech-row'));
+
   // Two frames so sticky offsets and row layout are settled before we scroll.
   requestAnimationFrame(function () {
-    requestAnimationFrame(openFromHash);
+    requestAnimationFrame(function () {
+      openFromHash();
+      if (vmFromUrl && !vmHashRow) { scrollToFilter(); }
+    });
   });
 }
 (function () {

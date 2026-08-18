@@ -164,6 +164,24 @@
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary, #174777) 20%, transparent);
 }
 
+/* Live facet count. Muted so the label reads first; JS rewrites the number as
+   the neutralized count for the current filter set. */
+.vmech-ct {
+  color: var(--muted, #6b7480);
+  font-variant-numeric: tabular-nums;
+}
+
+/* A facet that would yield nothing under the other active filters is dimmed and
+   inert. A checked facet is never disabled, so it can always be toggled back off. */
+.vmech-check.is-disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.vmech-check.is-disabled input {
+  cursor: not-allowed;
+}
+
 /* Full-width action row, left-aligned, with the count right after Reset —
    matching the gene browser's .gbx-actions placement. */
 .vmech-filter__actions {

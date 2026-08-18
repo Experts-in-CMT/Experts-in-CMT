@@ -389,7 +389,10 @@ add_shortcode("gene_browser", function ($atts = []) {
 .gbx-legend{width:100%;margin:0 0 2px;padding:0;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--gmut)}
 .gbx-check{display:inline-flex;align-items:center;gap:8px;font-size:14px;line-height:1.2;cursor:pointer;user-select:none;color:var(--gtx)}
 .gbx-check input{width:18px;height:18px;margin:0;border-radius:5px;accent-color:var(--gp);cursor:pointer}
-.gbx-check .gbx-ct{color:var(--gmut)}
+.gbx-check .gbx-ct{color:var(--gmut);font-variant-numeric:tabular-nums}
+/* A facet that would return nothing under the other active filters is dimmed and inert; a checked facet is never disabled so it can be switched back off. */
+.gbx-check.is-disabled{opacity:.4;cursor:not-allowed}
+.gbx-check.is-disabled input{cursor:not-allowed}
 .gbx-actions{display:flex;flex-wrap:wrap;align-items:center;gap:.9rem;flex-basis:100%;width:100%}
 .gbx-actions select{width:auto;flex:0 0 auto;font:13px "Manrope",sans-serif;padding:.5rem calc(var(--ctrl-pad-x,14px) * 2) .5rem .6rem;border:1px solid var(--gbd);border-radius:10px;background-color:#fff;color:var(--gtx)}
 .gbx-btn{padding:.5rem 1rem;font:600 13px "Manrope",sans-serif;letter-spacing:.03em;color:var(--gp);background:#fff;border:1px solid var(--gbd);border-radius:20px;cursor:pointer}
@@ -520,7 +523,7 @@ add_shortcode("gene_browser", function ($atts = []) {
 </style>
 
 <div class="gbx" data-total="<?php echo (int) $total_genes; ?>">
-  <div class="gbx-filter" role="search">
+  <div class="gbx-filter" id="gbx-filter" role="search">
     <label class="gbx-filter__search">
       <span class="gbx-sr">Search gene, name, alias, locus, or subtype</span>
       <input type="search" class="gbx-search" placeholder="ex: MFN2, mitofusin 2, 1p36.22, HGNC:16877…" autocomplete="off" spellcheck="false" />
@@ -808,6 +811,81 @@ add_shortcode("gene_browser", function ($atts = []) {
   var az = root.querySelector('.gbx-az');
   var totalGenes = rows.length;
 
+  // ---- Shareable URL state --------------------------------------------
+  // Active search / facets / chromosome / sort are mirrored into the query
+  // string so a configured view can be copied and shared, and re-applied when
+  // that link is opened. Keys are prefixed `gb_` so they never collide with the
+  // variant-mechanism table or other page params. No server round-trip: the
+  // whole catalog is already in the DOM, so this only drives the client filter.
+  var GB_URLKEYS = ['gb_q', 'gb_cls', 'gb_inh', 'gb_mito', 'gb_cand', 'gb_chr', 'gb_sort'];
+
+  function facetValues(facet) {
+    return facets
+      .filter(function (f) { return f.dataset.facet === facet && f.checked; })
+      .map(function (f) { return f.value; });
+  }
+
+  // Serialize the current UI state into the URL. Discrete filter actions push a
+  // new history entry (so Back/Forward step through filter states, matching the
+  // subtype browser); debounced-feeling actions like typing replace instead, so
+  // a search term does not leave one entry per keystroke.
+  function syncUrl(push) {
+    var params = new URLSearchParams(window.location.search);
+    GB_URLKEYS.forEach(function (k) { params.delete(k); });
+
+    var q = search ? (search.value || '').trim() : '';
+    if (q) { params.set('gb_q', q); }
+
+    var cls = facetValues('cls'); if (cls.length) { params.set('gb_cls', cls.join(',')); }
+    var inh = facetValues('inh'); if (inh.length) { params.set('gb_inh', inh.join(',')); }
+    if (root.querySelector('.gbx-facet[data-facet="mito"]').checked) { params.set('gb_mito', '1'); }
+    if (root.querySelector('.gbx-facet[data-facet="cand"]').checked) { params.set('gb_cand', '1'); }
+    if (chrSel.value) { params.set('gb_chr', chrSel.value); }
+    if (sortSel.value && sortSel.value !== 'sym') { params.set('gb_sort', sortSel.value); }
+
+    var qs = params.toString();
+    var url = window.location.pathname + (qs ? '?' + qs : '') + window.location.hash;
+    var cur = window.location.pathname + window.location.search + window.location.hash;
+    try {
+      if (push && url !== cur) { window.history.pushState({ gbx: 1 }, '', url); }
+      else { window.history.replaceState({ gbx: 1 }, '', url); }
+    } catch (e) {}
+  }
+
+  // Apply the URL's state to the controls. Idempotent: a key that is absent
+  // resets its control to the default, so a Back/Forward step (popstate) that
+  // lands on a sparser or empty URL restores cleanly. Returns whether the URL
+  // carried any filter state, which decides the arrival scroll.
+  function readUrl() {
+    var params = new URLSearchParams(window.location.search);
+    var had = GB_URLKEYS.some(function (k) { return params.has(k); });
+
+    if (search) { search.value = params.get('gb_q') || ''; }
+    var cls = (params.get('gb_cls') || '').split(',').filter(Boolean);
+    var inh = (params.get('gb_inh') || '').split(',').filter(Boolean);
+    var mito = params.get('gb_mito') === '1';
+    var cand = params.get('gb_cand') === '1';
+    facets.forEach(function (f) {
+      if (f.dataset.facet === 'cls') { f.checked = cls.indexOf(f.value) !== -1; }
+      else if (f.dataset.facet === 'inh') { f.checked = inh.indexOf(f.value) !== -1; }
+      else if (f.dataset.facet === 'mito') { f.checked = mito; }
+      else if (f.dataset.facet === 'cand') { f.checked = cand; }
+    });
+    chrSel.value = params.get('gb_chr') || '';
+    sortSel.value = params.get('gb_sort') || 'sym';
+    return had;
+  }
+
+  function scrollToFilter() {
+    var filterEl = root.querySelector('.gbx-filter');
+    if (!filterEl) { return; }
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var bar = document.getElementById('wpadminbar');
+    var offset = (bar ? bar.offsetHeight : 0) + 12;
+    var y = filterEl.getBoundingClientRect().top + window.pageYOffset - offset;
+    window.scrollTo({ top: y > 0 ? y : 0, behavior: reduce ? 'auto' : 'smooth' });
+  }
+
   function stickyTop() {
     var bar = document.getElementById('wpadminbar');
     root.style.setProperty('--gbx-top', (bar ? bar.offsetHeight : 0) + 'px');
@@ -829,6 +907,64 @@ add_shortcode("gene_browser", function ($atts = []) {
     var out = {};
     facets.forEach(function (f) { if (f.dataset.facet === facet && f.checked) { out[f.value] = true; } });
     return Object.keys(out).length ? out : null;
+  }
+
+  // Does a gene row pass every active filter EXCEPT the named facet group? The
+  // chromosome dropdown and search always apply. Used for live facet counts:
+  // an option's count is "how many genes I'd add by ticking this", so the
+  // option's own group is neutralized while every other filter still applies.
+  function passesExcept(row, exceptFacet) {
+    var fc = chrSel.value;
+    if (fc && row.dataset.chr !== fc) { return false; }
+    var q = (search.value || '').trim().toLowerCase();
+    if (q && row.dataset.text.indexOf(q) === -1) { return false; }
+    if (exceptFacet !== 'mito' &&
+        root.querySelector('.gbx-facet[data-facet="mito"]').checked &&
+        row.dataset.mito !== '1') { return false; }
+    if (exceptFacet !== 'cand' &&
+        root.querySelector('.gbx-facet[data-facet="cand"]').checked &&
+        row.dataset.cand !== '1') { return false; }
+    if (exceptFacet !== 'cls') {
+      var cls = activeSet('cls');
+      if (cls) {
+        var rc = row.dataset.classes ? row.dataset.classes.split('|') : [];
+        if (!rc.some(function (c) { return cls[c]; })) { return false; }
+      }
+    }
+    if (exceptFacet !== 'inh') {
+      var inh = activeSet('inh');
+      if (inh) {
+        var ri = row.dataset.inh ? row.dataset.inh.split('|') : [];
+        if (!ri.some(function (m) { return inh[m]; })) { return false; }
+      }
+    }
+    return true;
+  }
+
+  // Rewrite every facet's count to its neutralized gene total and dim any that
+  // would return nothing. Because the table is gene-resolved and a gene can
+  // span several classifications (NEFL/MPZ carry CMT1, CMT2 and CMT-DI), a gene
+  // is counted toward every class/inheritance token it holds, so the
+  // classification counts legitimately overlap and sum past the gene total.
+  function recount() {
+    facets.forEach(function (f) {
+      var facet = f.dataset.facet, val = f.value, n = 0;
+      rows.forEach(function (row) {
+        if (!passesExcept(row, facet)) { return; }
+        var hit;
+        if (facet === 'cls') { hit = (row.dataset.classes || '').split('|').indexOf(val) !== -1; }
+        else if (facet === 'inh') { hit = (row.dataset.inh || '').split('|').indexOf(val) !== -1; }
+        else if (facet === 'mito') { hit = row.dataset.mito === '1'; }
+        else { hit = row.dataset.cand === '1'; }
+        if (hit) { n++; }
+      });
+      var label = f.closest('.gbx-check');
+      var ct = label ? label.querySelector('.gbx-ct') : null;
+      if (ct) { ct.textContent = '(' + n + ')'; }
+      var disable = n === 0 && !f.checked;
+      f.disabled = disable;
+      if (label) { label.classList.toggle('is-disabled', disable); }
+    });
   }
 
   function apply() {
@@ -870,6 +1006,7 @@ add_shortcode("gene_browser", function ($atts = []) {
         : 'Showing <b>' + totalGenes + '</b> genes';
     }
     az.querySelectorAll('.gbx-azl').forEach(function (b) { var off = !inits[b.dataset.l]; b.classList.toggle('gbx-off', off); b.disabled = off; });
+    recount();
   }
 
   function sortRows() {
@@ -890,10 +1027,12 @@ add_shortcode("gene_browser", function ($atts = []) {
     row.addEventListener('click', function (e) { if (e.target.closest('a')) { return; } setOpen(row, row.getAttribute('aria-expanded') !== 'true'); });
     row.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOpen(row, row.getAttribute('aria-expanded') !== 'true'); } });
   });
-  facets.forEach(function (f) { f.addEventListener('change', apply); });
-  if (search) { search.addEventListener('input', apply); }
-  chrSel.addEventListener('change', apply);
-  sortSel.addEventListener('change', sortRows);
+  // Discrete filter changes push a history entry; typing replaces so a search
+  // term does not leave one entry per keystroke.
+  facets.forEach(function (f) { f.addEventListener('change', function () { apply(); syncUrl(true); }); });
+  if (search) { search.addEventListener('input', function () { apply(); syncUrl(false); }); }
+  chrSel.addEventListener('change', function () { apply(); syncUrl(true); });
+  sortSel.addEventListener('change', function () { sortRows(); syncUrl(true); });
 
   var allOpen = false;
   var toggleBtn = root.querySelector('.gbx-toggleall');
@@ -908,7 +1047,7 @@ add_shortcode("gene_browser", function ($atts = []) {
     chrSel.value = ''; sortSel.value = 'sym';
     rows.forEach(function (r) { setOpen(r, false); });
     allOpen = false; toggleBtn.textContent = 'OPEN ALL';
-    sortRows(); apply();
+    sortRows(); apply(); syncUrl(true);
   });
   az.addEventListener('click', function (e) {
     var b = e.target.closest('.gbx-azl');
@@ -920,7 +1059,30 @@ add_shortcode("gene_browser", function ($atts = []) {
     }
   });
 
-  apply();
+  // Re-render controls + table from the current URL without writing history.
+  // Used on first load (shared link) and on Back/Forward (popstate). sortRows()
+  // runs unconditionally so a Back step from an alternate sort back to the
+  // default 'sym' actually restores canonical order (the control alone would
+  // otherwise say A-Z while the DOM kept the previous order).
+  function renderFromUrl() {
+    var had = readUrl();
+    sortRows();
+    apply();
+    return had;
+  }
+
+  // Back/Forward: restore the controls and table to the URL of the history
+  // entry being revisited. No syncUrl here, so no new entry is created.
+  window.addEventListener('popstate', function () { renderFromUrl(); });
+
+  // First load: hydrate from a shared link, normalize the URL to canonical
+  // form (replace, no new entry), and land the reader on the filter.
+  var gbFromUrl = renderFromUrl();
+  if (gbFromUrl) {
+    syncUrl(false);
+    // Two frames so sticky offsets and layout are settled before we scroll.
+    requestAnimationFrame(function () { requestAnimationFrame(scrollToFilter); });
+  }
 })();
 </script>
 <?php return ob_get_clean();

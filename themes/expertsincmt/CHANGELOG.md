@@ -13,6 +13,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Gene Browser and Variant Mechanisms: Shareable Filter Links with Back and Forward (`gene-browser-table.php`, `variant-mechanism-table.php`)**
+  - Filter, search, and sort choices on both tables now write to the page address, so any configured view can be copied and shared as a link. Opening that link restores the same filters and scrolls the reader to the filter controls. Both tables already render their full catalog on load, so this is handled entirely in the browser with no extra server request.
+  - The address updates use prefixed keys (`gb_` for the gene browser, `vm_` for variant mechanisms) so the two tables never collide with each other or with the Genetics Database. Multi-select facets are comma-joined. The variant table's existing per-subtype row link (`#vmech-<code>`) is preserved and still takes precedence over the filter landing when both are present.
+  - Browser Back and Forward now step through filter states, matching the Genetics Database. A discrete change (a facet, the chromosome menu, or sort) adds a history entry; typing in search replaces the current one, so a search term does not leave an entry per keystroke. Returning to an earlier or empty state restores the controls and the table cleanly.
+  - inc/shortcodes/gene-browser-table.php
+  - inc/shortcodes/variant-mechanism-table.php
+
+- **Gene Browser and Variant Mechanisms: Live Facet Counts (`gene-browser-table.php`, `variant-mechanism-table.php`, `variant-mechanism.css`)**
+  - The count beside each filter option now updates as filters change, showing how many entries that option would return in the current context rather than a fixed total. An option that would return nothing is dimmed and disabled, so a dead-end combination is visible before it is clicked. A currently-checked option is never disabled, so it can always be switched back off. Counts track the search box as well, not only the checkboxes.
+  - Counting neutralizes the option's own group. Within a multi-select group the options are combined with OR, so a selected option does not zero out its siblings; each sibling instead shows how many results adding it would bring. Everything is computed in the browser from data already carried on each row, so there is no server request.
+  - Because the gene browser is gene-resolved, a gene is counted under every classification and inheritance mode it carries. Genes such as NEFL and MPZ span CMT1, CMT2, and CMT-intermediate, so the classification counts overlap by design and sum past the gene total, which is the correct reading for a per-gene table. The chromosome menu keeps a plain list with no per-option counts.
+  - inc/shortcodes/gene-browser-table.php
+  - inc/shortcodes/variant-mechanism-table.php
+  - assets/css/variant-mechanism.css
+
 - **GeneReviews Corrections: Subtype-Keyed Tool for `genereviews_url` (`eic-genereviews-corrections.php`)**
   - A new Tools > GeneReviews Corrections admin page sets or clears `genereviews_url` one subtype at a time, from a JSON dataset, with the same dry-run and commit shape as the other importers. It exists because `genereviews_url` is subtype-specific and the only tool that wrote it was keyed on gene symbol, and because that tool structurally cannot clear a value: its write loop opens `if ($new === "") continue;`, so a stale URL already stored survives any change to its source. Matching runs `code` against the ACF `subtype` field, then post title, then slug, with a `candidate-{slug}` fallback for candidate records.
   - URLs are validated against `#^https://www\.ncbi\.nlm\.nih\.gov/books/NBK\d+/$#`, and the tool refuses a dataset not marked `genereviews-v1`. That guard matters more here than on the mechanism importer: an empty value is a real instruction to clear, so a foreign dataset whose records lack the key would blank the field on every subtype it matched rather than merely skipping it.
