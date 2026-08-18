@@ -68,7 +68,7 @@ if (empty($args)) {
 /**
  * ============================================================
  *  [SECTION: SEARCH LOGIC]
- *  v0.8.x — Finalized exact/fuzzy hybrid search for Genes DB
+ *  v0.8.x — Finalized exact/fuzzy hybrid search for Subtype Browser
  *  Applies meta_query whenever a search term ($qs) is present.
  *  Runs for BOTH page-load and AJAX (qs comes from query vars).
  * ============================================================
@@ -354,8 +354,8 @@ if (!empty($extra_blocks)) {
 /* ------------------------------------------------------------
    Execute query (canonical sorter when needed)
    Setting the query var triggers the globally registered
-   eic_genes_type_ordering_clauses (inc/content/sort/genes-type-order.php),
-   which is the single source of truth for Genes DB ordering
+   eic_genes_type_ordering_clauses (inc/content/sort/subtype-browser-type-order.php),
+   which is the single source of truth for Subtype Browser ordering
    (empties last). Do not attach a second posts_clauses callback here.
    ------------------------------------------------------------ */
 if ($use_canonical_sort) {
@@ -625,7 +625,7 @@ if ($total_pages > 1) {
     $current = max(1, (int) ($args["paged"] ?? 1));
     $base_url =
         get_permalink(get_queried_object_id()) ?:
-        home_url("/cmt-genetics-database/");
+        eic_subtype_browser_page_url();
     // Build pagination params from the effective request: $_GET on page
     // load, $_POST during an AJAX fetch (where $_GET is empty). Strip the
     // AJAX plumbing and the paged key so injected page links still carry

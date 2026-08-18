@@ -195,7 +195,7 @@ add_shortcode("variant_mechanism_table", function ($atts = []) {
         "orderby" => "title",
         "order" => "ASC",
         // Candidate gene associations (candidate_gene = true) are not
-        // classified subtypes: excluded here, as in the Genes DB loop and the
+        // classified subtypes: excluded here, as in the Subtype Browser loop and the
         // homepage totals. NOT EXISTS keeps ordinary subtypes (meta absent/"0").
         "meta_query" => [
             "relation" => "OR",

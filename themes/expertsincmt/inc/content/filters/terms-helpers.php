@@ -93,7 +93,7 @@ function eicmt_terms_options_html($taxonomy, $selected = "", $placeholder = "")
 }
 
 /**
- * Genes DB search — exact-identifier match.
+ * Subtype Browser search — exact-identifier match.
  *
  * Returns the published `subtype` post IDs whose canonical identifier —
  * subtype name, gene symbol, or full gene name — is EXACTLY the query.

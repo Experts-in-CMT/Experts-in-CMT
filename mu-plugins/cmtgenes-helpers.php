@@ -9,7 +9,7 @@
 
 /*
  * ------------------------------------------------------------
- * MU Plugin: Genes Database Helpers
+ * MU Plugin: CMT Subtype Browser Helpers
  * ------------------------------------------------------------
  * Purpose:
  * • Powers subtype/genes/unknown inline totals
@@ -18,7 +18,7 @@
  * • Provides consistent search/meta field helpers for loop logic
  *
  * Notes:
- * • Core to Genes Database performance and accuracy
+ * • Core to CMT Subtype Browser performance and accuracy
  * • All caching tied to subtype CRUD via version bumps
  * • Safe to extend; do not alter existing return structures
  */

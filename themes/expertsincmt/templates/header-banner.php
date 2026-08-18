@@ -11,7 +11,7 @@
  * Since v0.5.0
  * Feature: Header Banner (Overlay Layout)
  * ------------------------------------------------------------
- * Brought in line with the Genes DB app hero's overlay design:
+ * Brought in line with the Subtype Browser app hero's overlay design:
  * image is output as a CSS custom property and sits behind the
  * text as a background layer, with a live CSS mask-image fade
  * driven by two ACF Range fields (banner_fade_start / banner_fade_end),

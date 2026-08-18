@@ -17,7 +17,7 @@
  *  - Sibling of [genes_hero]; same overlay pattern (image output
  *    as a CSS custom property, left-side fade driven by two ACF
  *    Range fields), so the two tools open the same way. Kept as
- *    its own component so the Genes DB hero is never at risk and
+ *    its own component so the Subtype Browser hero is never at risk and
  *    the two can carry different copy, image, and stats.
  *
  *  Fields (group_eic_vmech_hero, on the Variant Mechanisms page):
@@ -31,7 +31,7 @@
  *    vmech_hero_resolved_count    (number)  -> "{n} with a resolved mechanism"
  *
  *  Note:
- *  - Title renders as an H2, matching the Genes DB hero so it
+ *  - Title renders as an H2, matching the Subtype Browser hero so it
  *    inherits the same navy heading style. The page's real H1
  *    stays as the theme post-title, made screen-reader-only in
  *    the hero stylesheet so the heading order is intact without

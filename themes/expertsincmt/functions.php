@@ -183,9 +183,9 @@ add_action("wp_enqueue_scripts", function () {
             "nonce" => "glossary_ajax_nonce",
             "taxMap" => [],
         ],
-        "cmt-genetics-database" => [
+        "cmt-subtype-browser" => [
             "handle" => "genes-ajax",
-            "file" => "/assets/js/genes-ajax.js",
+            "file" => "/assets/js/subtype-browser-ajax.js",
             "var" => "GENES_AJAX",
             "nonce" => "genes_ajax_nonce",
             "taxMap" => [
@@ -244,12 +244,12 @@ add_action("wp_enqueue_scripts", function () {
 // by CSS (`.wp-block-query-no-results { display:none }` in main.css).
 
 /**
- * Genes DB — loop shortcode loader
+ * Subtype Browser — loop shortcode loader
  */
 add_action(
     "after_setup_theme",
     function () {
-        $rel = "/inc/content/loops/genes-loop.php";
+        $rel = "/inc/content/loops/subtype-browser-loop.php";
         $abs = get_template_directory() . $rel;
         if (file_exists($abs)) {
             require_once $abs;
@@ -258,13 +258,13 @@ add_action(
     20
 );
 
-// genes-hero.css is auto-loaded via the assets/css glob loader above.
+// subtype-browser-hero.css is auto-loaded via the assets/css glob loader above.
 
-// Genes DB — custom type order (global, but opt-in via query var)
+// Subtype Browser — custom type order (global, but opt-in via query var)
 add_action(
     "after_setup_theme",
     function () {
-        $rel = "/inc/content/sort/genes-type-order.php";
+        $rel = "/inc/content/sort/subtype-browser-type-order.php";
         $abs = get_template_directory() . $rel;
         if (file_exists($abs)) {
             require_once $abs;
@@ -356,12 +356,12 @@ add_action(
 /**
  * Enqueue Genes Filters stylesheet — load only when needed.
  */
-// genes-filters.css is auto-loaded via the assets/css glob loader above.
+// subtype-browser-filters.css is auto-loaded via the assets/css glob loader above.
 
 /**
  * Enqueue Genes Loop stylesheet — load only when needed.
  */
-// genes-loop.css is auto-loaded via the assets/css glob loader above.
+// subtype-browser-loop.css is auto-loaded via the assets/css glob loader above.
 
 // dr-filter.css is auto-loaded via the assets/css glob loader above.
 
@@ -501,7 +501,7 @@ add_action("wp_enqueue_scripts", function () {
 });
 
 // =========================================================
-// Genes Database Filter Array Taxonomy Includes
+// CMT Subtype Browser Filter Array Taxonomy Includes
 // =========================================================
 require_once get_stylesheet_directory() .
     "/inc/taxonomies/register-subtype-taxes.php";
@@ -510,7 +510,7 @@ require_once get_stylesheet_directory() .
 require_once get_stylesheet_directory() .
     "/inc/taxonomies/order-admin-terms.php";
 require_once get_stylesheet_directory() .
-    "/inc/content/filters/genes-filter.php";
+    "/inc/content/filters/subtype-browser-filter.php";
 
 // =========================================================
 // Load modular includes — expertsincmt

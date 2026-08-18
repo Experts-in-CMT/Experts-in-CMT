@@ -8,14 +8,14 @@
  */
 
 /**
- * File: ACF — Genes DB App Hero Fields
+ * File: ACF — Subtype Browser App Hero Fields
  * Purpose: Registers the field group for the Genes & Subtypes Database
  *          app hero (background image, title, intro copy). Rendered as
  *          an overlay hero, not a split banner, image is output as a
  *          CSS custom property and positioned entirely in CSS.
  *
  * Location:
- *   /inc/acf/genes-hero-fields.php
+ *   /inc/acf/subtype-browser-hero-fields.php
  */
 
 if (!defined("ABSPATH")) {
@@ -27,7 +27,7 @@ function eic_acf_genes_hero_fields()
 {
     acf_add_local_field_group([
         "key" => "group_eic_genes_hero",
-        "title" => "Genes DB App Hero",
+        "title" => "Subtype Browser App Hero",
         "fields" => [
             [
                 "key" => "field_eic_genes_hero_image",

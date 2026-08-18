@@ -9,14 +9,14 @@
 
 /**
  * ============================================================
- *  [genes_filter] — Genes Database Filter UI
+ *  [genes_filter] — CMT Subtype Browser Filter UI
  *  ------------------------------------------------------------
  *  Purpose:
  *    - Renders the full filter UI for the Genes & Subtypes Database
  *      (selector dropdowns + search field + reset link)
  *    - Emits GET params consumed by:
  *        • [genes_loop] shortcode (page-load rendering)
- *        • genes-ajax.js (live AJAX updates)
+ *        • subtype-browser-ajax.js (live AJAX updates)
  *
  *  Notes:
  *    - GET params produced by this filter:
@@ -158,6 +158,41 @@ function _eicmt_gf_options_html_single(
     return $html;
 }
 
+/**
+ * Permalink of the page that hosts the CMT Subtype Browser, resolved by the
+ * shortcode it contains rather than a hard-coded slug, so moving or renaming
+ * the page (e.g. under a /genetics/ parent) never breaks the filter's form
+ * action, reset, or pagination links. Found by shortcode so it also works
+ * during an AJAX fragment render, where there is no queried object to read a
+ * permalink from. Cached per request; falls back to the conventional path if
+ * the page is not published yet.
+ */
+if (!function_exists("eic_subtype_browser_page_url")) {
+    function eic_subtype_browser_page_url(): string
+    {
+        static $url = null;
+        if ($url !== null) {
+            return $url;
+        }
+        $found = get_posts([
+            "post_type" => "page",
+            "post_status" => "publish",
+            "posts_per_page" => 20,
+            "no_found_rows" => true,
+            "s" => "genes_filter",
+        ]);
+        foreach ($found as $p) {
+            if (
+                has_shortcode($p->post_content, "genes_filter") ||
+                has_shortcode($p->post_content, "genes_loop")
+            ) {
+                return $url = get_permalink($p->ID);
+            }
+        }
+        return $url = home_url("/genetics/cmt-subtype-browser/");
+    }
+}
+
 add_shortcode("genes_filter", function ($atts = []) {
     // Inject shortcode attributes, including per_page
     $a = shortcode_atts(
@@ -179,10 +214,7 @@ add_shortcode("genes_filter", function ($atts = []) {
 
     $base = get_permalink(get_queried_object_id());
     if (!$base) {
-        $genes_page = get_page_by_path("cmt-genetics-database");
-        $base = $genes_page
-            ? get_permalink($genes_page->ID)
-            : home_url("/cmt-genetics-database/");
+        $base = eic_subtype_browser_page_url();
     }
 
     $action_url = esc_url($base . "#" . $anchor);

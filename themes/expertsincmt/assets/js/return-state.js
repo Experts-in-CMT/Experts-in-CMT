@@ -38,7 +38,7 @@
 	// the [context_nav] Return link's data-return-key attribute.
 	var ARCHIVES = {
 		"dorsal-root": "post",
-		"cmt-genetics-database": "subtype",
+		"cmt-subtype-browser": "subtype",
 		"cmt-words": "glossary",
 		"what-is-cmt": "what-is-cmt",
 		"cmt-and-breathing": "breathing"

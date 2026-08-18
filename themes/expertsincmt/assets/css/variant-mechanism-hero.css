@@ -10,7 +10,7 @@
  * ------------------------------------------------------------
  * VARIANT MECHANISM BROWSER — APP HERO
  * ------------------------------------------------------------
- * Overlay hero (sibling of the Genes DB app hero): background
+ * Overlay hero (sibling of the Subtype Browser app hero): background
  * image + left-side fade gradient, driven by
  * --vmech-hero-fade-start / --vmech-hero-fade-end (set inline by
  * the [variant_mechanism_hero] shortcode from ACF Range fields).
@@ -73,7 +73,7 @@
   justify-content: center;
 }
 
-/* Match the Genes DB hero title exactly: an H2 carrying only a size, so it
+/* Match the Subtype Browser hero title exactly: an H2 carrying only a size, so it
    inherits the theme's navy heading color, weight, and family. */
 .vmech-hero__title {
   font-size: 2rem;
@@ -129,7 +129,7 @@
    page's real H1 but is made screen-reader-only, so the heading order holds
    without a second visible title above the hero. The filter/table section
    breaks out to the same centered width as the hero and is pulled up to overlap
-   its flat bottom edge, the same "app" seam the Genes DB uses. */
+   its flat bottom edge, the same "app" seam the Subtype Browser uses. */
 .has-vmech-hero .wp-block-post-title {
   position: absolute;
   width: 1px;
@@ -157,7 +157,7 @@
    Mobile: crop tighter, shallower overlap
    ========================================================= */
 @media (max-width: 600px) {
-  /* Keep the 100vw breakout on phones, matching the Genes DB hero, so this tool
+  /* Keep the 100vw breakout on phones, matching the Subtype Browser hero, so this tool
      runs edge to edge instead of sitting inset at content width. */
   .vmech-hero {
     min-height: clamp(220px, 46vw, 300px);

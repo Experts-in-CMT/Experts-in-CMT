@@ -9,9 +9,9 @@
 
 /*
  * ------------------------------------------------------------
- * Genes Database — Loop Shortcode
+ * CMT Subtype Browser — Loop Shortcode
  * ------------------------------------------------------------
- * Renders the full Genes Database loop for page-load mode.
+ * Renders the full CMT Subtype Browser loop for page-load mode.
  * Provides:
  *   • Taxonomy filters (cmt_type, inheritance, neuropathy, chromosome)
  *   • Search via qs=
@@ -23,7 +23,7 @@
  * – Do not alter query logic or canonical sort integration here.
  * – AJAX updates hydrate this shortcode through the endpoint.
  * – Fragment rendering logic lives in:
- *       inc/content/loops/partials/fragment-loop-genes-loop.php
+ *       inc/content/loops/partials/fragment-loop-subtype-browser.php
  */
 
 /* ============================================================
@@ -34,7 +34,7 @@
 
 /*
  * NOTE: The former debug sorter (eic_genes_custom_sort_clauses, empties-first)
- * was removed. Canonical ordering lives in inc/content/sort/genes-type-order.php
+ * was removed. Canonical ordering lives in inc/content/sort/subtype-browser-type-order.php
  * (eic_genes_type_ordering_clauses, empties-last), triggered by the
  * `eic_genes_custom_sort` query var.
  */
@@ -196,6 +196,6 @@ $sort_clear_url =
 
 
 <?php
-get_template_part("inc/content/loops/partials/fragment-loop-genes-loop");
+get_template_part("inc/content/loops/partials/fragment-loop-subtype-browser");
 return ob_get_clean();
 });

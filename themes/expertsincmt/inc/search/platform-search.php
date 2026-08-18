@@ -200,8 +200,9 @@ function eic_platform_search_resolve_intent($query_normalized)
  */
 function eic_platform_search_build_results($payload, $query_normalized)
 {
-    $genes_page = get_page_by_path("cmt-genetics-database", OBJECT, "page");
-    $genes_db_url = $genes_page ? get_permalink($genes_page->ID) : "";
+    $genes_db_url = function_exists("eic_subtype_browser_page_url")
+        ? eic_subtype_browser_page_url()
+        : "";
 
     $results = [
         "subtypes" => [],

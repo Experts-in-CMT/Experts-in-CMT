@@ -12,7 +12,7 @@
  *  Shortcode: [genes_hero]
  * ------------------------------------------------------------
  *  Purpose:
- *  - Renders the Genes DB app hero: background image, title,
+ *  - Renders the Subtype Browser app hero: background image, title,
  *    intro copy, and a static two-item stats line.
  *  - Image is output as a CSS custom property; the left-side
  *    fade is a live CSS mask-image driven by two ACF Range

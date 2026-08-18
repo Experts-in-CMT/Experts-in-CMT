@@ -12,7 +12,7 @@
  * Purpose: Registers the field group for the site-wide split/overlay
  *          header banner (image, title, intro copy), plus the two
  *          fade-mask range fields added when the banner was brought
- *          in line with the Genes DB app hero's overlay design.
+ *          in line with the Subtype Browser app hero's overlay design.
  *
  * Location:
  *   /inc/acf/header-banner-fields.php

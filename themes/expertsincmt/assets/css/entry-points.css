@@ -16,7 +16,7 @@
  * screen reader announces one link per card. The bottom CTA is a decorative
  * cue.
  *
- * Styling reuses the shared card tokens from genes-loop.css (radius, shadow,
+ * Styling reuses the shared card tokens from subtype-browser-loop.css (radius, shadow,
  * speed, ease), so these cards read as part of the same system as the
  * subtype and glossary cards: 22px radius, the navy-tinted shadow, a gentle
  * hover (deeper shadow + a primary-light border, no lift), a light-weight

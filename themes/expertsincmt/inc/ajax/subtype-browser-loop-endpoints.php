@@ -12,7 +12,7 @@
  *  GENES LOOP AJAX ENDPOINT
  *  ------------------------------------------------------------
  *  Purpose:
- *    Handles AJAX requests initiated by genes-ajax.js and returns
+ *    Handles AJAX requests initiated by subtype-browser-ajax.js and returns
  *    ONLY the rendered inner-loop HTML for injection into
  *    #genes-results-root.
  *
@@ -24,7 +24,7 @@
  *         • taxonomy filters (cmt_type, inheritance, neuropathy, chromosome)
  *         • sort logic (canonical FIELD() order unless overridden)
  *         • pagination
- *    - Sets query vars, loads fragment-loop-genes-loop.php, captures
+ *    - Sets query vars, loads fragment-loop-subtype-browser.php, captures
  *      the output, resets postdata, and returns JSON.
  *
  *  Notes:
@@ -32,7 +32,7 @@
  *    - Canonical sort is inviolable; endpoint must never disrupt
  *      FIELD() ordering unless an explicit gd_sort value is supplied.
  *    - Fragment file lives at:
- *          inc/content/loops/partials/fragment-loop-genes-loop.php
+ *          inc/content/loops/partials/fragment-loop-subtype-browser.php
  * ============================================================
  */
 
@@ -77,7 +77,7 @@ function eic_genes_loop_endpoint()
     ];
 
     // NOTE: search meta_query is intentionally NOT built here. The
-    // fragment (fragment-loop-genes-loop.php) reassigns $args['meta_query']
+    // fragment (fragment-loop-subtype-browser.php) reassigns $args['meta_query']
     // wholesale whenever a search term is present — the same condition
     // under which this endpoint would build one — so anything set here is
     // overwritten and the fragment is the single source of truth for the
@@ -147,7 +147,7 @@ function eic_genes_loop_endpoint()
     set_query_var("gd_sort", $sort);
 
     ob_start();
-    get_template_part("inc/content/loops/partials/fragment-loop-genes-loop");
+    get_template_part("inc/content/loops/partials/fragment-loop-subtype-browser");
     $html = ob_get_clean();
 
     wp_reset_postdata();

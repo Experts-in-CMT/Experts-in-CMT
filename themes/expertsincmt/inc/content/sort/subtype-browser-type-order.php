@@ -9,10 +9,10 @@
 
 /*
  * ------------------------------------------------------------
- * Genes Database — Canonical Sort Rules
+ * CMT Subtype Browser — Canonical Sort Rules
  * ------------------------------------------------------------
  * Defines the immutable FIELD() ordering for ACF key
- * `type_classification` used across all Genes DB queries.
+ * `type_classification` used across all Subtype Browser queries.
  *
  * IMPORTANT:
  * • This is the highest-priority rule in the Genes stack.

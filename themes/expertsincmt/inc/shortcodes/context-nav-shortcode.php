@@ -75,7 +75,9 @@ add_shortcode("context_nav", function () {
     if ($post_type === "post") {
         $back_url = home_url("/dorsal-root/#blog");
     } elseif ($post_type === "subtype") {
-        $back_url = home_url("/cmt-genetics-database/#ui");
+        $back_url = function_exists("eic_subtype_browser_page_url")
+            ? eic_subtype_browser_page_url() . "#ui"
+            : home_url("/genetics/cmt-subtype-browser/#ui");
     } elseif ($post_type === "glossary") {
         $back_url = home_url("/cmt-words/#results");
     } elseif ($post_type === "what-is-cmt") {

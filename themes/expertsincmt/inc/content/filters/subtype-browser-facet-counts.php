@@ -9,7 +9,7 @@
 
 /**
  * ============================================================
- *  Genes Database — Facet Counts
+ *  CMT Subtype Browser — Facet Counts
  * ------------------------------------------------------------
  *  Computes, for every filter control, how many subtypes that
  *  control would return given everything else currently applied.
@@ -33,7 +33,7 @@
  *  than issuing a query per facet option.
  *
  *  Location:
- *    /inc/content/filters/genes-facet-counts.php
+ *    /inc/content/filters/subtype-browser-facet-counts.php
  * ============================================================
  */
 
@@ -132,7 +132,7 @@ function eic_genes_facet_normalize_state(array $req)
  * result set regardless of the search semantics' finer points.
  *
  * The field lists and the three name-matched taxonomies are kept in
- * sync with fragment-loop-genes-loop.php; if that search changes,
+ * sync with fragment-loop-subtype-browser.php; if that search changes,
  * change it here too.
  *
  * @param string $qs

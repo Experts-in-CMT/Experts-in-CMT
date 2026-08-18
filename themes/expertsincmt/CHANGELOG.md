@@ -9,7 +9,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [4.1.0] - 2026-08-18
 
 ### Added
 
@@ -34,6 +34,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - mu-plugins/eic-genereviews-corrections.php
 
 ### Changed
+
+- **Genes Database Renamed to CMT Subtype Browser Throughout the Theme Code (`functions.php`, `inc/`, `assets/`)**
+  - The feature formerly called the Genes Database is now the CMT Subtype Browser. The 14 theme files named for it were renamed from `genes-*` to `subtype-browser-*` (the loop, filter, facet counts, totals helper, totals-inline shortcode, canonical type-order, AJAX endpoints, hero shortcode, hero ACF fields, the loop fragment partial, and the three `genes-*` stylesheets plus `genes-ajax.js`), with every `require`, `get_template_part`, and enqueue reference updated to match. All comments, docblocks, and CSS headers that named the old feature were rewritten, including the cross-references in sibling files (variant mechanism, glossary, dorsal root, header banner).
+  - Internal identifiers were left in place on purpose, so nothing in the stored page content or in shared links breaks: the `[genes_loop]`, `[genes_filter]`, `[genes_hero]`, and `[genes_totals_inline]` shortcode tags, the `genes-filter`/`genes-hero` CSS classes and custom properties, the `genes_get_loop` AJAX action, the `GENES_AJAX` script variable, and the filter query parameters are all unchanged.
+  - The page moved to `/genetics/cmt-subtype-browser/`, so the theme's links to it were reconciled to be slug-agnostic. A new `eic_subtype_browser_page_url()` helper resolves the page by the shortcode it hosts (mirroring `eic_vmech_page_url()`), so the filter form action, reset, and pagination links, the platform search result links, the context-nav Return button, and the entry-point cards all follow the page wherever it lives, in page-load and AJAX contexts alike. The script-enqueue gate and the return-state page map were pointed at the new leaf slug `cmt-subtype-browser`. Only editor-authored links inside page bodies, the footer, and the block templates still name the old slug; those are content, not theme code.
+  - Verified by a full WordPress bootstrap: the theme loads with no error, all four shortcodes register, the resolver returns the live page URL, and the browser page renders end to end with its form action on the new path.
+  - functions.php, inc/content/loops/, inc/content/filters/, inc/content/sort/, inc/ajax/, inc/acf/, inc/shortcodes/, inc/search/, assets/css/, assets/js/
 
 - **Variant Mechanism: `mechanism_flavor` Renamed to `mechanism_mode`, and Its Vocabulary Rebuilt (`subtype-fields.php`, `subtype-jsonld.php`, `variant-mechanism-table.php`, `subtype-fields-template.php`)**
   - The second-level mechanism field is renamed from `mechanism_flavor` to `mechanism_mode` (ACF key `field_mechanism_flavor` to `field_mechanism_mode`). "Flavor" read as a database column rather than science and appeared nowhere in the literature; "mode" pairs with `mechanism` and is native to genetics vocabulary. The public label is unchanged, since all three render paths already displayed it as "Mechanistic Basis," so nothing user-facing was renamed.

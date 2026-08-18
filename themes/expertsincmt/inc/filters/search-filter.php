@@ -21,7 +21,7 @@
  *   • Keep search + reset behavior consistent with Genes.
  *
  * Notes:
- *   • Mirrors genes-filter.php defaults.
+ *   • Mirrors subtype-browser-filter.php defaults.
  *   • Provides exact bar/row/field markup for parity.
  *   • Includes hidden GET preservation and anchored reload.
  */
@@ -37,7 +37,7 @@ if (!shortcode_exists("search_filter")) {
             ? sanitize_text_field((string) $_GET["qs"])
             : "";
 
-        // Anchor + base URL resolution (mirrors genes-filter.php)
+        // Anchor + base URL resolution (mirrors subtype-browser-filter.php)
         $anchor = "results";
 
         $base = get_permalink(get_queried_object_id());
@@ -58,7 +58,7 @@ if (!shortcode_exists("search_filter")) {
         <div class="genes-filter__bar">
           <div class="genes-filter__row">
 
-            <!-- SEARCH (exactly as in genes-filter.php) -->
+            <!-- SEARCH (exactly as in subtype-browser-filter.php) -->
             <label class="genes-filter__field genes-filter__field--search">
               <span class="genes-filter__label">Search by Gene, by Subtype, or by Year of Discovery</span>
               <input

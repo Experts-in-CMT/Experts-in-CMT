@@ -13,7 +13,7 @@
  * ------------------------------------------------------------
  *  Registers the field group for the Variant Mechanism Browser
  *  app hero (background image, fade, title, intro, and a
- *  three-item stats line). Sibling of the Genes DB App Hero;
+ *  three-item stats line). Sibling of the Subtype Browser App Hero;
  *  same meta-box architecture, Var-Mech-specific fields.
  *
  *  Rendered as an overlay hero by [variant_mechanism_hero]; the

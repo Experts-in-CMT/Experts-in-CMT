@@ -12,10 +12,10 @@
  * ------------------------------------------------------------
  * Purpose:
  *   - Handles live filtering, search, sorting, and pagination
- *     for the Genes Database loop.
+ *     for the CMT Subtype Browser loop.
  *   - Replaces ONLY the #results wrapper inside
  *       #genes-results-root
- *     using fragment HTML from genes-loop-endpoints.php.
+ *     using fragment HTML from subtype-browser-loop-endpoints.php.
  *
  * Architecture:
  *   - Full parity with the DR and Glossary AJAX stacks

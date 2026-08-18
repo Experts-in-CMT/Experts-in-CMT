@@ -9,7 +9,7 @@
 
 /**
  * ------------------------------------------------------------
- * Genes Database — Taxonomy Registration
+ * CMT Subtype Browser — Taxonomy Registration
  * ------------------------------------------------------------
  * Registers the four core taxonomies used by the Subtype CPT:
  *   - cmt_type

@@ -39,7 +39,7 @@ if (shortcode_exists("gene_browser")) {
     return;
 }
 
-/** EIC canonical type_classification order (genes-type-order.php), display labels. */
+/** EIC canonical type_classification order (subtype-browser-type-order.php), display labels. */
 if (!function_exists("eic_gb_canon")) {
     function eic_gb_canon(): array
     {

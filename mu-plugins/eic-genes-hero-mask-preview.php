@@ -8,15 +8,15 @@
  */
 
 /**
- * Plugin Name: EIC Genes Hero Mask Preview
- * Description: Live fade/mask preview on the Genes DB app hero image thumbnail in the ACF meta box. Drag the Desktop and Mobile "Fade Start %" / "Fade End %" sliders and watch each mask move, matching the front-end hero ::after gradient at that breakpoint. Editor-only; renders no front-end output.
+ * Plugin Name: EIC Subtype Browser Hero Mask Preview
+ * Description: Live fade/mask preview on the Subtype Browser app hero image thumbnail in the ACF meta box. Drag the Desktop and Mobile "Fade Start %" / "Fade End %" sliders and watch each mask move, matching the front-end hero ::after gradient at that breakpoint. Editor-only; renders no front-end output.
  * Version: 1.0.0
  * Author: Kenneth Raymond
  *
  * ------------------------------------------------------------
- * Genes DB Hero — Editor Mask Preview
+ * Subtype Browser Hero — Editor Mask Preview
  * ------------------------------------------------------------
- * The hero ([genes_hero] / genes-hero.css) masks its background
+ * The hero ([genes_hero] / subtype-browser-hero.css) masks its background
  * image with a left-to-right gradient:
  *
  *   linear-gradient(to right,
@@ -36,7 +36,7 @@
  * in per breakpoint without a save-and-check loop. Mirrors the header
  * banner's preview (eic-banner-mask-preview.php).
  *
- * Fields (genes-hero-fields.php):
+ * Fields (subtype-browser-hero-fields.php):
  *   genes_hero_image               (image)         field_eic_genes_hero_image
  *   genes_hero_fade_start          (range 0..100)  field_eic_genes_hero_fade_start
  *   genes_hero_fade_end            (range 0..100)  field_eic_genes_hero_fade_end

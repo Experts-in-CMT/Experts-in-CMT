@@ -30,7 +30,7 @@
  * "lead" (the genetics set gives each card its own tagline). A card whose lead
  * resolves to "" renders no label.
  *
- * Styling follows the genes/subtype card system (assets/css/genes-loop.css):
+ * Styling follows the genes/subtype card system (assets/css/subtype-browser-loop.css):
  * shared card tokens, a light-weight navy title, bare navy icons in the hero's
  * stroke style (the branch and DNA icons are reused from the heroes), and the
  * house scale-on-hover.
@@ -59,7 +59,7 @@ add_shortcode("eic_entry_points", function ($atts) {
 
     // Bare line-icons in the hero's style (viewBox 24, stroke-width 2,
     // currentColor). The book, branch and DNA icons are reused verbatim from
-    // the Genes DB and Variant Mechanisms heroes.
+    // the Subtype Browser and Variant Mechanisms heroes.
     $svg = fn($paths) =>
         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" ' .
         'stroke-width="2" aria-hidden="true">' . $paths . "</svg>";
@@ -68,7 +68,7 @@ add_shortcode("eic_entry_points", function ($atts) {
         '<circle cx="12" cy="12" r="9"/><path d="M12 11v5" stroke-linecap="round"/>' .
         '<circle cx="12" cy="7.8" r="1" fill="currentColor" stroke="none"/>'
     );
-    // Reused from the Genes DB hero (open book) — naming and history.
+    // Reused from the Subtype Browser hero (open book) — naming and history.
     $icon_book = $svg(
         '<path d="M4 5c3-1 6-1 8 1 2-2 5-2 8-1v13c-3-1-6-1-8 1-2-2-5-2-8-1V5z" ' .
         'stroke-linejoin="round"/><path d="M12 6v13" stroke-linecap="round"/>'
@@ -85,7 +85,7 @@ add_shortcode("eic_entry_points", function ($atts) {
         '<circle cx="5" cy="4" r="1.6"/><circle cx="19" cy="20" r="1.6"/>' .
         '<circle cx="5" cy="20" r="1.6"/>'
     );
-    // Reused from the Genes DB hero (DNA double-helix "genes" icon). This one
+    // Reused from the Subtype Browser hero (DNA double-helix "genes" icon). This one
     // is rendered a touch larger than the other card icons (see the --lg
     // modifier below) so the helix reads at card size.
     $icon_dna = $svg(
@@ -159,7 +159,7 @@ add_shortcode("eic_entry_points", function ($atts) {
                 ],
                 [
                     "title" => "CMT Subtype Browser",
-                    "url"   => home_url("/cmt-genetics-database/"),
+                    "url"   => eic_subtype_browser_page_url(),
                     "icon"  => $icon_search,
                     "items" => [
                         "You have a subtype, want the specifics",
@@ -196,7 +196,7 @@ add_shortcode("eic_entry_points", function ($atts) {
                 ],
                 [
                     "title" => "CMT Genetic Testing",
-                    "url"   => home_url("/genetic-testing/"),
+                    "url"   => home_url("/genetics/genetic-testing/"),
                     "icon"  => $icon_vial,
                     "items" => [
                         "Genetics came up",
@@ -231,7 +231,7 @@ add_shortcode("eic_entry_points", function ($atts) {
                 ],
                 [
                     "title" => "CMT Subtype Browser",
-                    "url"   => home_url("/cmt-genetics-database/"),
+                    "url"   => eic_subtype_browser_page_url(),
                     "icon"  => $icon_search,
                     "lead"  => "CMT. Curated.",
                     "items" => [
@@ -271,7 +271,7 @@ add_shortcode("eic_entry_points", function ($atts) {
                 ],
                 [
                     "title" => "CMT Genetic Testing",
-                    "url"   => home_url("/genetic-testing/"),
+                    "url"   => home_url("/genetics/genetic-testing/"),
                     "icon"  => $icon_vial,
                     "lead"  => "The info that matters",
                     "items" => [
@@ -349,7 +349,7 @@ add_shortcode("eic_entry_points", function ($atts) {
                 ],
                 [
                     "title" => "CMT Subtype Browser",
-                    "url"   => home_url("/cmt-genetics-database/"),
+                    "url"   => eic_subtype_browser_page_url(),
                     "icon"  => $icon_search,
                     "lead"  => "CMT. Curated.",
                     "items" => [

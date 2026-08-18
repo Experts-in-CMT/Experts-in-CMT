@@ -9,7 +9,7 @@
 /*!
  * ------------------------------------------------------------
  * VARIANT MECHANISMS  [variant_mechanism_table]
- * Accordion table: facets styled to match the Genes DB filter;
+ * Accordion table: facets styled to match the Subtype Browser filter;
  * compact aligned rows that expand to reveal rationale + source.
  * Scope: .vmech
  * ------------------------------------------------------------
@@ -28,7 +28,7 @@
    table and releases cleanly at the bottom, letting the page scroll into the
    footer. */
 
-/* ---- Filter card (matches the Genes DB filter aesthetic) ---- */
+/* ---- Filter card (matches the Subtype Browser filter aesthetic) ---- */
 .vmech-filter {
   display: flex;
   flex-wrap: wrap;
@@ -37,7 +37,7 @@
   padding: 1.25rem 1.5rem;
   background: var(--bg, #f6f8fa);
   border: 1px solid var(--border, #e2e6ea);
-  /* Top-right squared to match the Genes DB filter's notch, now that the app
+  /* Top-right squared to match the Subtype Browser filter's notch, now that the app
      hero gives this tool the same treatment. */
   border-radius: 28px 0 28px 28px;
   box-shadow: 0 10px 30px rgb(14 42 84 / 5%);
