@@ -14,7 +14,7 @@ Custom block theme for the Experts in CMT platform, built on the TwentyTwentyFiv
 
 == Changelog ==
 
-See CHANGELOG.md for the full version history. Current version: 3.1.0.
+See CHANGELOG.md for the full version history. Current version: 4.1.0.
 
 
 == Copyright ==

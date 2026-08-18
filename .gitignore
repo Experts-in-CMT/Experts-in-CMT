@@ -22,6 +22,9 @@ themes/*
 !.github/
 !.github/**
 
+# Repo landing README (shown on the GitHub repo home)
+!README.md
+
 # Ignore build/runtime junk inside themes
 themes/*/node_modules/
 themes/*/dist/
