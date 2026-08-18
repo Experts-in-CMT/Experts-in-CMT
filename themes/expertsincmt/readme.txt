@@ -3,7 +3,7 @@
 Contributors: Kenneth Raymond
 Requires at least: 7.0
 Tested up to: 7.0
-Requires PHP: 5.7
+Requires PHP: 8.0
 License: All rights reserved.
 
 
