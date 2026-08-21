@@ -29,6 +29,8 @@ CMT is genetically diverse and clinically complex, and most of what is known abo
 
 A custom search engine is built into the site to understand what you mean, not just match the words you type. Ask for a subtype, a gene, a symptom, or an inheritance pattern in whatever words you have, and it resolves your intent and takes you to the right answer. It is the engine behind the promise that you should not need the exact terminology to find the information.
 
+Results appear live as you type, matched terms are highlighted in context, and a near-miss is corrected to the closest subtype or gene rather than turned away. Broad searches hand off into the Subtype Browser or Gene Browser with the matching filter already applied, and even a search that matches nothing offers guided starting points instead of a dead end.
+
 ## Explore the genetics
 
 - **CMT Subtype Browser:** a searchable, filterable catalog of every named CMT subtype. Filter by CMT type, gene, inheritance pattern, neuropathy type, or chromosome, and open any subtype for its full profile.
@@ -54,7 +56,7 @@ The genetic records are curated by hand from the primary genetic and clinical li
 
 ## Versioning
 
-Current release: **4.1.0**. Changes are tracked in [CHANGELOG.md](themes/expertsincmt/CHANGELOG.md), following the [Keep a Changelog](https://keepachangelog.com) format and [Semantic Versioning](https://semver.org).
+Current release: **4.2.0**. Changes are tracked in [CHANGELOG.md](themes/expertsincmt/CHANGELOG.md), following the [Keep a Changelog](https://keepachangelog.com) format and [Semantic Versioning](https://semver.org).
 
 ## License
 

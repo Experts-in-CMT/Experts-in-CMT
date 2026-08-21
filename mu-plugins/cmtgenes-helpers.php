@@ -65,6 +65,37 @@ add_action("untrashed_post", "eic_gl_bump_ids_version", 10, 1);
 add_action("deleted_post", "eic_gl_bump_ids_version", 10, 1);
 
 /* ============================================================
+   TAX PARAM NORMALIZER (SLUG OR TERM_ID → TERM_ID)
+   - Filter params may arrive as a term slug (clean URLs) or a
+     numeric term_id (legacy links / filter selects)
+   - Slug match wins: chromosome slugs are numeric ("17") and
+     would otherwise be misread as term IDs
+   - Mirrors eic_resolve_tax_field() in the theme, but stays
+     self-contained so the MU-plugin works without the theme
+   ============================================================ */
+if (!function_exists("eic_gl_normalize_tax_param")) {
+    function eic_gl_normalize_tax_param($raw, string $taxonomy): int
+    {
+        $raw = is_array($raw) ? (string) reset($raw) : (string) $raw;
+        $raw = trim($raw);
+
+        if ($raw === "" || $raw === "0") {
+            return 0;
+        }
+
+        $slug = sanitize_title($raw);
+        if ($slug !== "") {
+            $term = get_term_by("slug", $slug, $taxonomy);
+            if ($term && !is_wp_error($term)) {
+                return (int) $term->term_id;
+            }
+        }
+
+        return ctype_digit($raw) ? (int) $raw : 0;
+    }
+}
+
+/* ============================================================
    REQUEST SIGNATURE (FOR CACHING)
    - Only the filters we honor + a global cache 'ver' to bust on changes
    - Accepts $overrides to neutralize one filter when computing facet counts
@@ -80,18 +111,22 @@ if (!function_exists("eic_gl_request_signature")) {
                 : "");
         $sig = [
             "qs" => trim($qs),
-            "cmt_type" => isset($_GET["cmt_type"])
-                ? (int) $_GET["cmt_type"]
-                : 0,
-            "inheritance" => isset($_GET["inheritance"])
-                ? (int) $_GET["inheritance"]
-                : 0,
-            "neuropathy" => isset($_GET["neuropathy"])
-                ? (int) $_GET["neuropathy"]
-                : 0,
-            "chromosome" => isset($_GET["chromosome"])
-                ? (int) $_GET["chromosome"]
-                : 0,
+            "cmt_type" => eic_gl_normalize_tax_param(
+                $_GET["cmt_type"] ?? "",
+                "cmt_type"
+            ),
+            "inheritance" => eic_gl_normalize_tax_param(
+                $_GET["inheritance"] ?? "",
+                "inheritance"
+            ),
+            "neuropathy" => eic_gl_normalize_tax_param(
+                $_GET["neuropathy"] ?? "",
+                "neuropathy"
+            ),
+            "chromosome" => eic_gl_normalize_tax_param(
+                $_GET["chromosome"] ?? "",
+                "chromosome"
+            ),
             // IMPORTANT: bump this when subtype content changes so transients invalidate
             "ver" => eic_gl_ids_version(),
         ];
@@ -125,7 +160,10 @@ if (!function_exists("eic_gl_build_base_query_args")) {
         $tax_query = ["relation" => "AND"];
         foreach ($tax_map as $param => $taxonomy) {
             if (!empty($_GET[$param])) {
-                $term_id = (int) $_GET[$param];
+                $term_id = eic_gl_normalize_tax_param(
+                    $_GET[$param],
+                    $taxonomy
+                );
                 if ($term_id) {
                     $tax_query[] = [
                         "taxonomy" => $taxonomy,

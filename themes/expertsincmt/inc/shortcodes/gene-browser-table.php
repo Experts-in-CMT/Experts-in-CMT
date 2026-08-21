@@ -396,6 +396,8 @@ add_shortcode("gene_browser", function ($atts = []) {
 .gbx-actions{display:flex;flex-wrap:wrap;align-items:center;gap:.9rem;flex-basis:100%;width:100%}
 .gbx-actions select{width:auto;flex:0 0 auto;font:13px "Manrope",sans-serif;padding:.5rem calc(var(--ctrl-pad-x,14px) * 2) .5rem .6rem;border:1px solid var(--gbd);border-radius:10px;background-color:#fff;color:var(--gtx)}
 .gbx-btn{padding:.5rem 1rem;font:600 13px "Manrope",sans-serif;letter-spacing:.03em;color:var(--gp);background:#fff;border:1px solid var(--gbd);border-radius:20px;cursor:pointer}
+.gbx-allowlist{flex-basis:100%;display:flex;flex-wrap:wrap;align-items:center;gap:.75rem;padding:.6rem 1rem;background:color-mix(in srgb,var(--gpl) 10%,#fff);border:1px solid var(--gbd);border-radius:14px}
+.gbx-allowlist__label{font-weight:600;color:var(--gp)}
 .gbx-btn:hover{border-color:var(--gpl)}
 .gbx-count{font-size:13px;color:var(--gmut);white-space:nowrap}
 .gbx-count b{color:var(--gtx)}
@@ -528,6 +530,12 @@ add_shortcode("gene_browser", function ($atts = []) {
       <span class="gbx-sr">Search gene, name, alias, locus, or subtype</span>
       <input type="search" class="gbx-search" placeholder="ex: MFN2, mitofusin 2, 1p36.22, HGNC:16877…" autocomplete="off" spellcheck="false" />
     </label>
+
+    <!-- Gene-set allowlist chip (gb_genes deep links, e.g. from search) -->
+    <div class="gbx-allowlist" hidden>
+      <span class="gbx-allowlist__label"></span>
+      <button type="button" class="gbx-btn gbx-allowlist__clear">CLEAR GENE SET</button>
+    </div>
 
     <fieldset class="gbx-group">
       <legend class="gbx-legend">Subtype Classification</legend>
@@ -684,6 +692,7 @@ add_shortcode("gene_browser", function ($atts = []) {
         <tr class="gbx-row" tabindex="0" role="button" aria-expanded="false"
             aria-controls="<?php echo esc_attr($rid); ?>"
             data-init="<?php echo esc_attr($init); ?>"
+            data-sym="<?php echo esc_attr(strtoupper($g["symbol"])); ?>"
             data-classes="<?php echo esc_attr(implode("|", $g["classes"])); ?>"
             data-inh="<?php echo esc_attr(implode("|", $g["modes"])); ?>"
             data-mito="<?php echo $g["mito"] ? "1" : "0"; ?>"
@@ -811,13 +820,33 @@ add_shortcode("gene_browser", function ($atts = []) {
   var az = root.querySelector('.gbx-az');
   var totalGenes = rows.length;
 
+  // ---- Gene-set allowlist (gb_genes deep links) -----------------------
+  // A comma-separated symbol list arriving on the URL (e.g. from platform
+  // search) narrows the table to exactly those genes. It composes with the
+  // facets like the chromosome dropdown: always applied while active. The
+  // chip names the set and offers one-click clearing.
+  var geneAllow = null; // null = inactive; else { SYMBOL: true, ... }
+  var allowChip = root.querySelector('.gbx-allowlist');
+  var allowLabel = root.querySelector('.gbx-allowlist__label');
+  var allowClear = root.querySelector('.gbx-allowlist__clear');
+
+  function updateAllowChip() {
+    if (!allowChip) { return; }
+    var active = !!geneAllow;
+    allowChip.hidden = !active;
+    if (active && allowLabel) {
+      allowLabel.textContent =
+        'Showing a gene set from search (' + Object.keys(geneAllow).length + ' genes)';
+    }
+  }
+
   // ---- Shareable URL state --------------------------------------------
   // Active search / facets / chromosome / sort are mirrored into the query
   // string so a configured view can be copied and shared, and re-applied when
   // that link is opened. Keys are prefixed `gb_` so they never collide with the
   // variant-mechanism table or other page params. No server round-trip: the
   // whole catalog is already in the DOM, so this only drives the client filter.
-  var GB_URLKEYS = ['gb_q', 'gb_cls', 'gb_inh', 'gb_mito', 'gb_cand', 'gb_chr', 'gb_sort'];
+  var GB_URLKEYS = ['gb_q', 'gb_cls', 'gb_inh', 'gb_mito', 'gb_cand', 'gb_chr', 'gb_sort', 'gb_genes'];
 
   function facetValues(facet) {
     return facets
@@ -842,6 +871,7 @@ add_shortcode("gene_browser", function ($atts = []) {
     if (root.querySelector('.gbx-facet[data-facet="cand"]').checked) { params.set('gb_cand', '1'); }
     if (chrSel.value) { params.set('gb_chr', chrSel.value); }
     if (sortSel.value && sortSel.value !== 'sym') { params.set('gb_sort', sortSel.value); }
+    if (geneAllow) { params.set('gb_genes', Object.keys(geneAllow).join(',')); }
 
     var qs = params.toString();
     var url = window.location.pathname + (qs ? '?' + qs : '') + window.location.hash;
@@ -873,6 +903,19 @@ add_shortcode("gene_browser", function ($atts = []) {
     });
     chrSel.value = params.get('gb_chr') || '';
     sortSel.value = params.get('gb_sort') || 'sym';
+
+    var genes = (params.get('gb_genes') || '')
+      .split(',')
+      .map(function (s) { return s.trim().toUpperCase(); })
+      .filter(Boolean);
+    if (genes.length) {
+      geneAllow = {};
+      genes.forEach(function (s) { geneAllow[s] = true; });
+    } else {
+      geneAllow = null;
+    }
+    updateAllowChip();
+
     return had;
   }
 
@@ -914,6 +957,7 @@ add_shortcode("gene_browser", function ($atts = []) {
   // an option's count is "how many genes I'd add by ticking this", so the
   // option's own group is neutralized while every other filter still applies.
   function passesExcept(row, exceptFacet) {
+    if (geneAllow && !geneAllow[row.dataset.sym]) { return false; }
     var fc = chrSel.value;
     if (fc && row.dataset.chr !== fc) { return false; }
     var q = (search.value || '').trim().toLowerCase();
@@ -977,7 +1021,8 @@ add_shortcode("gene_browser", function ($atts = []) {
     var inits = {};
     rows.forEach(function (row) {
       var ok = true;
-      if (fc && row.dataset.chr !== fc) { ok = false; }
+      if (geneAllow && !geneAllow[row.dataset.sym]) { ok = false; }
+      if (ok && fc && row.dataset.chr !== fc) { ok = false; }
       if (ok && mito && row.dataset.mito !== '1') { ok = false; }
       if (ok && cand && row.dataset.cand !== '1') { ok = false; }
       if (ok && cls) {
@@ -1000,7 +1045,7 @@ add_shortcode("gene_browser", function ($atts = []) {
       // search), where it reads as subtypes among the filtered genes. At rest the
       // count is gene-only, so the table carries no permanent subtype figure to
       // reconcile against the other surfaces. Sort and A-Z do not count as filters.
-      var filtered = !!(cls || inh || mito || cand || fc || q);
+      var filtered = !!(cls || inh || mito || cand || fc || q || geneAllow);
       countEl.innerHTML = filtered
         ? 'Showing <b>' + shown + '</b> of ' + totalGenes + ' genes \u00b7 <b>' + subs + '</b> subtypes'
         : 'Showing <b>' + totalGenes + '</b> genes';
@@ -1045,10 +1090,19 @@ add_shortcode("gene_browser", function ($atts = []) {
     facets.forEach(function (f) { f.checked = false; });
     if (search) { search.value = ''; }
     chrSel.value = ''; sortSel.value = 'sym';
+    geneAllow = null; updateAllowChip();
     rows.forEach(function (r) { setOpen(r, false); });
     allOpen = false; toggleBtn.textContent = 'OPEN ALL';
     sortRows(); apply(); syncUrl(true);
   });
+  if (allowClear) {
+    allowClear.addEventListener('click', function () {
+      geneAllow = null;
+      updateAllowChip();
+      apply();
+      syncUrl(true);
+    });
+  }
   az.addEventListener('click', function (e) {
     var b = e.target.closest('.gbx-azl');
     if (!b || b.classList.contains('gbx-off')) { return; }
@@ -1082,6 +1136,14 @@ add_shortcode("gene_browser", function ($atts = []) {
     syncUrl(false);
     // Two frames so sticky offsets and layout are settled before we scroll.
     requestAnimationFrame(function () { requestAnimationFrame(scrollToFilter); });
+    // Hero media and webfonts above the filter finish loading AFTER the early
+    // scroll and push the filter further down, leaving the viewport in the
+    // prose. Re-land on the filter once layout has stopped moving.
+    if (document.readyState !== 'complete') {
+      window.addEventListener('load', function () {
+        requestAnimationFrame(scrollToFilter);
+      }, { once: true });
+    }
   }
 })();
 </script>

@@ -29,8 +29,10 @@ if (!shortcode_exists("platform_search_filter")) {
         }
         $search_text = $raw !== "" ? sanitize_text_field($raw) : "";
 
-        // Submit to current URL for search
-        $action_url = esc_url(home_url("/"));
+        // Submit to home URL; the #results fragment on the action is
+        // preserved by the browser across a GET submit, so the reader
+        // lands on the results without any onclick action mutation.
+        $action_url = esc_url(home_url("/") . "#results");
         $reset_url = esc_url(home_url("/"));
 
         ob_start();
@@ -57,7 +59,7 @@ if (!shortcode_exists("platform_search_filter")) {
           placeholder='Search the Platform...'
           autocomplete="off"
         />
-        <button type="submit" class="ps-btn" onclick="this.form.action = this.form.action + '#results';">Search</button>
+        <button type="submit" class="ps-btn">Search</button>
 
       </div>
 

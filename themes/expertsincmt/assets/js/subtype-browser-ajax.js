@@ -38,6 +38,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	const anchor = form.dataset.anchor || '#results';
 
+	// Capture the arrival hash NOW: hydrateFromUrl() below rewrites the
+	// URL without the anchor (replaceState), so reading location.hash
+	// any later would always miss a #results arrival.
+	const arrivedAtAnchor = window.location.hash === anchor;
+
 	const endpoint = GENES_AJAX.url;
 	const nonce = GENES_AJAX.nonce;
 
@@ -571,6 +576,22 @@ document.addEventListener('DOMContentLoaded', function() {
 			includeAnchor: false
 		});
 	})();
+
+	// ------------------------------------------------------------
+	// Arrival landing on #results (e.g. a platform-search handoff)
+	// Two forces defeat the native fragment jump here: hydrateFromUrl's
+	// replaceState strips the hash (which can cancel the browser's own
+	// scroll), and hero media above the results loads late and shifts
+	// the layout. Land explicitly now, and re-land once layout stops
+	// moving.
+	// ------------------------------------------------------------
+	if (arrivedAtAnchor) {
+		const reland = () => requestAnimationFrame(() => requestAnimationFrame(() => focusResults({ scroll: true })));
+		reland();
+		if (document.readyState !== 'complete') {
+			window.addEventListener('load', reland, { once: true });
+		}
+	}
 
 	console.info('Genes AJAX stack initialized (single-source-parity mode)');
 });

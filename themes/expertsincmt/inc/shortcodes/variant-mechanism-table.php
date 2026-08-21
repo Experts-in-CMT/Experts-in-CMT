@@ -786,6 +786,17 @@ function eicVmechInit(root) {
       if (vmFromUrl && !vmHashRow) { scrollToFilter(); }
     });
   });
+  // Media and webfonts above the table finish loading AFTER the early scroll
+  // and shift the layout, leaving the viewport short of the target. Re-land
+  // once layout has stopped moving (row deep-link still wins over the filter).
+  if ((vmFromUrl || vmHashRow) && document.readyState !== 'complete') {
+    window.addEventListener('load', function () {
+      requestAnimationFrame(function () {
+        if (vmHashRow) { openFromHash(); }
+        else { scrollToFilter(); }
+      });
+    }, { once: true });
+  }
 }
 (function () {
   var nodes = document.querySelectorAll('.vmech');

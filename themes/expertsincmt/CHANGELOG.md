@@ -11,6 +11,63 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.2.0] - 2026-08-20
+
+Platform Search overhaul: the site search now understands what you mean, forgives what you mistype, and always gives you somewhere to go.
+
+### Added
+
+- **Live Search Results (`platform-search-ajax.js`, `platform-search-endpoints.php`, `platform-search-results.php`)**
+  - Search results now appear as you type, without reloading the page. Pressing Search still works exactly as before, and the page address updates with each search, so any result page can be copied and shared as a link. Browser Back and Forward step through your searches.
+  - On any page where the live layer cannot run, the search form falls back to its native behavior unchanged.
+  - assets/js/platform-search-ajax.js
+  - inc/ajax/platform-search-endpoints.php
+
+- **Search Never Comes Back Empty (`platform-search.php`, `platform-search-variables.php`, `platform-search-results.php`)**
+  - A near-miss is corrected automatically: searching "cmt1q" shows the closest subtypes under a banner explaining that nothing matched exactly. A farther miss offers "Did you mean" links to the nearest subtypes and genes.
+  - When there is truly nothing to suggest, the search page presents the Explore The Platform cards, the same guided starting points as the site's 404 page, so a dead end always leaves a path forward.
+
+- **Preview and Handoff for Broad Searches (`platform-search.php`, `gene-browser-table.php`)**
+  - A broad search, such as an inheritance pattern, a neuropathy type, a chromosome, or a CMT type, now previews the first five matching subtypes and genes with a "Showing 5 of N" line, then hands off to the CMT Subtype Browser or CMT Gene Browser with the matching filter already applied, instead of listing every record on the search page.
+  - The Gene Browser can now be linked with an exact set of genes (`gb_genes`), used for gene sets no single filter can express, such as the aminoacyl-tRNA synthetase panel. A notice chip shows the active gene set and clears with one click.
+  - Searches with no browser filter to hand off to preview five subtypes with a "Show all N" reveal in place.
+  - inc/shortcodes/gene-browser-table.php
+
+- **EIC Search Admin Page (`mu-plugins/eic-search-tools.php`)**
+  - Settings → EIC Search: an alias table that maps the terms patients actually type to what they should find: subtypes, genes, types, pinned articles, search phrases, and highlight terms. Rows run ahead of the built-in vocabulary, are validated on save with plain-language warnings, and take effect immediately.
+  - A search log records what visitors search and, most importantly, what returned nothing, so the vocabulary can grow from real usage. Query text only: no accounts, no visitor identity, administrator searches excluded, and entries older than 90 days pruned automatically. Includes a zero-result rollup, a recent-searches view, and a CSV download.
+  - mu-plugins/eic-search-tools.php
+
+- **Highlighted, Windowed Excerpts (`platform-search.php`)**
+  - Matched terms are now marked in every content excerpt, on every search path. Excerpts center on the sentence where the match actually lives, so a search for KIF1B shows the passage about KIF1B rather than an unrelated summary. Curated articles stay pinned first, with prose mentions following.
+
+- **Classification Pills (`platform-search-render.php`, `platform-search.css`)**
+  - Types, subtypes, and genes render as color-coded pills in the same classification family palette the Gene Browser uses, so CMT1 blue and CMT2 green mean the same thing everywhere. Content results carry a source byline on the title line, such as "| The Dorsal Root".
+
+### Changed
+
+- **Results page redesign (`platform-search.css`, `platform-search-render.php`)**: a coherent type scale, tighter spacing calibrated to the new previews, and a restored mobile hierarchy (the sitewide mobile font floor previously flattened the search headings and pills to body size).
+- **Search engine internals (`platform-search.php`, `platform-search-variables.php`)**: the resolver was rebuilt as an ordered registry with the curated vocabulary as a data table, verified byte-identical against a 66-query baseline before and after. Results are briefly cached, so repeated searches are instant.
+- **Readable filter links (`cmtgenes-helpers.php`)**: browser handoffs now use word-based addresses such as `?inheritance=autosomal-dominant` instead of numeric IDs. Legacy numeric links keep working.
+- **Accessibility (`platform-search-render.php`, `platform-search-ajax.js`)**: proper heading structure (page, then your search, then each result group), keyboard focus handed to newly revealed results, updating results announced to assistive technology, comfortable tap targets on touch screens, and every pill color verified for contrast.
+
+### Fixed
+
+- X-linked inheritance searches never matched due to how hyphens were normalized; "x linked recessive" now resolves to its subtypes correctly.
+- Publication author search queried field names that did not exist and could never match; searching an author name now finds their subtypes.
+- "years" no longer triggers the aminoacyl-tRNA synthetase gene panel, and "cmta" no longer resolves to Dominant Intermediate A.
+- Long names such as HMSN-Okinawa Type no longer overlap neighboring entries in results.
+- Links into the Subtype Browser, Gene Browser, and Variant Mechanisms now land on the filters and results reliably, instead of drifting into page prose while images above finish loading.
+- Repeating a search no longer stacks `#results` onto the page address.
+
+### Security
+
+- The search log's CSV download neutralizes spreadsheet formula prefixes, so a hostile search query cannot execute as a formula when the file is opened in Excel or Google Sheets.
+
+### Removed
+
+- Unused hosting-vendor mu-plugins removed from the development repository (endurance-page-cache, automation-by-installatron, woocommerce-analytics-proxy-speed-module).
+
 ## [4.1.0] - 2026-08-18
 
 ### Added
