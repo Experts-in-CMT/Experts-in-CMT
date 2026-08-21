@@ -120,3 +120,11 @@
 .eic-mech .eic-mech__body .eic-mech__conf--low {
   color: #b02a2a;
 }
+
+/* === Mobile: opt out of the main.css 18px floor === */
+@media (max-width: 600px) {
+  .eic-mech__label {
+    font-size: 13px !important;
+    line-height: 1.5 !important;
+  }
+}

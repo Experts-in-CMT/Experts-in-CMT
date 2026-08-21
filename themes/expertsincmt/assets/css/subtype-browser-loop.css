@@ -373,3 +373,12 @@
     word-break: normal;
   }
 }
+
+/* === Mobile: opt out of the main.css 18px floor (see its
+   wp-block-heading precedent) — card titles keep hierarchy === */
+@media (max-width: 600px) {
+  .eic-subtype-card__title {
+    font-size: 1.4rem !important;
+    line-height: 1.25 !important;
+  }
+}

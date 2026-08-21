@@ -220,3 +220,16 @@
     margin-left: 0;
   }
 }
+
+/* === Mobile: opt out of the main.css 18px floor — list titles
+   keep hierarchy, pills stay pills === */
+@media (max-width: 600px) {
+  .dr-list__title {
+    font-size: 1.35rem !important;
+    line-height: 1.3 !important;
+  }
+  .dr-list__pill {
+    font-size: 12px !important;
+    line-height: 1.5 !important;
+  }
+}

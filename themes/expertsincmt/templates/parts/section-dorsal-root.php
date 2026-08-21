@@ -77,7 +77,11 @@ $q = $featured_q->have_posts()
             <?php while ($q->have_posts()):
                 $q->the_post(); ?>
                 <article class="dr-feature__card">
-                    <a class="dr-feature__media" href="<?php the_permalink(); ?>">
+                    <?php // Decorative duplicate of the title link below:
+                    // hidden from assistive tech and the tab order so screen
+                    // readers hear ONE clean link per article, not an
+                    // unnamed image link first. ?>
+                    <a class="dr-feature__media" href="<?php the_permalink(); ?>" aria-hidden="true" tabindex="-1">
                         <?php if (has_post_thumbnail()): ?>
                             <?php the_post_thumbnail("large", [
                                 "loading" => "lazy",

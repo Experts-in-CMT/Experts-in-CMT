@@ -653,3 +653,12 @@
     background: color-mix(in srgb, var(--primary-light, #5ea0c9) 8%, #fff);
   }
 }
+
+/* === Mobile: opt out of the main.css 18px floor — mechanism
+   pills stay pills === */
+@media (max-width: 600px) {
+  .vmech-pill {
+    font-size: 12px !important;
+    line-height: 1.5 !important;
+  }
+}

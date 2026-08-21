@@ -431,6 +431,10 @@ add_shortcode("gene_browser", function ($atts = []) {
 .gbx-f-amber{background:#fdf0d8;color:#8a5a00}.gbx-f-orange{background:#ffe9e0;color:#9a3412}
 .gbx-f-rose{background:#ffe4ef;color:#9b2f5a}.gbx-f-slate{background:#e9edf3;color:#43536b}
 .gbx-f-grey{background:#eceff2;color:#5b6675}
+/* Mobile: opt out of the main.css 18px floor — pills stay pills */
+@media (max-width:600px){.gbx-pill{font-size:12px !important;line-height:1.5 !important}}
+/* Touch: A–Z jump links reach a comfortable tap size */
+@media (pointer:coarse){.gbx-azl{padding:.45em .55em}}
 .gbx-toggle{text-align:right}
 .gbx-plus::before{content:"+";display:inline-block;font-size:22px;font-weight:400;line-height:1;color:var(--gpl);transition:transform .2s ease}
 .gbx-row[aria-expanded="true"] .gbx-plus::before{transform:rotate(45deg)}
@@ -571,10 +575,10 @@ add_shortcode("gene_browser", function ($atts = []) {
     </fieldset>
 
     <div class="gbx-actions">
-      <select class="gbx-chr"><option value="">All chromosomes</option><?php foreach ($chr_list as $c): ?><option value="<?php echo esc_attr(
+      <select class="gbx-chr" aria-label="Filter by chromosome"><option value="">All chromosomes</option><?php foreach ($chr_list as $c): ?><option value="<?php echo esc_attr(
     $c
 ); ?>">Chr <?php echo esc_html($c); ?></option><?php endforeach; ?></select>
-      <select class="gbx-sort">
+      <select class="gbx-sort" aria-label="Sort genes">
         <option value="sym">Sort: A–Z</option>
         <option value="n">Sort: most subtypes</option>
         <option value="chr">Sort: by chromosome</option>

@@ -66,6 +66,10 @@ add_shortcode("eic_dataset_download", function ($atts = []) {
             ".eic-dl__btn{display:inline-block;padding:.85rem 1.6rem;border-radius:10px;background:var(--primary,#173a63);color:#fff;font-weight:600;text-decoration:none;transition:transform .12s ease,box-shadow .12s ease}" .
             ".eic-dl__btn:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgb(14 42 84 / 18%)}" .
             ".eic-dl__meta{margin:.6rem 0 0;font-size:13px;color:var(--muted,#6b7480)}" .
+            /* Mobile: opt out of the main.css 18px floor. p.eic-dl__meta
+               (0,1,1) ties the floor's `.wp-site-blocks p` and wins on
+               source order (this block renders after main.css). */
+            "@media (max-width:600px){p.eic-dl__meta{font-size:13px !important}}" .
             ".eic-dl__hint{margin:.35rem 0 0;font-size:12px;color:var(--muted,#6b7480)}" .
             "</style>";
     }

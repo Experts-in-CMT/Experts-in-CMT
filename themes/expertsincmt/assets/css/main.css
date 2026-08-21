@@ -2825,3 +2825,23 @@ a.dr-more:not([href]):focus {
     line-height: 1.3;
   }
 }
+
+/* === Mobile: eic-block-title opts out of the 18px floor above
+   (same pattern as the wp-block-heading bump) === */
+@media (max-width: 600px) {
+  .eic-block-title {
+    font-size: 1.35rem !important;
+    line-height: 1.3 !important;
+  }
+}
+
+/* === Kill the sitewide horizontal wiggle ===
+   Full-bleed sections (header-banner and friends) size with 100vw,
+   which includes the scrollbar width and so overhangs the layout
+   viewport by ~12px — a horizontal scroll wiggle on phones.
+   Clip the axis globally: clip (not hidden) creates no scroll
+   container, so position: sticky descendants keep working. */
+html,
+body {
+  overflow-x: clip;
+}

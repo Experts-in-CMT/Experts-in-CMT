@@ -232,3 +232,11 @@
     transition: none;
   }
 }
+
+/* === Mobile: opt out of the main.css 18px floor === */
+@media (max-width: 600px) {
+  .dr-feature__post-title {
+    font-size: 1.15rem !important;
+    line-height: 1.3 !important;
+  }
+}
