@@ -89,6 +89,10 @@ add_action(
             ];
         }, $specialty_types);
 
+        $base = trailingslashit(home_url());
+        $org_id = $base . "#organization";
+        $site_id = $base . "#website";
+
         $schema = [
             "@context" => "https://schema.org",
             "@type" => "MedicalWebPage",
@@ -104,16 +108,12 @@ add_action(
                 "alternateName" => "CMT",
                 "url" => "https://expertsincmt.org/what-is-cmt/",
             ],
-            "publisher" => [
-                "@type" => "Organization",
-                "name" => "expertsincmt",
-                "url" => "https://expertsincmt.org/",
-            ],
-            "isPartOf" => [
-                "@type" => "WebSite",
-                "name" => "expertsincmt",
-                "url" => "https://expertsincmt.org/",
-            ],
+            // Authorship, publishing, and site membership attributed to the
+            // real organization and website, referenced by Yoast's @ids so
+            // engines merge, not duplicate.
+            "author" => ["@id" => $org_id],
+            "publisher" => ["@id" => $org_id],
+            "isPartOf" => ["@id" => $site_id],
         ];
 
         if ($aspect !== "") {

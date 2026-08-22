@@ -11,6 +11,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Every medical page now names its author (`pages-jsonld.php`, `subtype-jsonld.php`, `educational-jsonld.php`)**
+  - The MedicalWebPage schema on medical pages, subtype pages, and educational pages now attributes authorship to the Experts in CMT organization, the same way the front page already does. The organization is referenced by Yoast's @id, so search and answer engines merge it into the existing entity graph instead of creating a duplicate.
+  - Before this, only the front page carried an author. Answer engines prefer citing content they can attribute to a named source, so pages like the CMT Gene Browser now hand engines a name to credit alongside their claims.
+  - The publisher and website references on these pages now point at Yoast's organization and website entities by @id as well, replacing inline copies that named the site "expertsincmt" while the rest of the markup said "Experts in CMT". One name, one entity, everywhere.
+  - inc/acf/pages-jsonld.php
+  - inc/acf/subtype-jsonld.php
+  - inc/acf/educational-jsonld.php
+
 ## [4.2.0] - 2026-08-20
 
 Platform Search overhaul: the site search now understands what you mean, forgives what you mistype, and always gives you somewhere to go.
