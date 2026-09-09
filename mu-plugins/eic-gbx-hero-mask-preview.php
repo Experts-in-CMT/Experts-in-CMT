@@ -9,12 +9,12 @@
 
 /**
  * Plugin Name: EIC Gene Browser Hero Mask Preview
- * Description: Live fade/mask preview on the Gene Browser hero image thumbnail in the ACF meta box. Drag the Desktop and Mobile "Fade Start %" / "Fade End %" sliders and watch each mask move, matching the front-end hero ::after gradient at that breakpoint. Editor-only; renders no front-end output.
+ * Description: Live fade/mask preview on the Gene Browser hero image thumbnail in the ACF meta box. Drag the Desktop and Mobile "Fade Start %"/"Fade End %" sliders and watch each mask move, matching the front-end hero ::after gradient at that breakpoint. Editor-only; renders no front-end output.
  * Version: 1.0.0
  * Author: Kenneth Raymond
  *
  * ------------------------------------------------------------
- * Gene Browser Hero — Editor Mask Preview
+ * Gene Browser Hero: Editor Mask Preview
  * ------------------------------------------------------------
  * Sibling of eic-vmech-hero-mask-preview.php. The hero
  * ([gene_browser_hero]) masks its background image with a

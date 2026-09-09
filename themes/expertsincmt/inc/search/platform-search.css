@@ -492,3 +492,147 @@ mark.ps-highlight {
     padding-bottom: 0.45em;
   }
 }
+
+/* ============================================================
+   Variant Bucket: One Line Per ClinVar Record
+   ============================================================
+   Gene pill, HGVS name with its one-letter form, cDNA, ClinVar
+   classification and review stars, then the links. Wraps on
+   narrow screens; the gene pill and name stay first.
+*/
+
+.ps-group--variant .ps-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.ps-group--variant .ps-item.ps-variant {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.7rem;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--border, #e1e5ea);
+  border-radius: 10px;
+  background: #fff;
+  line-height: 1.4;
+}
+
+.ps-variant__name {
+  font-family: "Fira Code", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--primary, #174777);
+  /* Real ClinVar names run long (insertion cDNA, genomic coordinates):
+     wrap anywhere rather than pushing the row past the viewport */
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+
+.ps-variant__short {
+  font-weight: 500;
+  font-size: 0.85em;
+  color: var(--muted, #555555);
+}
+
+.ps-variant__cdna,
+.ps-variant__rs,
+.ps-variant__ext {
+  font-family: "Fira Code", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.85rem;
+  color: var(--muted, #555555);
+}
+
+.ps-variant__cdna {
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+
+.ps-variant__rs {
+  white-space: nowrap;
+}
+
+.ps-variant__cls {
+  display: inline-block;
+  padding: 0.15em 0.6em;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.ps-variant__cls--p  { background: #ffe4ef; color: #9b2f5a; }
+.ps-variant__cls--lp { background: #fdf0d8; color: #8a5a00; }
+
+.ps-variant__stars {
+  letter-spacing: 0.05em;
+  font-size: 0.95rem;
+  color: #b07c00; /* empty stars are a rating of none: outline glyph, same Star Gold */
+  white-space: nowrap;
+}
+
+.ps-variant__stars .ps-star--on {
+  /* The gene page's star gold, held at the 3:1 non-text minimum on white */
+  color: #b07c00;
+}
+
+.ps-variant__tier {
+  font-size: 0.8rem;
+  color: var(--muted, #555555);
+  white-space: nowrap;
+}
+
+.ps-variant__links {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.9rem;
+  margin-left: auto;
+  font-size: 0.9rem;
+}
+
+.ps-variant__card {
+  font-weight: 600;
+  color: var(--primary, #174777);
+}
+
+.ps-variant--none .ps-variant__note {
+  font-size: 0.9rem;
+  color: var(--muted, #555555);
+}
+
+@media (max-width: 600px) {
+  .ps-group--variant .ps-item.ps-variant {
+    gap: 0.35rem 0.6rem;
+  }
+  .ps-variant__links {
+    margin-left: 0;
+    width: 100%;
+  }
+}
+
+/* Did you mean (near-miss variants): its own line under the miss */
+.ps-variant__near {
+  width: 100%;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.ps-variant__near-label {
+  color: var(--muted, #555555);
+}
+
+.ps-variant__near a {
+  font-weight: 600;
+}
+
+.ps-variant__near-gene {
+  font-weight: 500;
+  color: var(--muted, #555555);
+}
+
+.ps-variant__near-sep {
+  margin: 0 0.5em;
+  color: var(--border, #e1e5ea);
+}

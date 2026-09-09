@@ -1,0 +1,41 @@
+/**
+ * Copyright (c) 2025-2026 Kenneth Raymond
+ * All rights reserved.
+ *
+ * Part of the Experts in CMT platform.
+ * Do not copy, modify, or redistribute without permission.
+ */
+
+/* =========================================================
+   Gene pages: let the header banner intro wrap.
+   ---------------------------------------------------------
+   The banner intro is a single nowrap line anchored to the
+   H1's right edge, sized for a subtype's "GENE | year". A full
+   gene name runs past it and is clipped. On gene pages only,
+   the intro sits in flow under the title and wraps, the same
+   treatment the banner already uses on mobile. Nothing else
+   about the banner changes. Auto-loaded by the assets/css glob.
+   ========================================================= */
+
+.single-gene .header-banner__content {
+  width: auto;
+}
+
+.single-gene .header-banner__title {
+  white-space: normal;
+  text-align: left;
+}
+
+.single-gene .header-banner__intro {
+  position: static;
+  inset: auto;
+}
+
+.single-gene .header-banner__intro,
+.single-gene .header-banner__intro p {
+  width: auto;
+  overflow: visible;
+  white-space: normal;
+  text-align: left;
+  max-width: 38ch;
+}

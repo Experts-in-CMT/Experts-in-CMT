@@ -38,7 +38,7 @@ add_action("acf/init", function () {
 
     acf_add_local_field_group([
         "key" => "group_glossary_core",
-        "title" => "Glossary — Core",
+        "title" => "Glossary: Core",
         "fields" => [
             // Canonical Term
             [

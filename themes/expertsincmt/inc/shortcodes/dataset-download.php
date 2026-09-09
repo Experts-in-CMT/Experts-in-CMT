@@ -50,11 +50,7 @@ add_shortcode("eic_dataset_download", function ($atts = []) {
     $ver = preg_match('/v([0-9A-Za-z._-]+)\.zip$/', $file, $m) ? $m[1] : "";
     $built = date_i18n(get_option("date_format"), (int) filemtime($latest));
     $size = size_format((int) filesize($latest), 1);
-    // Cache-bust the static zip URL with the build's mtime. The filename is
-    // stable across rebuilds, so without this a CDN or the browser serves the
-    // old bytes at the same URL. Self-healing: the query changes only when the
-    // file changes, so there is nothing to bump by hand.
-    $url = trailingslashit($up["baseurl"]) . "eic-datasets/" . rawurlencode($file) . "?v=" . (int) filemtime($latest);
+    $url = trailingslashit($up["baseurl"]) . "eic-datasets/" . rawurlencode($file);
 
     static $css_done = false;
     $style = "";

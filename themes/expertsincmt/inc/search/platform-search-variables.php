@@ -331,6 +331,10 @@ function eic_ps_generate_suffix_variants($value)
 function eic_ps_intent_resolvers(): array
 {
     return [
+        // Variant notation is unambiguous and reads the raw query;
+        // passes unless a variant token parses (a gene symbol always
+        // wins over the grammar, so S100B stays a gene)
+        "eic_ps_resolve_variant",
         "eic_ps_resolve_phrase_clamps",
         "eic_ps_resolve_chromosome",
         "eic_ps_resolve_inheritance_clamp",
@@ -354,6 +358,10 @@ function eic_ps_build_context(string $normalized_query): array
 {
     return [
         "tokens" => preg_split("/\s+/", $normalized_query),
+
+        // The query as typed (variant resolver): normalization strips
+        // the dots, hyphens, and ">" that variant notation is made of
+        "raw" => function_exists("eic_ps_raw_query") ? eic_ps_raw_query() : "",
 
         /**
          * Jurisdiction gate: dominant/recessive + intermediate

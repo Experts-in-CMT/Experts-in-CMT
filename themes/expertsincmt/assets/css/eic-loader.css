@@ -1,0 +1,22 @@
+/**
+ * Copyright (c) 2025-2026 Kenneth Raymond
+ * All rights reserved.
+ *
+ * Part of the Experts in CMT platform.
+ * Do not copy, modify, or redistribute without permission.
+ */
+
+/* =========================================================
+   EIC Loader: the platform-wide loading indicator
+   ---------------------------------------------------------
+   The DNA helix (inc/shortcodes/eic-loader.php) drawing itself in,
+   holding, and drawing back out on a loop. Inherits color from its
+   context; set `color` on a wrapper to tint it. Sized in em so it
+   follows the surrounding type. Auto-loaded by the assets/css glob.
+   ========================================================= */
+
+.eic-loader{display:inline-block;width:1.1em;height:1.1em;vertical-align:-.2em}
+.eic-loader[hidden]{display:none}
+.eic-loader path{stroke-dasharray:48;stroke-dashoffset:48;animation:eic-loader-draw 1.6s ease-in-out infinite}
+@keyframes eic-loader-draw{0%{stroke-dashoffset:48}45%{stroke-dashoffset:0}60%{stroke-dashoffset:0}100%{stroke-dashoffset:-48}}
+@media(prefers-reduced-motion:reduce){.eic-loader path{animation:none;stroke-dashoffset:0}}

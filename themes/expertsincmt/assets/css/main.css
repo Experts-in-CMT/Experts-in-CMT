@@ -65,9 +65,6 @@
   --fs-h3: clamp(18px, 0.9vw + 14px, 22px);
   --fs-h4: clamp(16px, 0.6vw + 13px, 18px);
 
-  /* Lead / dek */
-  --fs-lead: clamp(20px, 1.1vw + 16px, 28px);
-
   /* Controls (scalable padding + radius) */
   --radius-ctrl: 10px;
   --ctrl-pad-y: clamp(10px, 0.5vw + 6px, 14px);

@@ -195,7 +195,13 @@ $pub_heading =
           <dt><?php echo $is_cmtx3
               ? "ISCN Notation"
               : "HGNC-Approved Gene Symbol"; ?></dt>
-          <dd><?php echo esc_html($gene_symbol); ?></dd>
+          <dd><?php
+          // Links to the gene post when one is published; plain text otherwise
+          $gene_post_url = function_exists("eic_gene_post_url") ? eic_gene_post_url($gene_symbol) : "";
+          echo $gene_post_url !== ""
+              ? '<a href="' . esc_url($gene_post_url) . '" aria-label="' . esc_attr($gene_symbol . " gene page") . '">' . esc_html($gene_symbol) . "</a>"
+              : esc_html($gene_symbol);
+          ?></dd>
         </div>
       <?php endif; ?>
 
@@ -328,7 +334,39 @@ $pub_heading =
   </div>
 <?php endif; ?>
 
-<?php if (!empty($clinvar_url)): ?>
+<?php
+// Gene page's ClinVar Variants card when a gene post exists; the ClinVar
+// search in clinvar_url otherwise. The structural record's symbol is ISCN
+// notation, so its link is labeled by the subtype code (CMTX3) instead.
+$clinvar_card_url = "";
+$clinvar_card_label = $gene_symbol;
+if (!$unknown_gene && function_exists("eic_gene_post_url")) {
+    $clinvar_card_url = eic_gene_post_url($gene_symbol);
+    if ($clinvar_card_url !== "") {
+        $clinvar_card_url .= "#gene-variants";
+        if (
+            function_exists("eic_gene_symbol_is_plausible") &&
+            !eic_gene_symbol_is_plausible($gene_symbol) &&
+            function_exists("eic_gene_structural_code")
+        ) {
+            $code = eic_gene_structural_code($gene_symbol);
+            if ($code !== "") {
+                $clinvar_card_label = $code;
+            }
+        }
+    }
+}
+?>
+<?php if ($clinvar_card_url !== ""): ?>
+  <div class="eic-fact">
+    <dt>ClinVar Pathogenic Variants</dt>
+    <dd>
+      <a class="dr-more" href="<?php echo esc_url($clinvar_card_url); ?>">
+        View <?php echo esc_html($clinvar_card_label); ?> ClinVar Variants
+      </a>
+    </dd>
+  </div>
+<?php elseif (!empty($clinvar_url)): ?>
   <div class="eic-fact">
     <dt>ClinVar Pathogenic Variants</dt>
     <dd>

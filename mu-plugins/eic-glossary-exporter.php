@@ -14,14 +14,14 @@
  * Author: Kenneth Raymond
  *
  * ------------------------------------------------------------
- * Glossary — Full Export
+ * Glossary: Full Export
  * ------------------------------------------------------------
  * For each `glossary` record, exports:
  *   - Core post columns (title, slug, status, dates, content, excerpt, etc.)
  *   - post_content (full definition body) and post_excerpt
- *   - ALL raw postmeta (captures every ACF field — canonical_term,
+ *   - ALL raw postmeta (captures every ACF field: canonical_term,
  *     short_definition, source_url, source_label, term_image,
- *     alt_text_override, aka_synonyms, common_misspellings, notes_admin —
+ *     alt_text_override, aka_synonyms, common_misspellings, notes_admin:
  *     plus every Yoast `_yoast_wpseo_*` entry, in one lossless pass)
  *   - Resolved ACF values via get_fields() for readability (when ACF is active)
  *   - All taxonomy terms (glossary_letter, post_tag, and any other

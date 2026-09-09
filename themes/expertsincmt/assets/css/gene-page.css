@@ -1,0 +1,205 @@
+/**
+ * Copyright (c) 2025-2026 Kenneth Raymond
+ * All rights reserved.
+ *
+ * Part of the Experts in CMT platform.
+ * Do not copy, modify, or redistribute without permission.
+ */
+
+/* =========================================================
+   Gene page (.gpx): the Gene Browser row, opened up as a page.
+   ---------------------------------------------------------
+   Same components and class names as the Gene Browser's expanded
+   detail (gene-browser-table.php), so a gene page and a browser row
+   are visibly the same thing. Typography is the site's, not the
+   browser's inline stack: Albert Sans via --font-sans, the fluid
+   --fs-body / --fs-h2 scale, --primary headings, eyebrow labels;
+   every component size is in em so it follows that scale. The
+   browser's styles are inline in its shortcode and exist only
+   on the browser page; this file carries the component subset
+   the gene page needs, under a .gpx root. Auto-loaded by the
+   assets/css glob; scoped, so it touches nothing else.
+   ========================================================= */
+
+.gpx{--gp:var(--primary,#174777);--gpl:var(--primary-light,#5ea0c9);--gtx:var(--text,#111);--gmut:var(--muted,#555);--gbd:var(--border,#e1e5ea);--gbg:var(--bg,#fff);--gr:14px;--gmono:"Fira Code",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;width:100%;max-width:1180px;margin:0 auto 2.5rem;padding-inline:12px;color:var(--gtx);font-family:var(--font-sans);font-size:var(--fs-body);line-height:1.6}
+.gpx *{box-sizing:border-box}
+.gpx a:focus-visible{outline:2px solid var(--gp);outline-offset:2px}
+
+/* Sections: each is a detail body, the way a row opens in the browser. */
+.gpx-section{padding:16px 18px 20px;background:color-mix(in srgb,var(--gpl) 12%,#fff);border:1px solid var(--gbd);border-radius:12px;margin-top:14px}
+.gpx-section:first-child{margin-top:0}
+/* !important escapes main.css's global H2 rhythm rule (h2{margin-top:var(--h2-mt)!important}); inside a card the section heading sits flush. */
+.gpx h2.gpx-h{margin:0 0 .75rem !important;padding:0;font-family:var(--font-sans);font-size:var(--fs-h2);font-weight:500;line-height:1.2 !important;letter-spacing:-0.005em;color:var(--primary);text-transform:none}
+.gpx-h b{color:var(--gtx);font-weight:800}
+.gpx-mono{font-family:var(--gmono)}
+
+/* Summary strip (the row's cells) */
+.gpx-summary{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px}
+.gpx-summary .gbx-loc{font-family:var(--gmono);color:var(--gtx);font-size:.95em}
+.gpx-summary .gbx-inh{white-space:nowrap;color:var(--gmut);font-weight:600}
+.gpx-summary .gbx-sub{font-variant-numeric:tabular-nums;font-weight:700;color:var(--gtx)}
+
+/* Classification pills */
+.gpx .gbx-pill{display:inline-block;padding:.15em .7em;border-radius:1em;font-size:.85em;font-weight:700;white-space:nowrap;margin:2px 4px 2px 0}
+.gbx-f-blue{background:#e3f0ff;color:#0b4a8f}.gbx-f-green{background:#e6f6ef;color:#0f6b45}
+.gbx-f-purple{background:#efe4ff;color:#5b21b6}.gbx-f-indigo{background:#e5e8fb;color:#3538a3}
+.gbx-f-amber{background:#fdf0d8;color:#8a5a00}.gbx-f-orange{background:#ffe9e0;color:#9a3412}
+.gbx-f-rose{background:#ffe4ef;color:#9b2f5a}.gbx-f-slate{background:#e9edf3;color:#43536b}
+.gbx-f-grey{background:#eceff2;color:#5b6675}
+
+
+/* Function */
+.gpx .gbx-func{font-size:1em;color:var(--gtx);line-height:1.6;max-width:var(--maxw,72ch);margin:0}
+.gpx .gbx-func-src{display:inline-block;margin-left:.4em;font-size:.75em;text-transform:uppercase;letter-spacing:.08em;font-weight:600;color:var(--gmut);border:1px solid var(--gbd);border-radius:3px;padding:0 .5em;white-space:nowrap;vertical-align:middle}
+.gpx .gbx-func-src a{display:inline;color:var(--gmut);text-decoration:none}
+/* A full citation (structural record: the sentinel paper's abstract) reads as a line, not a chip */
+.gpx .gbx-func-src--cite{display:block;margin:.6em 0 0;padding:0;border:0;text-transform:none;letter-spacing:0;font-weight:400;font-size:.85em;white-space:normal;line-height:1.5}
+.gpx .gbx-func-src--cite a{text-decoration:underline}
+.gpx .gbx-exnote{padding:.6em .9em;border:1px solid var(--gbd);background:#fff;border-radius:6px;font-size:.95em;color:var(--gmut);line-height:1.6}
+
+/* Meta tags */
+.gpx .gbx-meta{display:flex;flex-wrap:wrap;gap:7px 9px;font-size:.9em;color:var(--gmut)}
+.gpx .gbx-mtag{border:1px solid var(--gbd);border-radius:3px;padding:2px 8px;background:#fff;color:var(--gtx)}
+.gpx .gbx-mtag b{font-weight:700}.gpx .gbx-mtag.gbx-null{color:var(--gmut);background:#f1f4f6}
+
+/* External records + Evidence lines */
+.gpx .gbx-links{display:flex;flex-wrap:wrap;align-items:center;gap:7px 9px;font-size:.9em}
+.gpx .gbx-links + .gbx-links{margin-top:12px;padding-top:12px;border-top:1px dashed var(--gbd)}
+.gpx .gbx-links .gbx-lbl{font-size:.85em;text-transform:uppercase;letter-spacing:.08em;color:var(--gmut);font-weight:600}
+.gpx .gbx-chip{border:1px solid var(--gbd);border-radius:3px;padding:.15em .6em;background:#fff;font-family:var(--gmono);font-size:.95em}
+.gpx .gbx-chip a{color:var(--gp);text-decoration:none}.gpx .gbx-chip a:hover{text-decoration:underline}.gpx .gbx-chip--mane{background:#f1f4f6;color:var(--gmut)}
+.gpx .gbx-ev{display:inline-flex;align-items:baseline;gap:.4em;border-radius:4px;padding:.2em .7em;font-size:1em;font-weight:700;line-height:1.4}
+.gpx .gbx-ev a{color:inherit;text-decoration:none}.gpx .gbx-ev a:hover{text-decoration:underline}
+.gpx .gbx-ev-k{font-size:.75em;text-transform:uppercase;letter-spacing:.08em;font-weight:800}
+.gpx .gbx-ev-dis{font-weight:500;font-size:.9em}
+.gpx .gbx-ev-green{background:#e6f6ef;color:#0f6b45}.gpx .gbx-ev-amber{background:#fdf0d8;color:#8a5a00}
+.gpx .gbx-ev-purple{background:#efe4ff;color:#5b21b6}.gpx .gbx-ev-red{background:#ffe4ef;color:#9b2f5a}
+.gpx .gbx-ev-grey{background:#eceff2;color:#5b6675}.gpx .gbx-ev-dose{background:#e8eefc;color:#2a3f8f}
+
+/* Subtype matrix */
+.gpx .gbx-matrix{overflow-x:auto;border:1px solid var(--gbd);border-radius:8px;background:#fff}
+.gpx .gbx-matrix table{border-collapse:collapse;width:100%;font-size:.95em}
+.gpx .gbx-matrix th,.gpx .gbx-matrix td{padding:.6em .9em;text-align:left;vertical-align:top;border-bottom:1px solid var(--gbd);line-height:1.5}
+.gpx .gbx-matrix thead th{font-size:.85em;text-transform:uppercase;letter-spacing:.08em;color:var(--gmut);font-weight:600;background:#fbfcfd;white-space:nowrap}
+.gpx .gbx-matrix tbody tr:last-child td{border-bottom:none}
+.gpx .gbx-matrix td.gbx-st{font-family:var(--gmono);font-weight:600;white-space:nowrap}
+.gpx .gbx-matrix td.gbx-st a{color:var(--gp);text-decoration:none}
+.gpx .gbx-matrix td.gbx-yr{font-variant-numeric:tabular-nums;white-space:nowrap}
+.gpx .gbx-clsm{display:inline-block;font-size:.85em;font-weight:700;border:1px solid var(--gbd);border-radius:3px;padding:.05em .5em;background:#fff}
+.gpx .gbx-pub{max-width:52ch}.gpx .gbx-pub-t{line-height:1.5}.gpx .gbx-pub-t a{color:var(--gp);text-decoration:none}
+.gpx .gbx-pub-m{font-size:.85em;color:var(--gmut);margin-top:2px}.gpx .gbx-none{color:var(--gmut)}
+
+/* Identifiers grid (open on the page, no toggle) */
+.gpx .gbx-idgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(26em,1fr));gap:.3em 1.5em;padding:0}
+.gpx .gbx-idrow{display:flex;gap:.6em;font-family:var(--gmono);font-size:.95em}
+.gpx .gbx-k{color:var(--gmut);min-width:9em;flex:none}.gpx .gbx-v{color:var(--gtx);white-space:nowrap}.gpx .gbx-v.gbx-na{color:var(--gmut);font-style:italic}
+
+/* Phone: matrix stacks into cards, mirroring the browser's phone treatment */
+@media(max-width:640px){
+  .gpx{padding-inline:8px}
+  .gpx-section{padding:14px 14px 16px;border-radius:10px}
+  .gpx .gbx-matrix{border:0;background:transparent;overflow:visible}
+  .gpx .gbx-matrix table,.gpx .gbx-matrix tbody,.gpx .gbx-matrix tr,.gpx .gbx-matrix td{display:block;width:auto}
+  .gpx .gbx-matrix thead{display:none}
+  .gpx .gbx-matrix tr{border:1px solid var(--gbd);border-radius:8px;background:#fff;padding:6px 0;margin-bottom:10px}
+  .gpx .gbx-matrix td{border-bottom:0;padding:5px 13px}
+  .gpx .gbx-matrix td .gpx-dl{display:block;font-size:.85em;text-transform:uppercase;letter-spacing:.08em;color:var(--gmut);font-weight:600;margin-bottom:2px}
+  .gpx .gbx-matrix td.gbx-st{white-space:normal}
+  .gpx .gbx-pub{max-width:none}
+  /* Identifier grid: one column, key stacked above its value in the same
+     label register as the stacked cards, so a full-width value almost never
+     breaks. The desktop grid's 26em minimum column and nowrap values overrun
+     a phone viewport and the overflow is clipped, cutting the coordinates
+     off invisibly; overflow-wrap stays as the net for any longer value. */
+  /* Evidence badges wrap on the narrowest phones instead of poking past 320px */
+  .gpx .gbx-ev{white-space:normal;flex-wrap:wrap}
+  .gpx .gbx-idgrid{grid-template-columns:1fr;gap:.7em}
+  .gpx .gbx-idrow{display:block}
+  .gpx .gbx-k{display:block;min-width:0;font-family:var(--font-sans);font-size:.85em;text-transform:uppercase;letter-spacing:.08em;font-weight:600;margin-bottom:1px}
+  .gpx .gbx-v{white-space:normal;overflow-wrap:anywhere;min-width:0}
+}
+
+/* ClinVar Variants card: three collapsed tiers, lazy-filled */
+.gpx .gpx-note{margin:0 0 .75rem;font-size:.95em;color:var(--gmut);max-width:var(--maxw,72ch)}
+.gpx .gpx-cv-status{color:var(--gp);font-weight:600}
+.gpx .gpx-tier{border:1px solid var(--gbd);border-radius:8px;background:#fff;margin-top:.6rem}
+.gpx .gpx-tier>summary{cursor:pointer;list-style:none;display:flex;align-items:baseline;gap:.6em;padding:.7em 1em;font-weight:600;color:var(--gtx)}
+.gpx .gpx-tier>summary::-webkit-details-marker{display:none}
+/* An open tier keeps its title bar pinned while its rows scroll, so the
+   tier can be closed from anywhere in the list; the table header pins
+   just beneath it (--gpx-sum is the bar height, set by gene-page.js). */
+.gpx .gpx-tier[open]>summary{position:sticky;top:var(--gpx-top,0px);z-index:6;background:#fff;border-bottom:1px solid var(--gbd);border-radius:8px 8px 0 0}
+/* Pseudo markers carry empty alternative text so screen readers skip the
+   glyph; the plain declaration first is the fallback where the slash
+   syntax is unsupported. */
+.gpx .gpx-tier>summary::before{content:"\25b8";content:"\25b8"/"";color:var(--gmut);font-size:.9em}
+.gpx .gpx-tier[open]>summary::before{content:"\25be";content:"\25be"/""}
+.gpx .gpx-tier__count{margin-left:auto;font-variant-numeric:tabular-nums;font-weight:700;color:var(--gp)}
+.gpx .gpx-tier__count:empty::before{content:"\2013";content:"\2013"/"";color:var(--gmut);font-weight:400}
+.gpx .gpx-tier__why{margin:0;padding:0 1em .6em;font-size:.9em;color:var(--gmut);max-width:var(--maxw,72ch)}
+.gpx .gpx-tier__body{padding:0 1em 1em}
+.gpx .gpx-tier__body .gbx-matrix{margin-top:0}
+.gpx .gpx-cond{display:inline-block;border:1px solid var(--gbd);border-radius:3px;padding:.05em .5em;margin:1px 3px 1px 0;font-size:.9em;background:#fff}
+.gpx .gpx-cond--cmt{color:var(--primary,#174777);border-color:var(--gbd);background:color-mix(in srgb,var(--gpl) 10%,#fff)}
+.gpx .gpx-cond--unspecified{color:var(--gmut);font-style:italic}
+.gpx .gpx-cv-meta{margin:.75rem 0 0;font-size:.85em;color:var(--gmut)}
+.gpx .gpx-cv-meta:empty{display:none}
+
+/* Tier tables: fixed proportions so long HGVS names wrap instead of crushing Condition */
+.gpx .gpx-tier__body .gbx-matrix table{table-layout:fixed}
+.gpx .gpx-tier__body .gbx-matrix th:nth-child(1){width:27%}
+.gpx .gpx-tier__body .gbx-matrix th:nth-child(2){width:12%}
+.gpx .gpx-tier__body .gbx-matrix th:nth-child(3){width:14%}
+.gpx .gpx-tier__body .gbx-matrix th:nth-child(4){width:8%}
+.gpx .gpx-tier__body .gbx-matrix th:nth-child(5){width:25%}
+.gpx .gpx-tier__body .gbx-matrix th:nth-child(6){width:14%}
+.gpx .gpx-tier__body .gbx-matrix td.gbx-st{white-space:normal;overflow-wrap:break-word;font-size:.9em;font-weight:500}
+.gpx .gpx-tier__body .gbx-matrix td{overflow-wrap:normal;word-break:normal}
+.gpx .gpx-tier__body .gbx-ev{white-space:normal}
+@media(max-width:640px){.gpx .gpx-tier__body .gbx-matrix table{table-layout:auto}}
+
+/* Tier tables are a register, not reading matter: step down as the browser does */
+.gpx .gpx-tier__body .gbx-matrix table{font-size:.85em}
+.gpx .gpx-tier__body .gbx-matrix th,.gpx .gpx-tier__body .gbx-matrix td{padding:.5em .8em}
+.gpx .gpx-tier__body .gbx-matrix td.gbx-st{font-size:1em}
+.gpx .gpx-tier__body .gpx-cond{font-size:1em}
+
+/* Inline spinner beside "Loading from ClinVar…" (CSS, no image) */
+.gpx .gpx-cv-status.is-loading::after{content:"";display:inline-block;width:.75em;height:.75em;margin-left:.45em;vertical-align:-.08em;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:gpx-spin .8s linear infinite}
+@keyframes gpx-spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.gpx .gpx-cv-status.is-loading::after{animation:none;border-right-color:currentColor;opacity:.5}}
+
+/* Loading indicator: the platform loader (eic-loader.css), placed beside the status */
+.gpx .gpx-cv-icon{margin-left:.45em;color:var(--gp)}
+
+/* Review stars in ClinVar's gold, deepened past the 3:1 non-text contrast
+   minimum on white; empties stay muted. A visually hidden text equivalent
+   in the cell (.gpx-sr) carries the count and review status. */
+.gpx .gpx-stars{white-space:nowrap;letter-spacing:.05em}
+.gpx .gpx-star{color:#b07c00} /* empty stars are a rating of none, drawn in Star Gold like the filled ones */
+.gpx .gpx-star--on{color:#b07c00}
+
+/* Visually hidden, read by screen readers (the theme defines no global
+   screen-reader-text class) */
+.gpx .gpx-sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+/* Cell labels: real text so screen readers announce them in the stacked
+   phone layout. Hidden on desktop, where the header row carries them. */
+.gpx .gpx-dl{display:none}
+
+/* Legacy CMT names (DSS, CMT3, Roussy-Levy): in CMT, but not subtypes */
+.gpx .gpx-cond--legacy{color:var(--gmut);border-style:dashed;background:#fbfcfd}
+.gpx .gpx-cond--legacy small{font-size:.75em;text-transform:uppercase;letter-spacing:.06em;font-weight:600;margin-left:.3em}
+
+/* Sticky tier headers, echoing the Gene Browser and Variant Mechanism Browser */
+@media(min-width:641px){
+  .gpx .gpx-tier__body .gbx-matrix{overflow:visible}
+  /* Keyboard focus scrolled into view lands below the sticky header, not under it */
+  .gpx .gpx-tier__body .gbx-matrix a{scroll-margin-top:calc(var(--gpx-top,0px) + var(--gpx-sum,0px) + 3.5em)}
+  .gpx .gpx-tier__body .gbx-matrix thead th{position:sticky;top:calc(var(--gpx-top,0px) + var(--gpx-sum,0px));z-index:5;background:var(--gp);color:#fff;padding:21px 14px;font-size:14px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;border-bottom:0}
+  .gpx .gpx-tier__body .gbx-matrix thead th:first-child{border-top-left-radius:8px}
+  .gpx .gpx-tier__body .gbx-matrix thead th:last-child{border-top-right-radius:8px}
+}
+
+/* Row arrived at from search (?v=VCV…): a soft hold on the record */
+.gpx .gpx-tier__body tr.is-target td{background:color-mix(in srgb,var(--gpl) 10%,#fff)}

@@ -592,9 +592,9 @@ JS;
         $changed_fields = 0;
         $error_rows = [];
 
-        echo "<h2>" . ($commit ? "Commit" : "Dry run") . " — " . count($rows) . " subtypes</h2>";
+        echo "<h2>" . ($commit ? "Commit" : "Dry run") . ": " . count($rows) . " subtypes</h2>";
         if (self::$last_deferred > 0) {
-            echo '<div class="notice notice-warning"><p><strong>Cold cache — batch limit reached.</strong> ' .
+            echo '<div class="notice notice-warning"><p><strong>Cold cache: batch limit reached.</strong> ' .
                 (int) self::$last_deferred . " gene(s) were not looked up this run (live-lookup cap of " .
                 (int) self::BATCH . " per run). Cached results persist, so run the tool again to fetch the next batch.</p></div>";
         }
@@ -641,7 +641,7 @@ JS;
             "<strong>{$changed_rows}</strong> subtype(s). " .
             "<strong>{$err}</strong> lookup error(s).</p>";
 
-        // Coverage metrics — gene-level effective state (proposed value where the
+        // Coverage metrics: gene-level effective state (proposed value where the
         // source has one, else the stored value) after this run.
         $eff = [];
         foreach ($rows as $r) {

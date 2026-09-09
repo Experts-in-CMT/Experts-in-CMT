@@ -11,15 +11,176 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Gene post type (`inc/cpt/gene-cpt.php`, `mu-plugins/eic-gene-posts-tool.php`, `functions.php`)**
+  - `gene` post type at `/genetics/gene/{symbol}/`. A gene post is a shell (title = HGNC symbol, slug = symbol lowercased, no fields); page content is projected at render from the published subtype records matching `gene_symbol` via `eic_gene_projection()`, the Gene Browser's per-gene resolution.
+  - Tools > Gene Posts creates missing posts from published subtypes (dry run, commit, insert-only, re-runnable). Saving a published subtype creates its gene post if absent. Symbol lookups load in one query per request.
+  - The structural record (CMTX3) gets a gene post titled and slugged by subtype code, resolvable by code or ISCN string.
+  - inc/cpt/gene-cpt.php
+  - mu-plugins/eic-gene-posts-tool.php
+  - functions.php
+
+- **Gene page (`single-gene.html`, `gene-fields-shortcode.php`, `gene-fields-template.php`, `gene-jsonld.php`, `gene-page.css`, `gene-banner.css`)**
+  - Block template carrying `[gene_fields]`, rendered in the Gene Browser's register: Gene Function (UniProt summary), Relationship to CMT (row cells plus the subtype matrix headed Sentinel Publication, each code linked), Stored Identifiers (aliases, identifier grid, External Records chips, Evidence badges). Same components and class names as the browser's expanded detail under a `.gpx` root; site typography.
+  - Header Banner group attached to `gene`; `banner_title` and `banner_intro` filled when empty by the tool and the publish hook. `gene-banner.css` lets the intro wrap. Tools > Header Banner Image lists Gene.
+  - `[context_nav]` gains a `gene` entry (Previous, Next, Return to the Gene Browser, A to Z by symbol).
+  - JSON-LD: schema.org `Gene` (identifiers as PropertyValue, external records as sameAs, subtypes as associatedDisease) and `MedicalWebPage` via Yoast @ids.
+  - For the structural record: Gene Function carries the sentinel paper's abstract with citation and CC BY 4.0 credit; Stored Identifiers states gene-level identifiers do not apply.
+  - templates/single-gene.html
+  - templates/gene-fields-template.php
+  - inc/shortcodes/gene-fields-shortcode.php
+  - inc/acf/gene-jsonld.php
+  - inc/acf/header-banner-fields.php
+  - inc/shortcodes/context-nav-shortcode.php
+  - assets/css/gene-page.css
+  - assets/css/gene-banner.css
+  - mu-plugins/eic-banner-image-tool.php
+
+- **EIC Loader (`inc/shortcodes/eic-loader.php`, `assets/css/eic-loader.css`)**
+  - Platform loading indicator: the DNA helix as inline SVG in the current text color, stroke-dash draw in/out loop, still under reduced motion. `eic_loader($class, $hidden)`, `[eic_loader]`, `.eic-loader`.
+  - inc/shortcodes/eic-loader.php
+  - assets/css/eic-loader.css
+
+- **ClinVar Variants card on the gene page (`mu-plugins/eic-clinvar-variants.php`, `gene-fields-template.php`, `gene-page.js`, `gene-page.css`)**
+  - REST route `GET eic/v1/clinvar/{gene}` fetches the gene's pathogenic and likely pathogenic ClinVar variants (aggregate germline classification only) via E-utilities, summaries in batches of 40. Cache: transient per gene keyed on ClinVar's release stamp, holding parsed records only; tiers and classification applied on read; a cached record missing a field the parser now writes is refetched. One fetch per gene at a time, per-visitor budget on uncached fetches, diagnostics off on production.
+  - Three collapsed tiers, split by reported disease: Reported in CMT, Reported in Other Diseases, Variants w/o a Recorded Disease (no disease named, at every gene). A variant reported in both CMT and another disease appears in both tiers, each showing only its own reports. CMT matched by MedGen CUI seed plus classification name patterns; "intermediate" counts only beside dominant or recessive. Legacy names (Dejerine-Sottas, CMT3, Roussy-Levy) render as a dashed "legacy name" chip. "GENE-related disorder" traits read as no disease recorded.
+  - Every gene page carries the card, candidates included; the structural record's card states no records were found.
+  - Card note, review-stars explainer, counts and totals line loaded on page load; each row: ClinVar link, type, classification, stars, reported diseases, last evaluated. HGVS names break at seams; year-1 placeholder dates blanked. `assets/js/gene-page.js` enqueued on single gene pages only.
+  - mu-plugins/eic-clinvar-variants.php
+  - templates/gene-fields-template.php
+  - assets/js/gene-page.js
+  - assets/css/gene-page.css
+  - functions.php
+
+- **ClinVar Dataset in the gene page schema (`inc/acf/gene-jsonld.php`, `mu-plugins/eic-clinvar-variants.php`)**
+  - schema.org `Dataset` for the card: NCBI creator, ClinVar catalog, release stamp as version, P/LP and Reported in CMT counts, gene as subject. `Gene` carries an `@id` and `subjectOf`; `MedicalWebPage` main entity references it.
+  - Reported in CMT variants emitted as `BioChemEntity` (SO:0001060) with VCV and rsID identifiers, HGVS representations, classification, review status, type, and CMT diseases with MedGen codes. Capped at 150 per gene (`eic_gene_schema_variant_cap`).
+  - Read cache-only via `EIC_ClinVar_Variants::cached()`; no NCBI call at render. The structural record carries no Dataset.
+  - inc/acf/gene-jsonld.php
+  - mu-plugins/eic-clinvar-variants.php
+
+- **Variant search (`inc/search/platform-search-variants.php`, `mu-plugins/eic-variant-index.php`)**
+  - Resolver for variant queries (`t424m`, `Thr424Met`, `p.Thr424Met`, `HSPB3-P121L`, `itpr3 c.1271C>T`, `rs104894520`, `VCV000041229`): returns the variant (HGVS protein name with one-letter form, cDNA, classification, stars, tier), the gene, its subtypes, and content. Links to the gene page row (`?v=VCV…#gene-variants`, row opened and highlighted) and to ClinVar. Unmatched variant at a known gene returns the gene and subtypes with a miss line. Log intent `variant`.
+  - One grammar and amino-acid map: all keys one-letter form; three-letter, `p.`, case, parentheses, frameshift, deletion, duplication, synonymous notation carried through. A gene symbol always wins over the grammar. Resolver reads the raw query; search cache key carries the typed form.
+  - Site-wide index table `wp_eic_variant_index`, one row per key per record, derived from the card payload. Weekly WP-Cron roll worked a few genes per tick; self-heals on `eic_clinvar_gene_built`; in-memory fallback from the cached card payload. Tools > Variant Index: counts, queue, schedule, last-roll errors, Rebuild Now.
+  - Did you mean: same residues and suffix, position one digit off, dropped, added, or wrong; within the gene when resolved, else site-wide; up to five, Reported in CMT first then by stars. Log intent `variant (did you mean)`.
+  - inc/search/platform-search-variants.php
+  - inc/search/platform-search.php
+  - inc/search/platform-search-variables.php
+  - inc/search/platform-search-render.php
+  - inc/search/platform-search.css
+  - inc/shortcodes/platform-search-results.php
+  - assets/js/gene-page.js
+  - assets/css/gene-page.css
+  - mu-plugins/eic-variant-index.php
+  - mu-plugins/eic-clinvar-variants.php
+
 ### Changed
 
-- **Every medical page now names its author (`pages-jsonld.php`, `subtype-jsonld.php`, `educational-jsonld.php`)**
-  - The MedicalWebPage schema on medical pages, subtype pages, and educational pages now attributes authorship to the Experts in CMT organization, the same way the front page already does. The organization is referenced by Yoast's @id, so search and answer engines merge it into the existing entity graph instead of creating a duplicate.
-  - Before this, only the front page carried an author. Answer engines prefer citing content they can attribute to a named source, so pages like the CMT Gene Browser now hand engines a name to credit alongside their claims.
-  - The publisher and website references on these pages now point at Yoast's organization and website entities by @id as well, replacing inline copies that named the site "expertsincmt" while the rest of the markup said "Experts in CMT". One name, one entity, everywhere.
+- **Subtype post type registered in code; subtype URLs moved (`inc/cpt/subtype-cpt.php`, `functions.php`)**
+  - `subtype` registered in PHP, transcribed value for value from the ACF post type, with rewrite slug `genetics/subtype` and `has_archive` false. Key, labels, supports, REST, menu, capabilities, hierarchy, and query var unchanged.
+  - Subtype pages now at `/genetics/subtype/{slug}/`. All internal links read the permalink. Old `/subtype/{slug}/` URLs redirect via Yoast.
+  - inc/cpt/subtype-cpt.php
+  - functions.php
+
+- **Search gene pills link to the gene post (`platform-search.php`, `platform-search-variants.php`)**
+  - Gene pills and gene "did you mean" links resolve through `eic_ps_gene_url()` to `/genetics/gene/{symbol}/`, Gene Browser filter as fallback.
+  - inc/search/platform-search.php
+  - inc/search/platform-search-variants.php
+
+- **Browsers link identifiers and name their calls to action (`gene-browser-table.php`, `variant-mechanism-table.php`, `variant-mechanism.css`)**
+  - Gene Browser: symbol cell links to the gene page in every row (label CMTX3 for the structural record; structural Gene Function source as a "Source" pill); expanded detail ends with "Learn more about GENE →". Clicking the symbol navigates rather than toggling the row.
+  - Variant Mechanism browser: gene links to the gene page, subtype code to the subtype page.
+  - All such links carry an aria-label naming the destination ("MPZ gene page", "CMT1B subtype page").
+  - inc/shortcodes/gene-browser-table.php
+  - inc/shortcodes/variant-mechanism-table.php
+  - assets/css/variant-mechanism.css
+
+- **Subtype page links into the gene stack (`subtype-fields-template.php`)**
+  - Gene symbol links to the gene page (aria-label "SYMBOL gene page"). ClinVar Pathogenic Variants button goes to the gene page's `#gene-variants` card; ClinVar search kept for a symbol without a page. `clinvar_url` field untouched.
+  - templates/subtype-fields-template.php
+
+- **Gene page navigation (`context-nav-shortcode.php`, `return-state.js`)**
+  - Previous and Next labeled with the neighbor symbol (← CLTCL1, CNTNAP1 →), with direction and destination in the accessible name. Return to the Gene Browser restores filters and scroll position (`cmt-gene-browser` added to the return-state map).
+  - inc/shortcodes/context-nav-shortcode.php
+  - assets/js/return-state.js
+
+- **ClinVar Variants card: copy, stars, sticky tiers (`gene-fields-template.php`, `gene-jsonld.php`, `gene-page.css`, `gene-page.js`, `platform-search.css`)**
+  - Card note: "Pathogenic and likely pathogenic variants in GENE, as classified in ClinVar, are read live from NCBI. Only aggregate germline records are shown. Uncertain and conflicting classifications are not. Experts in CMT makes no claim to the accuracy of ClinVar data. This index is provided for informational purposes only." Dataset description matches. Reported in Other Diseases explainer: "Reported in a disease other than CMT. Listed apart rather than counted as CMT variants."
+  - Review stars: all four in Star Gold, filled for earned, outlined for the rest, card and search results. Tier header bars match the browsers' height and type size. Open tier summaries are sticky below the admin bar with the table header beneath. Search-target row washed in Light Blue at 10%. Reported in CMT condition chips in Deep Blue on the Light Blue 10% wash.
+  - Closing a tier from its pinned header holds the viewport at the header bar. A condition name renders once per row.
+  - templates/gene-fields-template.php
+  - inc/acf/gene-jsonld.php
+  - assets/css/gene-page.css
+  - assets/js/gene-page.js
+  - inc/search/platform-search.css
+
+- **Every medical page names its author (`pages-jsonld.php`, `subtype-jsonld.php`, `educational-jsonld.php`)**
+  - `MedicalWebPage` author, publisher, and website reference the Yoast organization and website entities by @id on medical, subtype, and educational pages, replacing inline copies.
   - inc/acf/pages-jsonld.php
   - inc/acf/subtype-jsonld.php
   - inc/acf/educational-jsonld.php
+
+- **No cache-version query strings (`functions.php`, `eic-admin-tools.php`, `dataset-download.php`)**
+  - Stylesheets, scripts, and the dataset download serve without `?ver=` or `?v=`.
+  - functions.php
+  - mu-plugins/eic-admin-tools.php
+  - inc/shortcodes/dataset-download.php
+
+- **Gene page and search variants: mobile and accessibility (`gene-page.css`, `gene-fields-template.php`, `gene-page.js`, `platform-search.css`, `platform-search-render.php`)**
+  - Stored Identifiers stack to one labeled column on phones; evidence badges wrap. Stacked-table labels are real text. External links announce "opens in a new tab". Stars carry a spoken equivalent. Totals line announced on load. Focus never lands under a sticky header; arriving from search, focus lands on the target row. Variant names and cDNA wrap at any width.
+  - assets/css/gene-page.css
+  - templates/gene-fields-template.php
+  - assets/js/gene-page.js
+  - inc/search/platform-search.css
+  - inc/search/platform-search-render.php
+
+- **Structured data hardened against markup in values (`pages-jsonld.php`, `subtype-jsonld.php`, `gene-jsonld.php`, `frontpage-jsonld.php`, `educational-jsonld.php`)**
+  - Angle brackets in every schema value emit as unicode escapes.
+  - inc/acf/pages-jsonld.php
+  - inc/acf/subtype-jsonld.php
+  - inc/acf/gene-jsonld.php
+  - inc/acf/frontpage-jsonld.php
+  - inc/acf/educational-jsonld.php
+
+### Fixed
+
+- **Gene Browser: Enter on a focused symbol link opens the gene page instead of toggling the row (`gene-browser-table.php`)**
+  - inc/shortcodes/gene-browser-table.php
+
+- **ClinVar Variants: cache keyed on ClinVar's actual release date, named in the totals line, in place of a week-number fallback (`eic-clinvar-variants.php`)**
+  - mu-plugins/eic-clinvar-variants.php
+
+- **ClinVar Variants: no-disease reports land in Variants w/o a Recorded Disease at every gene (`eic-clinvar-variants.php`, `gene-fields-template.php`)**
+  - Previously diverted to Reported in Other Diseases at genes whose set includes other diseases. Other Diseases explainer updated.
+  - mu-plugins/eic-clinvar-variants.php
+  - templates/gene-fields-template.php
+
+- **Variant grammar: suffix shorthand (`R98fs`, `T118del`, `G107dup`) parses and displays as `p.Arg98fs`, `p.Thr118del`, `p.Gly107dup` (`eic-variant-index.php`)**
+  - mu-plugins/eic-variant-index.php
+
+- **Variant Index: per-gene state survives a cron tick; a freshly built gene indexes once; multi-variant queries resolve each key site-wide unless a gene was typed; each queued gene gets its own time budget (`eic-variant-index.php`, `platform-search-variants.php`)**
+  - mu-plugins/eic-variant-index.php
+  - inc/search/platform-search-variants.php
+
+- **Mechanism Details panel spans both fact columns on desktop instead of clipping at the page edge (`subtype-mechanism.css`)**
+  - assets/css/subtype-mechanism.css
+
+- **ClinVar Variants: accented condition names classify (`eic-clinvar-variants.php`)**
+  - CMT and legacy name patterns compiled with the unicode flag; "Roussy-Lévy syndrome" now lands in Reported in CMT as a legacy name instead of Reported in Other Diseases.
+  - mu-plugins/eic-clinvar-variants.php
+
+- **Variant search: miss and did-you-mean copy (`platform-search-render.php`)**
+  - Miss line: "No indexed pathogenic or likely pathogenic ClinVar records found for VARIANT in GENE." and, with no gene typed, "No indexed pathogenic or likely pathogenic ClinVar record matches VARIANT in any CMT gene cataloged by EIC." Did-you-mean entries read gene first ("ITPR3 p.Thr1424Met").
+  - inc/search/platform-search-render.php
+
+- **Variant Mechanism browser: Enter on a focused gene or subtype link navigates instead of toggling the row (`variant-mechanism-table.php`)**
+  - inc/shortcodes/variant-mechanism-table.php
+
+### Removed
+
+- **ACF post type definition for subtypes (`acf-json/post_type_674650572f387.json`)**, superseded by `inc/cpt/subtype-cpt.php`.
 
 ## [4.2.0] - 2026-08-20
 

@@ -276,7 +276,7 @@ final class EIC_ClinVar_URL_Tool
     {
         $rows = self::collect($hgnc);
         $counts = ["empty -> set" => 0, "differs -> fix" => 0, "ok" => 0];
-        echo "<h2>Dry run — " . count($rows) . " subtypes</h2>";
+        echo "<h2>Dry run: " . count($rows) . " subtypes</h2>";
         echo '<table class="widefat striped"><thead><tr>' .
             "<th>Subtype</th><th>Gene</th><th>Status</th>" .
             "<th>Current</th><th>Proposed</th></tr></thead><tbody>";

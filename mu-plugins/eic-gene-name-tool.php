@@ -55,7 +55,7 @@ final class EIC_Gene_Name_Tool
 
     /**
      * In-request memo for the shared HGNC cache option, with a single deferred
-     * write at shutdown (was read + re-written on every uncached name — O(n^2)).
+     * write at shutdown (was read + re-written on every uncached name: O(n^2)).
      */
     private static $cache_mem = null;
     private static $cache_dirty = false;
@@ -358,7 +358,7 @@ final class EIC_Gene_Name_Tool
         }
         echo "</tbody></table>";
         if (self::$last_deferred > 0) {
-            echo '<div class="notice notice-warning"><p><strong>Cold cache — batch limit reached.</strong> ' .
+            echo '<div class="notice notice-warning"><p><strong>Cold cache: batch limit reached.</strong> ' .
                 (int) self::$last_deferred . " gene(s) were deferred this run (live-lookup cap of " .
                 (int) self::BATCH . " per run). Cached lookups persist, so run again to continue.</p></div>";
         }

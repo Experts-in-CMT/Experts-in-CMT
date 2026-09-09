@@ -359,7 +359,7 @@ final class EIC_Subtype_Importer
 
     private static function do_dryrun(array $records): void
     {
-        echo "<h2>Dry run — " . count($records) . " record(s)</h2>";
+        echo "<h2>Dry run: " . count($records) . " record(s)</h2>";
         foreach ($records as $i => $r) {
             $label = esc_html($r["subtype"] ?? "record " . ($i + 1));
             $errors = self::validate($r);
@@ -367,7 +367,7 @@ final class EIC_Subtype_Importer
             echo "<h3 style='margin-top:0'>" . $label . "</h3>";
 
             if ($errors) {
-                echo '<p style="color:#b32d2e"><strong>Invalid — will be skipped:</strong></p><ul>';
+                echo '<p style="color:#b32d2e"><strong>Invalid: will be skipped:</strong></p><ul>';
                 foreach ($errors as $er) {
                     echo "<li>" . esc_html($er) . "</li>";
                 }
@@ -394,7 +394,7 @@ final class EIC_Subtype_Importer
 
                 if ($n === 0) {
                     echo '<p style="color:#1a7f37"><strong>Exists (ID ' . (int) $exists->ID .
-                        '). No changes — identical to the record on file.</strong></p>';
+                        '). No changes: identical to the record on file.</strong></p>';
                 } else {
                     echo '<p style="color:#996800"><strong>Exists (ID ' . (int) $exists->ID .
                         '). Commit will change ' . (int) $n . ' field(s):</strong></p>';
@@ -413,8 +413,8 @@ final class EIC_Subtype_Importer
             }
 
             $rows = [
-                "post_title / slug" => $r["subtype"] . " / " . $p["slug"],
-                "acronym / sort" => $p["acronym"] . " / " . $p["type_sort_order"],
+                "post_title/slug" => $r["subtype"] . "/" . $p["slug"],
+                "acronym/sort" => $p["acronym"] . "/" . $p["type_sort_order"],
                 "banner_intro" => $p["banner_intro"],
                 "cmt_type term" => $p["cmt_type_term"],
                 "inheritance term(s)" => implode(" + ", $p["inheritance_terms"]),
@@ -422,7 +422,7 @@ final class EIC_Subtype_Importer
                 "chromosome term" => $p["chromosome_term"],
                 "gene fields" => $p["unknown_gene"] ? "NON-WRITE (unknown gene)" : ($p["gene"] !== "" ? $p["gene"] : "(none)"),
                 "intermediate CTA" => $p["intermediate_cta"] !== "" ? $p["intermediate_cta"] : "(n/a)",
-                "omim_subtype / gene" => ($r["omim_subtype"] ?? "—") . " / " . ($r["omim_gene"] ?? "—"),
+                "omim_subtype/gene" => ($r["omim_subtype"] ?? "—") . "/" . ($r["omim_gene"] ?? "—"),
                 "focus keyword" => $p["focuskw"],
                 "SEO title" => self::SEO_TITLE,
                 "social/X title" => "echoes SEO title",
@@ -479,7 +479,7 @@ final class EIC_Subtype_Importer
                     "post_excerpt" => $p["excerpt"],
                 ], true);
                 if (is_wp_error($post_id)) {
-                    echo "<li><strong>{$label}</strong>: insert failed — " .
+                    echo "<li><strong>{$label}</strong>: insert failed, " .
                         esc_html($post_id->get_error_message()) . "</li>";
                     $failed++; continue;
                 }
@@ -487,7 +487,7 @@ final class EIC_Subtype_Importer
                 echo "<li><strong>{$label}</strong>: created (ID {$post_id}).</li>";
                 $created++;
             } else {
-                // UPSERT — diff only
+                // UPSERT: diff only
                 $post_id = (int) $existing->ID;
                 self::diff_post_fields($post_id, $r, $p);
                 self::write_record($post_id, $r, $p);
@@ -558,7 +558,7 @@ final class EIC_Subtype_Importer
         self::set_field("ars_gene", !empty($r["ars_gene"]), $post_id);
         self::set_field("mitochondrial_involvement", !empty($r["mitochondrial_involvement"]), $post_id);
 
-        /* Gene identity — NON-WRITE when unknown_gene */
+        /* Gene identity: NON-WRITE when unknown_gene */
         if (empty($r["unknown_gene"])) {
             if (!empty($r["gene_symbol"])) {
                 self::set_field("gene_symbol", $r["gene_symbol"], $post_id);

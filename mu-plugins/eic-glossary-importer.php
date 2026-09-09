@@ -251,7 +251,7 @@ final class EIC_Glossary_Importer
         $unchanged = 0;
         $failed = 0;
 
-        echo "<h2>" . ($preview ? "Dry run" : "Import complete") . " — " .
+        echo "<h2>" . ($preview ? "Dry run" : "Import complete") . ": " .
             count($records) . " record(s)</h2><ul>";
 
         foreach ($records as $r) {
@@ -295,7 +295,7 @@ final class EIC_Glossary_Importer
                     true
                 );
                 if (is_wp_error($post_id)) {
-                    echo "<li><strong>{$label}</strong>: insert failed — " .
+                    echo "<li><strong>{$label}</strong>: insert failed, " .
                         esc_html($post_id->get_error_message()) . "</li>";
                     $failed++;
                     continue;

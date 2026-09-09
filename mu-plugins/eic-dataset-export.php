@@ -18,8 +18,8 @@
  *
  * License filter (see claude/external-records-spec.md):
  *   - IDs and URLs pass (an ID inside a hyperlink is shareable).
- *   - ClinGen values (validity, dosage, disease, MONDO) pass — CC0.
- *   - UniProt gene_function passes — CC BY 4.0 (attributed, modified).
+ *   - ClinGen values (validity, dosage, disease, MONDO) pass: CC0.
+ *   - UniProt gene_function passes: CC BY 4.0 (attributed, modified).
  *   - PanelApp rating VALUE is omitted; only panelapp_url ships,
  *     pending an explicit Genomics England reuse license.
  *   - No GeneReviews or OMIM text is emitted (only links / MIM numbers).
@@ -103,9 +103,9 @@ final class EIC_Dataset_Export
             ],
             "PanelApp" => [
                 "role" => "Gene page link",
-                "license" => "Unstated reuse license — link only",
+                "license" => "Unstated reuse license: link only",
                 "note" => "Green/amber/red rating value omitted from this dataset pending an explicit reuse license from Genomics England.",
-                "panel" => "846 — Hereditary neuropathy or pain disorder (v8.30)",
+                "panel" => "846: Hereditary neuropathy or pain disorder (v8.30)",
                 "url" => "https://panelapp.genomicsengland.co.uk/panels/846/",
             ],
             "OMIM" => [
@@ -121,7 +121,7 @@ final class EIC_Dataset_Export
             ],
             "gnomAD" => [
                 "role" => "Gene page link (built from the Ensembl gene ID)",
-                "license" => "Link only — no frequency or constraint values redistributed",
+                "license" => "Link only: no frequency or constraint values redistributed",
                 "url" => "https://gnomad.broadinstitute.org",
             ],
             "GENESIS / The Genesis Project Foundation" => [
@@ -478,7 +478,7 @@ final class EIC_Dataset_Export
 
     private static function preview(array $genes): void
     {
-        echo "<h2>Preview — " . count($genes) . " genes</h2>";
+        echo "<h2>Preview: " . count($genes) . " genes</h2>";
         self::metrics($genes);
     }
 
@@ -525,7 +525,7 @@ final class EIC_Dataset_Export
         echo "<p>The published package the front-end download button serves. Download it here to " .
             "deposit at Zenodo (or elsewhere) for DOI minting.</p>";
         echo '<p><a class="button button-primary button-hero" href="' . esc_url($p["url"]) .
-            '" download="' . esc_attr($p["file"]) . '">Download package — v' . esc_html($p["ver"]) .
+            '" download="' . esc_attr($p["file"]) . '">Download package: v' . esc_html($p["ver"]) .
             " (" . esc_html($p["size"]) . ")</a></p>";
         echo '<p style="color:#6b7480"><small><code>' . esc_html($p["file"]) . "</code> · built " .
             esc_html($p["built"]) . "</small></p>";
@@ -590,7 +590,7 @@ final class EIC_Dataset_Export
                 $links .= ' &nbsp;·&nbsp; <a href="' . esc_url($url . $base . ".zip") . '" download="' . esc_attr($base . ".zip") . '"><strong>' . esc_html($base) . ".zip</strong></a>";
             }
             echo '<div class="notice notice-success"><p><strong>Built v' . esc_html($version) . "." .
-                ($ok_zip ? "" : " (zip not written — ZipArchive unavailable)") . '</strong></p><p>' . $links . "</p></div>";
+                ($ok_zip ? "" : " (zip not written: ZipArchive unavailable)") . '</strong></p><p>' . $links . "</p></div>";
         } else {
             echo '<div class="notice notice-error"><p>Failed to write one or more files to <code>' .
                 esc_html($dir) . "</code>. Check filesystem permissions.</p></div>";
@@ -735,7 +735,7 @@ final class EIC_Dataset_Export
         } else {
             $file = dirname(__FILE__) . "/eic-dataset-license.txt";
             $fallback = is_readable($file) ? "the beside-plugin file" : "the built-in summary";
-            echo '<p style="color:#b26a00"><em>No license uploaded yet — builds will ' .
+            echo '<p style="color:#b26a00"><em>No license uploaded yet: builds will ' .
                 "fall back to " . esc_html($fallback) . ".</em></p>";
         }
 

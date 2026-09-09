@@ -28,8 +28,8 @@
  */
 
 // Adds theme support for post formats.
-if (!function_exists("twentytwentyfive_post_format_setup")):
-    function twentytwentyfive_post_format_setup()
+if (!function_exists("expertsincmt_post_format_setup")):
+    function expertsincmt_post_format_setup()
     {
         add_theme_support("post-formats", [
             "aside",
@@ -44,11 +44,11 @@ if (!function_exists("twentytwentyfive_post_format_setup")):
         ]);
     }
 endif;
-add_action("after_setup_theme", "twentytwentyfive_post_format_setup");
+add_action("after_setup_theme", "expertsincmt_post_format_setup");
 
 // Enqueues editor styles in the editors.
-if (!function_exists("twentytwentyfive_editor_style")):
-    function twentytwentyfive_editor_style()
+if (!function_exists("expertsincmt_editor_style")):
+    function expertsincmt_editor_style()
     {
         add_editor_style([
             "assets/css/editor-style.css",
@@ -56,79 +56,79 @@ if (!function_exists("twentytwentyfive_editor_style")):
         ]);
     }
 endif;
-add_action("after_setup_theme", "twentytwentyfive_editor_style");
+add_action("after_setup_theme", "expertsincmt_editor_style");
 
 // Enqueues style.css on the front.
-if (!function_exists("twentytwentyfive_enqueue_styles")):
-    function twentytwentyfive_enqueue_styles()
+if (!function_exists("expertsincmt_enqueue_styles")):
+    function expertsincmt_enqueue_styles()
     {
         wp_enqueue_style(
-            "twentytwentyfive-style",
+            "expertsincmt-style",
             get_parent_theme_file_uri("style.css"),
             [],
             wp_get_theme()->get("Version")
         );
     }
 endif;
-add_action("wp_enqueue_scripts", "twentytwentyfive_enqueue_styles");
+add_action("wp_enqueue_scripts", "expertsincmt_enqueue_styles");
 
 // Registers custom block styles.
-if (!function_exists("twentytwentyfive_block_styles")):
-    function twentytwentyfive_block_styles()
+if (!function_exists("expertsincmt_block_styles")):
+    function expertsincmt_block_styles()
     {
         register_block_style("core/list", [
             "name" => "checkmark-list",
-            "label" => __("Checkmark", "twentytwentyfive"),
+            "label" => __("Checkmark", "expertsincmt"),
             "inline_style" => '
 				ul.is-style-checkmark-list { list-style-type: "\2713"; }
 				ul.is-style-checkmark-list li { padding-inline-start: 1ch; }',
         ]);
     }
 endif;
-add_action("init", "twentytwentyfive_block_styles");
+add_action("init", "expertsincmt_block_styles");
 
 // Registers pattern categories.
-if (!function_exists("twentytwentyfive_pattern_categories")):
-    function twentytwentyfive_pattern_categories()
+if (!function_exists("expertsincmt_pattern_categories")):
+    function expertsincmt_pattern_categories()
     {
-        register_block_pattern_category("twentytwentyfive_page", [
-            "label" => __("Pages", "twentytwentyfive"),
+        register_block_pattern_category("expertsincmt_page", [
+            "label" => __("Pages", "expertsincmt"),
             "description" => __(
                 "A collection of full page layouts.",
-                "twentytwentyfive"
+                "expertsincmt"
             ),
         ]);
 
-        register_block_pattern_category("twentytwentyfive_post-format", [
-            "label" => __("Post formats", "twentytwentyfive"),
+        register_block_pattern_category("expertsincmt_post-format", [
+            "label" => __("Post formats", "expertsincmt"),
             "description" => __(
                 "A collection of post format patterns.",
-                "twentytwentyfive"
+                "expertsincmt"
             ),
         ]);
     }
 endif;
-add_action("init", "twentytwentyfive_pattern_categories");
+add_action("init", "expertsincmt_pattern_categories");
 
 // Registers block binding sources.
-if (!function_exists("twentytwentyfive_register_block_bindings")):
-    function twentytwentyfive_register_block_bindings()
+if (!function_exists("expertsincmt_register_block_bindings")):
+    function expertsincmt_register_block_bindings()
     {
-        register_block_bindings_source("twentytwentyfive/format", [
+        register_block_bindings_source("expertsincmt/format", [
             "label" => _x(
                 "Post format name",
                 "Label for the block binding placeholder in the editor",
-                "twentytwentyfive"
+                "expertsincmt"
             ),
-            "get_value_callback" => "twentytwentyfive_format_binding",
+            "get_value_callback" => "expertsincmt_format_binding",
         ]);
     }
 endif;
-add_action("init", "twentytwentyfive_register_block_bindings");
+add_action("init", "expertsincmt_register_block_bindings");
 
 // Registers block binding callback function for the post format name.
-if (!function_exists("twentytwentyfive_format_binding")):
-    function twentytwentyfive_format_binding()
+if (!function_exists("expertsincmt_format_binding")):
+    function expertsincmt_format_binding()
     {
         $post_format_slug = get_post_format();
         if ($post_format_slug && "standard" !== $post_format_slug) {
@@ -162,7 +162,7 @@ add_action("wp_enqueue_scripts", function () {
         "eic-return-state",
         get_stylesheet_directory_uri() . $rel,
         [],
-        filemtime($abs),
+        null,
         true
     );
 });
@@ -205,9 +205,7 @@ add_action("wp_enqueue_scripts", function () {
                 get_stylesheet_directory_uri() .
                     "/assets/js/loop-url-utils.js",
                 [],
-                filemtime(
-                    get_stylesheet_directory() . "/assets/js/loop-url-utils.js"
-                ),
+                null,
                 true
             );
 
@@ -216,7 +214,7 @@ add_action("wp_enqueue_scripts", function () {
                 $c["handle"],
                 get_stylesheet_directory_uri() . $c["file"],
                 ["eic-loop-url"],
-                filemtime(get_stylesheet_directory() . $c["file"]),
+                null,
                 true
             );
 
@@ -308,8 +306,8 @@ add_action(
             wp_enqueue_style(
                 "experts-main",
                 get_template_directory_uri() . $relative,
-                ["twentytwentyfive-style"],
-                filemtime($path)
+                ["expertsincmt-style"],
+                null
             );
         }
     },
@@ -346,7 +344,7 @@ add_action(
                 "eic-" . sanitize_key(pathinfo($name, PATHINFO_FILENAME)),
                 $uri . "/" . $name,
                 ["experts-main"],
-                filemtime($file)
+                null
             );
         }
     },
@@ -396,6 +394,35 @@ require_once get_stylesheet_directory() .
     "/inc/acf/cmt-and-breathing-fields.php";
 require_once get_stylesheet_directory() .
     "/inc/shortcodes/cmt-and-breathing-fields-shortcode.php";
+
+// =========================================================
+// SUBTYPE CPT (the canonical store; registered in code since 2026-09-08)
+// =========================================================
+require_once get_stylesheet_directory() . "/inc/cpt/subtype-cpt.php";
+
+// =========================================================
+// GENE CPT (shell post per gene, projected from the subtype store)
+// =========================================================
+require_once get_stylesheet_directory() . "/inc/cpt/gene-cpt.php";
+
+// Gene page: ClinVar Variants card script, single gene pages only.
+add_action("wp_enqueue_scripts", function () {
+    if (is_admin() || !is_singular("gene")) {
+        return;
+    }
+    $rel = "/assets/js/gene-page.js";
+    $abs = get_stylesheet_directory() . $rel;
+    if (!file_exists($abs)) {
+        return;
+    }
+    wp_enqueue_script(
+        "eic-gene-page",
+        get_stylesheet_directory_uri() . $rel,
+        [],
+        null,
+        true
+    );
+});
 
 // =========================================================
 // Register header banner from /blocks/header-banner/block.json
@@ -455,24 +482,13 @@ add_filter(
 add_action(
     "wp_enqueue_scripts",
     function () {
-        $theme_version = wp_get_theme()->get("Version");
-
         // nav-parent-link.css is auto-loaded via the assets/css glob loader.
-
-        // Version by file modification time so a changed JS file always
-        // busts browser/CDN cache. A static theme-version query kept
-        // serving the old script after edits.
-        $nav_js_path =
-            get_stylesheet_directory() . "/assets/js/nav-parent-link.js";
-        $nav_js_ver = file_exists($nav_js_path)
-            ? (string) filemtime($nav_js_path)
-            : $theme_version;
 
         wp_enqueue_script(
             "cmtgenes-nav-parent-link",
             get_stylesheet_directory_uri() . "/assets/js/nav-parent-link.js",
             [],
-            $nav_js_ver,
+            null,
             true
         );
     },
@@ -494,7 +510,7 @@ add_action("wp_enqueue_scripts", function () {
             "dnsmi-modal",
             get_stylesheet_directory_uri() . $js_rel,
             [],
-            filemtime($js_path),
+            null,
             true
         );
     }
@@ -579,7 +595,7 @@ add_action("wp_enqueue_scripts", function () {
             "platform-search",
             get_stylesheet_directory_uri() . "/inc/search/platform-search.css",
             [],
-            filemtime(get_stylesheet_directory() . "/inc/search/platform-search.css")
+            null
         );
 
         // Live search (progressive enhancement over the GET form)
@@ -587,9 +603,7 @@ add_action("wp_enqueue_scripts", function () {
             "platform-search-ajax",
             get_stylesheet_directory_uri() . "/assets/js/platform-search-ajax.js",
             [],
-            filemtime(
-                get_stylesheet_directory() . "/assets/js/platform-search-ajax.js"
-            ),
+            null,
             true
         );
 

@@ -314,7 +314,7 @@ final class EIC_External_Records_Backfill
         $cand_seen = [];
 
         echo "<h2>" . ($commit ? "Commit" : "Dry run") .
-            " — scanning " . count($q->posts) . " records against " .
+            ": scanning " . count($q->posts) . " records against " .
             count($data) . " genes with external records</h2>";
         echo '<table class="widefat striped"><thead><tr>' .
             "<th>Gene</th><th>Record</th><th>Field</th><th>Old</th><th>New</th></tr></thead><tbody>";
@@ -365,12 +365,12 @@ final class EIC_External_Records_Backfill
         echo "</tbody></table>";
 
         echo "<p><strong>" . count($seen) . "</strong> genes matched across " .
-            (int) $records_matched . " records — " . (int) $fields_written .
+            (int) $records_matched . " records: " . (int) $fields_written .
             ($commit ? " fields written across " : " fields would change across ") .
             (int) $records_changed . " records; " . (int) $records_current .
             " records already current.</p>";
 
-        // Coverage metrics — gene-level, from the dataset for matched genes.
+        // Coverage metrics: gene-level, from the dataset for matched genes.
         $m_cg = $m_pa = $m_dose = $m_orph = 0;
         $cg_dist = [];
         $pa_dist = ["Green" => 0, "Amber" => 0, "Red" => 0];
@@ -409,9 +409,9 @@ final class EIC_External_Records_Backfill
         echo "<tr><td><strong>Records carrying external records</strong></td><td>" .
             (int) $records_matched . "</td></tr>";
         echo "<tr><td><strong>ClinGen validity (CMT&nbsp;GCEP)</strong></td><td>" . (int) $m_cg .
-            " genes" . ($cg_bits ? " — " . implode(", ", $cg_bits) : "") . "</td></tr>";
+            " genes" . ($cg_bits ? ": " . implode(", ", $cg_bits) : "") . "</td></tr>";
         echo "<tr><td><strong>PanelApp 846 rating</strong></td><td>" . (int) $m_pa .
-            " genes — Green " . (int) $pa_dist["Green"] . ", Amber " . (int) $pa_dist["Amber"] .
+            " genes: Green " . (int) $pa_dist["Green"] . ", Amber " . (int) $pa_dist["Amber"] .
             ", Red " . (int) $pa_dist["Red"] . "</td></tr>";
         echo "<tr><td><strong>ClinGen dosage</strong></td><td>" . (int) $m_dose . " genes</td></tr>";
         echo "<tr><td><strong>Orphanet gene page</strong></td><td>" . (int) $m_orph . " genes</td></tr>";

@@ -197,7 +197,7 @@ final class EIC_Candidate_Genes_Importer
             "yoast_metadesc" => "_yoast_wpseo_metadesc",
         ];
         echo "<h2>" . ($commit ? "Backfill commit" : "Backfill dry run") .
-            " — " . count($q->posts) . " candidate record(s)</h2>";
+            ": " . count($q->posts) . " candidate record(s)</h2>";
         echo '<table class="widefat striped"><thead><tr>' .
             "<th>Gene</th><th>Candidate Since</th><th>Changes</th></tr></thead><tbody>";
         foreach ($q->posts as $post) {
@@ -389,7 +389,7 @@ final class EIC_Candidate_Genes_Importer
         $updated = 0;
         $skipped = 0;
 
-        echo "<h2>" . ($commit ? "Commit" : "Dry run") . " — " . count($records) . " record(s)</h2>";
+        echo "<h2>" . ($commit ? "Commit" : "Dry run") . ": " . count($records) . " record(s)</h2>";
         echo '<table class="widefat striped"><thead><tr>' .
             "<th>Gene</th><th>Type</th><th>Slug</th><th>Since</th><th>Status</th>" .
             "</tr></thead><tbody>";
@@ -414,9 +414,9 @@ final class EIC_Candidate_Genes_Importer
             if ($commit) {
                 if ($existing) {
                     $id = (int) $existing->ID;
-                    // Preserve the record's existing status on update — do not
+                    // Preserve the record's existing status on update: do not
                     // force-republish something an editor may have drafted or
-                    // trashed — and only rewrite the title when it differs.
+                    // trashed: and only rewrite the title when it differs.
                     if (get_post_field("post_title", $id) !== $p["title"]) {
                         wp_update_post(["ID" => $id, "post_title" => $p["title"]]);
                     }

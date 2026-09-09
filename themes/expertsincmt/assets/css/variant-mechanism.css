@@ -329,6 +329,13 @@
   color: var(--primary, #174777);
 }
 
+.vmech-gene a,
+.vmech-code a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
 .vmech-gene em {
   /* Darkened from --primary-light (#5ea0c9 = 2.85:1 on white, fails AA) to a
      blue that clears 4.5:1 while staying an accent, not the navy primary. */

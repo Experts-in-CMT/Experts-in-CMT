@@ -128,3 +128,16 @@
     line-height: 1.5 !important;
   }
 }
+
+/* Desktop: the open Details panel spans both fact columns. The fact
+   itself takes the full grid row while open, so the panel fills it
+   exactly from either column; a width stretched from one cell ran
+   off-page whenever the fact landed in the right column. */
+@media (min-width: 900px) {
+  .eic-fact:has(.eic-mech[open]) {
+    grid-column: 1 / -1;
+  }
+  .eic-mech[open] .eic-mech__body {
+    max-width: none;
+  }
+}

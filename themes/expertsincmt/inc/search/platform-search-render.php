@@ -49,6 +49,116 @@ function eic_render_platform_search_results(array $results = [])
 <section class="platform-search-results">
 
 <!-- =========================================
+     GROUP: Variant (variant resolver; leads the page)
+     ========================================= -->
+<?php if (!empty($results["variants"])): ?>
+    <div class="ps-group ps-group--variant">
+        <h3 class="ps-group__title">
+            <?php echo (count($results["variants"]) === 1
+                ? "Variant"
+                : "Variants") . " Related to Your Search"; ?>
+        </h3>
+        <ul class="ps-list ps-variants">
+            <?php foreach ($results["variants"] as $v): ?>
+                <?php
+                $gene = (string) ($v["gene"] ?? "");
+                $gene_url = (string) ($v["gene_url"] ?? "");
+                $card_url = (string) ($v["card_url"] ?? "");
+                $query = (string) ($v["query"] ?? "");
+
+                $gene_pill = $gene === ""
+                    ? ""
+                    : ($gene_url
+                        ? '<a href="' . esc_url($gene_url) . '" class="ps-pill ps-f-slate">' . esc_html($gene) . "</a>"
+                        : '<span class="ps-pill ps-f-slate">' . esc_html($gene) . "</span>");
+
+                if (empty($v["found"])) {
+                    // Parsed cleanly, but ClinVar records no P/LP variant by
+                    // that name at this gene (or at any CMT gene EIC catalogs)
+                    echo '<li class="ps-item ps-variant ps-variant--none">';
+                    echo $gene_pill;
+                    $name_html = '<span class="ps-variant__name">' . esc_html($query) . "</span>";
+                    echo '<span class="ps-variant__note">' .
+                        ($gene !== ""
+                            ? "No indexed pathogenic or likely pathogenic ClinVar records found for " . $name_html . " in " . esc_html($gene) . "."
+                            : "No indexed pathogenic or likely pathogenic ClinVar record matches " . $name_html . " in any CMT gene cataloged by EIC.") .
+                        "</span>";
+                    if ($card_url) {
+                        echo '<a class="ps-variant__card" href="' . esc_url($card_url) . '">View ' . esc_html($gene) . "'s ClinVar Variants</a>";
+                    }
+                    if (!empty($v["near"]) && is_array($v["near"])) {
+                        // Same residues, position a digit off: T424M → p.Thr1424Met
+                        echo '<div class="ps-variant__near"><span class="ps-variant__near-label">Did you mean:</span> ';
+                        $links = [];
+                        foreach ($v["near"] as $n) {
+                            $n_name = (string) ($n["protein3"] ?: ($n["title"] ?? $n["vcv"] ?? ""));
+                            $n_gene = (string) ($n["gene"] ?? "");
+                            $n_url = (string) ($n["card_url"] ?? "");
+                            $label = ($n_gene !== "" ? '<span class="ps-variant__near-gene">' . esc_html($n_gene) . "</span> " : "") . esc_html($n_name);
+                            $links[] = $n_url
+                                ? '<a href="' . esc_url($n_url) . '">' . $label . "</a>"
+                                : "<span>" . $label . "</span>";
+                        }
+                        echo implode('<span class="ps-variant__near-sep">·</span>', $links);
+                        echo "</div>";
+                    }
+                    echo "</li>";
+                    continue;
+                }
+
+                $protein3 = (string) ($v["protein3"] ?? "");
+                $protein1 = (string) ($v["protein1"] ?? "");
+                $cdna = (string) ($v["cdna"] ?? "");
+                $rsid = (string) ($v["rsid"] ?? "");
+                $vcv = (string) ($v["vcv"] ?? "");
+                $cls = (string) ($v["classification"] ?? "");
+                $stars = max(0, min(4, (int) ($v["stars"] ?? 0)));
+                $tier = (string) ($v["tier"] ?? "");
+                $name = $protein3 !== "" ? $protein3 : ($cdna !== "" ? $cdna : (string) ($v["title"] ?? $vcv));
+                $lp = stripos($cls, "likely") !== false && stripos($cls, "pathogenic/") !== 0;
+                $tier_label = ["A" => "Reported in CMT", "B" => "No Recorded Disease", "C" => "Reported in Other Diseases"][$tier] ?? "";
+                ?>
+                <li class="ps-item ps-variant">
+                    <?php echo $gene_pill; ?>
+                    <span class="ps-variant__name"><?php echo esc_html($name); ?><?php if ($protein1 !== "" && $protein3 !== "") {
+                        echo ' <small class="ps-variant__short">' . esc_html($protein1) . "</small>";
+                    } ?></span>
+                    <?php if ($cdna !== "" && $protein3 !== ""): ?>
+                        <span class="ps-variant__cdna"><?php echo esc_html($cdna); ?></span>
+                    <?php endif; ?>
+                    <?php if ($cls !== ""): ?>
+                        <span class="ps-variant__cls ps-variant__cls--<?php echo $lp ? "lp" : "p"; ?>"><?php echo esc_html($cls); ?></span>
+                    <?php endif; ?>
+                    <span class="ps-variant__stars" aria-hidden="true"><?php
+                        // Hidden glyphs + a text equivalent, the gene card's pattern:
+                        // aria-label on a plain span is exposed unreliably
+                        for ($i = 1; $i <= 4; $i++) {
+                            echo '<span class="ps-star' . ($i <= $stars ? " ps-star--on" : "") . '">' . ($i <= $stars ? "&#9733;" : "&#9734;") . "</span>";
+                        }
+                    ?></span><span class="screen-reader-text"><?php echo esc_html($stars . " of 4 ClinVar review stars"); ?></span>
+                    <?php if ($tier_label !== ""): ?>
+                        <span class="ps-variant__tier"><?php echo esc_html($tier_label); ?></span>
+                    <?php endif; ?>
+                    <span class="ps-variant__links"><?php
+                        if ($card_url) {
+                            echo '<a class="ps-variant__card" href="' . esc_url($card_url) . '">View on the ' . esc_html($gene) . " gene page</a>";
+                        }
+                        if (!empty($v["url"])) {
+                            echo '<a class="ps-variant__ext" href="' . esc_url((string) $v["url"]) . '" target="_blank" rel="noopener">' .
+                                esc_html($vcv !== "" ? $vcv : "ClinVar") .
+                                '<span class="screen-reader-text"> (opens in a new tab)</span></a>';
+                        }
+                        if ($rsid !== "") {
+                            echo '<span class="ps-variant__rs">' . esc_html($rsid) . "</span>";
+                        }
+                    ?></span>
+                </li>
+            <?php endforeach; ?>
+        </ul>
+    </div>
+<?php endif; ?>
+
+<!-- =========================================
      GROUP: Type
      ========================================= -->
 <?php if (!empty($results["types"])): ?>

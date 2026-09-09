@@ -54,7 +54,7 @@ $results = $payload["results"] ?? [];
 $has_results = false;
 $total_results = 0;
 
-foreach (["subtypes", "genes", "types", "content"] as $bucket) {
+foreach (["variants", "subtypes", "genes", "types", "content"] as $bucket) {
     // Preview-trimmed buckets carry their real size in *_total
     $total_results +=
         (int) ($results[$bucket . "_total"] ?? count($results[$bucket] ?? []));

@@ -14,7 +14,7 @@
  * Author: Kenneth Raymond
  *
  * ------------------------------------------------------------
- * Subtype Maintenance — Consistency Scanner & Fixer
+ * Subtype Maintenance: Consistency Scanner & Fixer
  * ------------------------------------------------------------
  * Checks (each scanned read-only on load, applied only on demand):
  *   1. inheritance  ACF field reconciled to the inheritance taxonomy
@@ -338,7 +338,7 @@ add_action("admin_post_eic_maint_apply", function () {
 });
 
 /* ============================================================
- * Check 1 — inheritance ACF vs taxonomy
+ * Check 1: inheritance ACF vs taxonomy
  * ============================================================ */
 
 /**
@@ -446,7 +446,7 @@ function eic_maint_apply_inheritance($findings)
 }
 
 /* ============================================================
- * Check 2 — neuropathy ACF <-> taxonomy
+ * Check 2: neuropathy ACF <-> taxonomy
  * ============================================================ */
 
 function eic_maint_scan_neuropathy()
@@ -519,7 +519,7 @@ function eic_maint_apply_neuropathy($findings)
 }
 
 /* ============================================================
- * Check 3 — legacy glossary link in post_content
+ * Check 3: legacy glossary link in post_content
  * ============================================================ */
 
 function eic_maint_scan_glossary()
@@ -569,7 +569,7 @@ function eic_maint_apply_glossary($findings)
 }
 
 /* ============================================================
- * Check 4 — Yoast description variables
+ * Check 4: Yoast description variables
  * ============================================================ */
 
 function eic_maint_scan_yoast_vars()
@@ -629,7 +629,7 @@ function eic_maint_apply_yoast_vars($findings)
 }
 
 /* ============================================================
- * Check 5 — Yoast focus keyword
+ * Check 5: Yoast focus keyword
  * ============================================================ */
 
 function eic_maint_scan_focuskw()
@@ -807,7 +807,7 @@ function eic_maint_apply_focuskw($findings)
 }
 
 /* ============================================================
- * Check 6 — internal cross-link markup normalization
+ * Check 6: internal cross-link markup normalization
  * ============================================================ */
 
 /**

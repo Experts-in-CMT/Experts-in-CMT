@@ -24,7 +24,7 @@
  * • The theme's resolver consumes eic_search_alias_entries();
  *   rows compile into the same entry shape as the code-side
  *   semantic table, and run BEFORE it (admin overrides code).
- * • Log rows are query text only — no IPs, users, or sessions.
+ * • Log rows are query text only: no IPs, users, or sessions.
  *   Administrator searches are skipped by default (filterable).
  * • MU-plugin stays self-contained: no theme dependencies.
  */
@@ -109,7 +109,7 @@ add_action("init", "eic_search_log_maybe_install", 5);
    ============================================================ */
 
 /**
- * Record one search event. Query text only — no visitor identity.
+ * Record one search event. Query text only: no visitor identity.
  *
  * @param array $args {raw, normalized, resolver, results, source}
  */
@@ -160,7 +160,7 @@ function eic_search_log_event(array $args): void
 
 /**
  * Retention sweep: drop rows older than the retention window.
- * Runs when the admin page renders — no cron required.
+ * Runs when the admin page renders: no cron required.
  */
 function eic_search_log_purge(): void
 {
@@ -354,7 +354,7 @@ function eic_search_alias_entries(): array
         foreach (eic_search_alias_csv($row["genes"]) as $symbol) {
             $symbol = strtoupper($symbol);
 
-            // Delivered VERBATIM to the Gene bucket — the association
+            // Delivered VERBATIM to the Gene bucket: the association
             // is the curator's, not the tool's. If the symbol is also
             // a current causative gene, its subtypes come along
             // silently; if not, the label still renders as declared.
@@ -513,12 +513,12 @@ function eic_search_tools_handle_save(): array
 
             if (trim($row["term"]) === "" || !$has_targets) {
                 $warnings[] =
-                    "Row skipped — a term and at least one target are required.";
+                    "Row skipped: a term and at least one target are required.";
                 continue;
             }
 
             foreach (eic_search_alias_validate_row($row) as $w) {
-                $warnings[] = "“{$row["term"]}” — {$w}";
+                $warnings[] = "“{$row["term"]}”: {$w}";
             }
 
             $rows[] = $row;
@@ -689,7 +689,7 @@ function eic_search_tools_render_alias_tab(): void
                     <?php foreach ($buckets as [$field, $label, $ph, $hint]): ?>
                         <div>
                             <label><?php echo esc_html($label); ?>
-                                <span class="eic-hint">— <?php echo esc_html(
+                                <span class="eic-hint">· ?php echo esc_html(
                                     $hint
                                 ); ?></span></label>
                             <input type="text"
@@ -784,7 +784,7 @@ function eic_search_tools_render_log_tab(): void
 
     <h3>Zero-result queries, last 30 days</h3>
     <?php if (empty($zero)): ?>
-        <p>None — every logged search returned something.</p>
+        <p>None: every logged search returned something.</p>
     <?php else: ?>
         <table class="widefat striped">
             <thead><tr><th>Query</th><th style="width:10%">Hits</th><th style="width:22%">Last seen</th></tr></thead>

@@ -209,6 +209,13 @@ function eic_acf_header_banner_fields()
                     "value" => "glossary",
                 ],
             ],
+            [
+                [
+                    "param" => "post_type",
+                    "operator" => "==",
+                    "value" => "gene",
+                ],
+            ],
         ],
         "menu_order" => 999,
         "position" => "normal",

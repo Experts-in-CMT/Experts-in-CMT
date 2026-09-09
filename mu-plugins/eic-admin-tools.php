@@ -9,7 +9,7 @@
 
 /**
  * ------------------------------------------------------------
- * MU Plugin: EIC Admin Tools — Shared Branding + Header Shell
+ * MU Plugin: EIC Admin Tools: Shared Branding + Header Shell
  * ------------------------------------------------------------
  * Purpose:
  *   - Loads one shared stylesheet (eic-admin-tools.css) across
@@ -57,14 +57,12 @@ add_action("admin_enqueue_scripts", function () {
     }
 
     $rel = "/eic-admin-tools.css";
-    $path = WPMU_PLUGIN_DIR . $rel;
-    $ver = file_exists($path) ? filemtime($path) : "1.0";
 
     wp_enqueue_style(
         "eic-admin-tools",
         WPMU_PLUGIN_URL . $rel,
         [],
-        $ver
+        null
     );
 });
 

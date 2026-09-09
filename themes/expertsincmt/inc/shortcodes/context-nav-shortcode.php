@@ -36,6 +36,7 @@ add_shortcode("context_nav", function () {
         "glossary",
         "what-is-cmt",
         "breathing",
+        "gene",
     ];
 
     if (!in_array($post_type, $supported_types, true)) {
@@ -69,6 +70,11 @@ add_shortcode("context_nav", function () {
             "next"       => "Next Topic →",
             "back_label" => "Return to CMT and Breathing",
         ],
+        "gene" => [
+            "prev"       => "← Previous Gene",
+            "next"       => "Next Gene →",
+            "back_label" => "Return to the Gene Browser",
+        ],
     ];
 
     // Back URL logic
@@ -84,6 +90,10 @@ add_shortcode("context_nav", function () {
         $back_url = home_url("/what-is-cmt/#topics");
     } elseif ($post_type === "breathing") {
         $back_url = home_url("/cmt-and-breathing/#topics");
+    } elseif ($post_type === "gene") {
+        $back_url = function_exists("eic_ps_gene_browser_page_url")
+            ? eic_ps_gene_browser_page_url()
+            : home_url("/genetics/cmt-gene-browser/");
     } else {
         $back_url = home_url("/");
     }
@@ -241,6 +251,23 @@ if ($post_type === "post") {
 
     $L = $labels[$post_type];
 
+    // Gene pages name the neighbor: a gene post's title is its symbol.
+    // The visible label is the arrow plus the symbol, which tells a screen
+    // reader nothing about direction, so the anchor carries the full
+    // sentence as an aria-label.
+    $prev_aria = "";
+    $next_aria = "";
+    if ($post_type === "gene") {
+        if ($prev_id) {
+            $L["prev"] = "\u{2190} " . get_the_title($prev_id);
+            $prev_aria = "Previous gene: " . get_the_title($prev_id);
+        }
+        if ($next_id) {
+            $L["next"] = get_the_title($next_id) . " \u{2192}";
+            $next_aria = "Next gene: " . get_the_title($next_id);
+        }
+    }
+
     ob_start();
     ?>
     <div class="eicmt-ctnav-wrap">
@@ -248,7 +275,7 @@ if ($post_type === "post") {
 
   <div class="eicmt-ctnav__col eicmt-ctnav__col--prev">
   <?php if ($prev_id): ?>
-    <a class="eicmt-ctnav__link" href="<?php echo esc_url(get_permalink($prev_id)); ?>">
+    <a class="eicmt-ctnav__link" href="<?php echo esc_url(get_permalink($prev_id)); ?>"<?php echo $prev_aria !== "" ? ' aria-label="' . esc_attr($prev_aria) . '"' : ""; ?>>
       <span class="ctnav-prev-label">
         <?php echo esc_html($L["prev"]); ?>
       </span>
@@ -268,7 +295,7 @@ if ($post_type === "post") {
 
 <div class="eicmt-ctnav__col eicmt-ctnav__col--next">
   <?php if ($next_id): ?>
-    <a class="eicmt-ctnav__link" href="<?php echo esc_url(get_permalink($next_id)); ?>">
+    <a class="eicmt-ctnav__link" href="<?php echo esc_url(get_permalink($next_id)); ?>"<?php echo $next_aria !== "" ? ' aria-label="' . esc_attr($next_aria) . '"' : ""; ?>>
       <span class="ctnav-next-label">
         <?php echo esc_html($L["next"]); ?>
       </span>

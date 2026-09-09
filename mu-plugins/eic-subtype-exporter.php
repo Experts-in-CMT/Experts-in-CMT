@@ -14,7 +14,7 @@
  * Author: Kenneth Raymond
  *
  * ------------------------------------------------------------
- * Subtype Database — Full Export
+ * Subtype Database: Full Export
  * ------------------------------------------------------------
  * For each `subtype` record, exports:
  *   - Core post columns (title, slug, status, dates, content, excerpt, etc.)

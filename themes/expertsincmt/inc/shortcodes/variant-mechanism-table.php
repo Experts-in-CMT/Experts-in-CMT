@@ -461,10 +461,20 @@ add_shortcode("variant_mechanism_table", function ($atts = []) {
             data-call="<?php echo esc_attr($r["call"]); ?>"
             data-conf="<?php echo esc_attr($r["confidence"]); ?>"
             data-text="<?php echo esc_attr($haystack); ?>">
-          <td class="vmech-gene"><?php echo $r["gene"] === ""
-              ? '<span class="vmech-muted">n/a</span>'
-              : "<em>" . esc_html($r["gene"]) . "</em>"; ?></td>
-          <td class="vmech-code"><?php echo esc_html($r["code"]); ?></td>
+          <td class="vmech-gene"><?php
+              // Gene links to its gene post where one exists, subtype to its
+              // post, as the Gene Browser does; the row toggle ignores anchors
+              $vm_gene_url = $r["gene"] !== "" && function_exists("eic_gene_post_url") ? eic_gene_post_url($r["gene"]) : "";
+              if ($r["gene"] === "") {
+                  echo '<span class="vmech-muted">n/a</span>';
+              } elseif ($vm_gene_url !== "") {
+                  echo '<a href="' . esc_url($vm_gene_url) . '" aria-label="' . esc_attr($r["gene"] . " gene page") . '"><em>' . esc_html($r["gene"]) . "</em></a>";
+              } else {
+                  echo "<em>" . esc_html($r["gene"]) . "</em>";
+              } ?></td>
+          <td class="vmech-code"><?php echo $r["url"]
+              ? '<a href="' . esc_url($r["url"]) . '" aria-label="' . esc_attr($r["code"] . " subtype page") . '">' . esc_html($r["code"]) . "</a>"
+              : esc_html($r["code"]); ?></td>
           <td class="vmech-inh" title="<?php echo esc_attr(
               $r["inheritance"]
           ); ?>"><?php echo esc_html(
@@ -709,6 +719,7 @@ function eicVmechInit(root) {
       setOpen(row, row.getAttribute('aria-expanded') !== 'true');
     });
     row.addEventListener('keydown', function (e) {
+      if (e.target.closest('a')) { return; }
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
         setOpen(row, row.getAttribute('aria-expanded') !== 'true');

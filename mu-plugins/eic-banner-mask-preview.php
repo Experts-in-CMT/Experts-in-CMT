@@ -9,12 +9,12 @@
 
 /**
  * Plugin Name: EIC Banner Mask Preview
- * Description: Live fade/mask preview on the header-banner image thumbnail in the ACF meta box. Drag the Desktop and Mobile "Fade Start %" / "Fade End %" sliders and watch each mask move, matching the front-end banner ::after gradient at that breakpoint. Editor-only; renders no front-end output.
+ * Description: Live fade/mask preview on the header-banner image thumbnail in the ACF meta box. Drag the Desktop and Mobile "Fade Start %"/"Fade End %" sliders and watch each mask move, matching the front-end banner ::after gradient at that breakpoint. Editor-only; renders no front-end output.
  * Version: 1.1.0
  * Author: Kenneth Raymond
  *
  * ------------------------------------------------------------
- * Header Banner — Editor Mask Preview
+ * Header Banner: Editor Mask Preview
  * ------------------------------------------------------------
  * The header banner (templates/header-banner.php / header-banner.css)
  * masks its background image with a left-to-right gradient:

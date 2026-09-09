@@ -35,7 +35,7 @@ if (!function_exists("eic_gl_plural")) {
 }
 
 /* ============================================================
-   CACHE VERSIONING — BUST TRANSIENTS ON CONTENT CHANGES
+   CACHE VERSIONING: BUST TRANSIENTS ON CONTENT CHANGES
    - eic_gl_ids_version(): reads numeric version from options
    - eic_gl_bump_ids_version(): bump version when subtype changes
    - Hooks on save/trashed/untrashed/deleted for 'subtype'
@@ -422,7 +422,7 @@ add_shortcode("genes_totals_inline", function () {
 });
 
 /* ============================================================
-   ACF VALIDATION — UNIQUE 'subtype' FIELD WITHIN CPT
+   ACF VALIDATION: UNIQUE 'subtype' FIELD WITHIN CPT
    - Enforces: the ACF 'subtype' field must be unique for post_type=subtype
    ============================================================ */
 add_filter(

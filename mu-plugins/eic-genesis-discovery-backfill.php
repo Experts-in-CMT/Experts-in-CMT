@@ -126,7 +126,7 @@ final class EIC_Genesis_Discovery_Backfill
         $seen = [];
 
         echo "<h2>" . ($commit ? "Commit" : "Dry run") .
-            " — scanning " . count($q->posts) . " records against " .
+            ": scanning " . count($q->posts) . " records against " .
             count($genes) . " GENESIS genes</h2>";
         echo '<table class="widefat striped"><thead><tr>' .
             "<th>Gene</th><th>Record</th><th>Status</th></tr></thead><tbody>";
@@ -155,7 +155,7 @@ final class EIC_Genesis_Discovery_Backfill
 
         $missing = array_values(array_diff(array_keys($genes), array_keys($seen)));
         sort($missing);
-        echo "<p><strong>" . count($seen) . "</strong> GENESIS-list genes present in the dataset — " .
+        echo "<p><strong>" . count($seen) . "</strong> GENESIS-list genes present in the dataset: " .
             (int) $set . ($commit ? " newly set" : " would be set") . ", " .
             (int) $already . " already flagged.</p>";
         echo "<details><summary>" . count($missing) .

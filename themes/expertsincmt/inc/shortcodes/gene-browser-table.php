@@ -121,11 +121,23 @@ if (!function_exists("eic_gb_func_block")) {
             $rest = "";
         }
         $uni = trim((string) ($g["uniprot"] ?? ""));
-        $src = '<span class="gbx-func-src">Source: ' .
-            ($uni !== ""
-                ? '<a href="https://www.uniprot.org/uniprotkb/' . esc_attr($uni) . '" target="_blank" rel="noopener">UniProt</a>'
-                : "UniProt") .
-            "</span>";
+        if (!empty($g["structural"])) {
+            // Structural record: the text is the sentinel paper's abstract
+            // (CC BY); the pill links to the paper, which carries the full
+            // attribution (the gene page spells it out)
+            $sp_doi = (string) ($g["subtypes"][0]["doi"] ?? "");
+            $src = '<span class="gbx-func-src">' .
+                ($sp_doi !== ""
+                    ? '<a href="' . esc_url($sp_doi) . '" target="_blank" rel="noopener">Source</a>'
+                    : "Source") .
+                "</span>";
+        } else {
+            $src = '<span class="gbx-func-src">Source: ' .
+                ($uni !== ""
+                    ? '<a href="https://www.uniprot.org/uniprotkb/' . esc_attr($uni) . '" target="_blank" rel="noopener">UniProt</a>'
+                    : "UniProt") .
+                "</span>";
+        }
         $more = $rest !== ""
             ? '<details><summary aria-label="Toggle the rest of the function description"></summary> <span class="gbx-func-full">' . esc_html($rest) . "</span></details> "
             : "";
@@ -215,6 +227,7 @@ add_shortcode("gene_browser", function ($atts = []) {
             "year" => trim((string) get_field("year_of_discovery", $id)),
             "omim_subtype" => trim((string) get_field("omim_subtype", $id)),
             "pub_title" => trim(wp_strip_all_tags((string) get_field("publication_title", $id))),
+            "authors" => trim(wp_strip_all_tags((string) get_field("authors", $id))),
             "doi" => trim((string) get_field("doi_url", $id)),
         ];
 
@@ -420,7 +433,6 @@ add_shortcode("gene_browser", function ($atts = []) {
 .gbx-row:hover>td{background:color-mix(in srgb,var(--gpl) 8%,#fff)}
 .gbx-row[aria-expanded="true"]>td{background:color-mix(in srgb,var(--gpl) 12%,#fff);border-bottom:0}
 .gbx-gene em{color:#26719c;font-weight:600;font-style:italic}
-.gbx-gene.gbx-notgene em{font-style:normal;font-family:var(--gmono);font-size:12px}
 .gbx-name{color:var(--gmut)}
 .gbx-loc{font-family:var(--gmono);color:var(--gtx);font-size:13px}
 .gbx-inh{white-space:nowrap;color:var(--gmut);font-weight:600}
@@ -440,6 +452,10 @@ add_shortcode("gene_browser", function ($atts = []) {
 .gbx-row[aria-expanded="true"] .gbx-plus::before{transform:rotate(45deg)}
 @media(prefers-reduced-motion:reduce){.gbx-plus::before{transition:none}}
 .gbx-detail>td{padding:0;border-top:0}
+.gbx-detail__link{margin:12px 0 0;font-size:13px}
+.gbx-detail__link a{color:var(--gp);font-weight:600;text-decoration:none}
+.gbx-detail__link a:hover,.gbx-detail__link a:focus-visible{text-decoration:underline}
+.gbx-detail__link em{font-style:italic}
 .gbx-detail__body{padding:6px 18px 20px;background:color-mix(in srgb,var(--gpl) 12%,#fff);border-bottom:1px solid var(--gbd)}
 .gbx-exnote{padding:9px 12px;border:1px solid var(--gbd);background:#fff;border-radius:6px;font-size:12.5px;color:var(--gmut);line-height:1.5}
 .gbx-func{font-size:14px;color:var(--gtx);line-height:1.5;max-width:80ch;margin:2px 0 6px}
@@ -708,9 +724,17 @@ add_shortcode("gene_browser", function ($atts = []) {
             data-year="<?php echo (int) ($g["first_year"] !== "" ? $g["first_year"] : 9999); ?>"
             data-sortkey="<?php echo esc_attr($g["sortkey"]); ?>"
             data-text="<?php echo esc_attr($haystack); ?>">
-          <td class="gbx-gene<?php echo $g["structural"] ? " gbx-notgene" : ""; ?>"><em><?php echo esc_html(
-    $g["symbol"]
-); ?></em></td>
+          <td class="gbx-gene"><?php
+            // Symbol links to the gene post where one exists (inc/cpt/gene-cpt.php);
+            // plain text where it does not. The row's expand handler ignores anchor clicks.
+            // The structural record (CMTX3) is labeled by its subtype code, since
+            // EIC counts its cause as a gene; its post is named the same way.
+            $gene_label = $g["structural"] && !empty($g["subtypes"]) ? $g["subtypes"][0]["code"] : $g["symbol"];
+            $gene_url = function_exists("eic_gene_post_url") ? eic_gene_post_url($g["symbol"]) : "";
+            echo $gene_url !== ""
+                ? '<a class="gbx-genelink" href="' . esc_url($gene_url) . '"><em>' . esc_html($gene_label) . "</em></a>"
+                : "<em>" . esc_html($gene_label) . "</em>";
+          ?></td>
           <td class="gbx-name"><?php echo esc_html($g["full_name"]); ?></td>
           <td class="gbx-loc"><?php echo esc_html($g["locus"] !== "" ? $g["locus"] : "n/a"); ?></td>
           <td class="gbx-inh"><?php echo $g["modes"] ? esc_html(implode(", ", $g["modes"])) : '<span class="gbx-none">—</span>'; ?></td>
@@ -795,6 +819,9 @@ add_shortcode("gene_browser", function ($atts = []) {
                 echo $idrow("mane_refseq", $g["mane_refseq"]);
                 echo $idrow("mane_ensembl", $g["mane_ensembl"]); ?>
               </div></details>
+              <?php endif; ?>
+              <?php if ($gene_url !== ""): ?>
+                <p class="gbx-detail__link"><a href="<?php echo esc_url($gene_url); ?>" aria-label="<?php echo esc_attr($gene_label . " gene page"); ?>">Learn more about <em><?php echo esc_html($gene_label); ?></em> <span class="gbx-detail__arrow" aria-hidden="true">&rarr;</span></a></p>
               <?php endif; ?>
             </div>
           </td>
@@ -1074,7 +1101,7 @@ add_shortcode("gene_browser", function ($atts = []) {
 
   rows.forEach(function (row) {
     row.addEventListener('click', function (e) { if (e.target.closest('a')) { return; } setOpen(row, row.getAttribute('aria-expanded') !== 'true'); });
-    row.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOpen(row, row.getAttribute('aria-expanded') !== 'true'); } });
+    row.addEventListener('keydown', function (e) { if (e.target.closest('a')) { return; } if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOpen(row, row.getAttribute('aria-expanded') !== 'true'); } });
   });
   // Discrete filter changes push a history entry; typing replaces so a search
   // term does not leave one entry per keystroke.

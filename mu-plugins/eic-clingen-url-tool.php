@@ -416,10 +416,10 @@ final class EIC_ClinGen_URL_Tool
             "empty -> set" => 0, "differs -> fix" => 0, "ok" => 0,
             "multiple (choose)" => 0, "no CMT curation" => 0,
         ];
-        echo "<h2>Dry run — " . count($rows) . " subtypes</h2>";
+        echo "<h2>Dry run: " . count($rows) . " subtypes</h2>";
         echo '<table class="widefat striped"><thead><tr>' .
             "<th>Subtype</th><th>Gene</th><th>Status</th><th>Class</th>" .
-            "<th>Current</th><th>Proposed / options</th></tr></thead><tbody>";
+            "<th>Current</th><th>Proposed/options</th></tr></thead><tbody>";
         foreach ($rows as $r) {
             if (isset($counts[$r["status"]])) {
                 $counts[$r["status"]]++;

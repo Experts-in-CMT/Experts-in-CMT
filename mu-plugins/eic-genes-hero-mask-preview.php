@@ -9,12 +9,12 @@
 
 /**
  * Plugin Name: EIC Subtype Browser Hero Mask Preview
- * Description: Live fade/mask preview on the Subtype Browser app hero image thumbnail in the ACF meta box. Drag the Desktop and Mobile "Fade Start %" / "Fade End %" sliders and watch each mask move, matching the front-end hero ::after gradient at that breakpoint. Editor-only; renders no front-end output.
+ * Description: Live fade/mask preview on the Subtype Browser app hero image thumbnail in the ACF meta box. Drag the Desktop and Mobile "Fade Start %"/"Fade End %" sliders and watch each mask move, matching the front-end hero ::after gradient at that breakpoint. Editor-only; renders no front-end output.
  * Version: 1.0.0
  * Author: Kenneth Raymond
  *
  * ------------------------------------------------------------
- * Subtype Browser Hero — Editor Mask Preview
+ * Subtype Browser Hero: Editor Mask Preview
  * ------------------------------------------------------------
  * The hero ([genes_hero] / subtype-browser-hero.css) masks its background
  * image with a left-to-right gradient:

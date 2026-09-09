@@ -13,7 +13,7 @@
  * The interpost nav's Return button links to a fixed archive URL.
  * This restores the state the user actually left:
  *
- *   - Genes / Dorsal Root : filter selection + pagination (carried
+ *   - Genes / Gene Browser / Dorsal Root : filter selection + pagination (carried
  *                           by the listing URL's query string) and
  *                           scroll position.
  *   - Glossary            : search term + pagination (query string)
@@ -39,6 +39,7 @@
 	var ARCHIVES = {
 		"dorsal-root": "post",
 		"cmt-subtype-browser": "subtype",
+		"cmt-gene-browser": "gene",
 		"cmt-words": "glossary",
 		"what-is-cmt": "what-is-cmt",
 		"cmt-and-breathing": "breathing"

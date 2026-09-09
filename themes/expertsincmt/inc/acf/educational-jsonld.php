@@ -93,7 +93,7 @@ add_action(
         echo "\n" . '<script type="application/ld+json">' . "\n";
         echo wp_json_encode(
             $condition_schema,
-            JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT
+            JSON_HEX_TAG | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT
         );
         echo "\n" . "</script>" . "\n";
 
@@ -219,7 +219,7 @@ add_action(
         echo "\n" . '<script type="application/ld+json">' . "\n";
         echo wp_json_encode(
             $schema,
-            JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT
+            JSON_HEX_TAG | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT
         );
         echo "\n" . "</script>" . "\n";
     },

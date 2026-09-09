@@ -48,7 +48,7 @@ function eic_authoritative_resources_links()
 {
     $links = [
         [
-            "name" => "Charcot-Marie-Tooth disease — phenotypic series",
+            "name" => "Charcot-Marie-Tooth disease: phenotypic series",
             "url" => "https://omim.org/phenotypicSeries/PS118220",
             "source" => "OMIM",
         ],
@@ -60,7 +60,7 @@ function eic_authoritative_resources_links()
         [
             "name" => "Charcot-Marie-Tooth Disease",
             "url" => "https://meshb.nlm.nih.gov/record/ui?ui=D002607",
-            "source" => "MeSH — U.S. National Library of Medicine",
+            "source" => "MeSH, U.S. National Library of Medicine",
         ],
     ];
 

@@ -46,6 +46,7 @@ final class EIC_Banner_Image_Tool
     {
         return [
             "subtype"     => "Subtype",
+            "gene"        => "Gene",
             "breathing"   => "CMT and Breathing",
             "what-is-cmt" => "What is CMT",
             "glossary"    => "Glossary",
@@ -205,7 +206,7 @@ JS;
         $change = 0;
         $label = self::post_types()[$type];
         $fname = esc_html(wp_basename(get_attached_file($img)));
-        echo "<h2>Dry run — " . count($rows) . " " . esc_html($label) . " post(s)</h2>";
+        echo "<h2>Dry run: " . count($rows) . " " . esc_html($label) . " post(s)</h2>";
         echo "<p>Proposed image: <code>ID " . $img . " &middot; " . $fname . "</code></p>";
         echo '<table class="widefat striped"><thead><tr><th>Post</th><th>Current image</th><th>Change?</th></tr></thead><tbody>';
         foreach ($rows as $r) {

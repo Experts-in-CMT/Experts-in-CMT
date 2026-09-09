@@ -51,6 +51,15 @@ function eic_platform_search_resolve($raw_query)
 {
     $query_normalized = eic_platform_search_normalize_input($raw_query);
 
+    // Variant notation lives in the characters normalization strips
+    // (p.Thr424Met, c.1271C>T, HSPB3-P121L): the variant resolver
+    // reads the query as typed, and the cache key carries it so two
+    // spellings that normalize alike never share a result
+    if (function_exists("eic_ps_raw_query")) {
+        eic_ps_raw_query($raw_query);
+    }
+    $raw_signature = preg_replace("/\s+/", " ", strtolower(trim($raw_query)));
+
     /**
      * ------------------------------------------------------------
      * Transient cache (same pattern as the Subtype Browser)
@@ -71,7 +80,15 @@ function eic_platform_search_resolve($raw_query)
 
     $cache_key =
         "eic_ps_" .
-        md5($query_normalized . "|" . $cache_version . "|" . $alias_version);
+        md5(
+            $query_normalized .
+                "|" .
+                $raw_signature .
+                "|" .
+                $cache_version .
+                "|" .
+                $alias_version
+        );
     $bypass_cache = isset($_GET["nocache"]);
 
     if (!$bypass_cache) {
@@ -299,11 +316,7 @@ function eic_platform_search_build_results($payload, $query_normalized)
             $results["genes"][] = [
                 "label" => $gene_symbol,
                 "type" => "Gene",
-                "url" =>
-                    $genes_db_url .
-                    "?qs=" .
-                    urlencode(strtolower($gene_symbol)) .
-                    "#results",
+                "url" => eic_ps_gene_url($gene_symbol),
             ];
         }
 
@@ -369,6 +382,12 @@ function eic_platform_search_build_results($payload, $query_normalized)
         $results["_corrected"] = (string) $variables["meta"]["corrected_label"];
     }
 
+    // Variant entries (variant resolver): rendered as their own group
+    // above the rest; the gene, subtypes, and content ride along below
+    if (!empty($variables["variants"]) && is_array($variables["variants"])) {
+        $results["variants"] = array_values($variables["variants"]);
+    }
+
     /**
      * ------------------------------------------------------------
      * Semantic payload (multi-bucket)
@@ -392,11 +411,7 @@ function eic_platform_search_build_results($payload, $query_normalized)
                 $results["genes"][] = [
                     "label" => $gene_symbol,
                     "type" => "Gene",
-                    "url" =>
-                        $genes_db_url .
-                        "?qs=" .
-                        urlencode(strtolower($gene_symbol)) .
-                        "#results",
+                    "url" => eic_ps_gene_url($gene_symbol),
                 ];
             }
         }
@@ -418,11 +433,7 @@ function eic_platform_search_build_results($payload, $query_normalized)
                 $results["genes"][] = [
                     "label" => $gl,
                     "type" => "Gene",
-                    "url" =>
-                        $genes_db_url .
-                        "?qs=" .
-                        urlencode(strtolower($gl)) .
-                        "#results",
+                    "url" => eic_ps_gene_url($gl),
                 ];
             }
         }
@@ -591,11 +602,7 @@ function eic_platform_search_build_results($payload, $query_normalized)
                 $results["genes"][] = [
                     "label" => $gene_symbol,
                     "type" => "Gene",
-                    "url" =>
-                        $genes_db_url .
-                        "?qs=" .
-                        urlencode(strtolower($gene_symbol)) .
-                        "#results",
+                    "url" => eic_ps_gene_url($gene_symbol),
                 ];
             }
 
@@ -995,12 +1002,7 @@ function eic_ps_fuzzy_candidates(string $raw_query): array
                 $candidates[$norm] = [
                     "label" => strtoupper($gene),
                     "kind" => "gene",
-                    "url" => $browser_url
-                        ? $browser_url .
-                            "?qs=" .
-                            urlencode(strtolower($gene)) .
-                            "#results"
-                        : "",
+                    "url" => eic_ps_gene_url($gene),
                     "subtype_ids" => [],
                 ];
             }

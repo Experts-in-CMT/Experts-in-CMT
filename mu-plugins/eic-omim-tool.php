@@ -545,7 +545,7 @@ JS;
         $rows = self::collect($do_sub, $do_gene);
         $set_sub = 0;
         $set_gene = 0;
-        echo "<h2>Dry run — " . count($rows) . " subtypes</h2>";
+        echo "<h2>Dry run: " . count($rows) . " subtypes</h2>";
         echo '<table class="widefat striped"><thead><tr>' .
             "<th>Subtype</th><th>Gene</th><th>OMIM subtype</th><th>OMIM gene</th>" .
             "</tr></thead><tbody>";

@@ -150,14 +150,14 @@ add_action("acf/init", function () {
                     "Heterozygous or Compound Heterozygous",
                 "Heterozygous or Homozygous or Compound Heterozygous" =>
                     "Heterozygous or Homozygous or Compound Heterozygous",
-                "Hemizygous (Male) / Heterozygous (Female)" =>
-                    "Hemizygous (Male) / Heterozygous (Female)",
-                "Hemizygous (Male) / Homozygous (Female)" =>
-                    "Hemizygous (Male) / Homozygous (Female)",
-                "Hemizygous (Male) / Compound Heterozygous (Female)" =>
-                    "Hemizygous (Male) / Compound Heterozygous (Female)",
-                "Hemizygous (Male) / Compound Heterozygous or Homozygous (Female)" =>
-                    "Hemizygous (Male) / Compound Heterozygous or Homozygous (Female)",
+                "Hemizygous (Male)/Heterozygous (Female)" =>
+                    "Hemizygous (Male)/Heterozygous (Female)",
+                "Hemizygous (Male)/Homozygous (Female)" =>
+                    "Hemizygous (Male)/Homozygous (Female)",
+                "Hemizygous (Male)/Compound Heterozygous (Female)" =>
+                    "Hemizygous (Male)/Compound Heterozygous (Female)",
+                "Hemizygous (Male)/Compound Heterozygous or Homozygous (Female)" =>
+                    "Hemizygous (Male)/Compound Heterozygous or Homozygous (Female)",
                 "Heteroplasmic" => "Heteroplasmic",
                 "Homoplasmic" => "Homoplasmic",
             ],
@@ -991,7 +991,7 @@ add_action("acf/init", function () {
 
     acf_add_local_field_group([
         "key" => "group_subtype_core_discovery",
-        "title" => "Subtype — Core & Discovery",
+        "title" => "Subtype: Core & Discovery",
         "fields" => $fields,
         "location" => [
             [

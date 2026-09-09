@@ -9,7 +9,7 @@
 
 /*
  * ------------------------------------------------------------
- * Glossary — MU Plugin: Canonical Uniqueness Guard
+ * Glossary: MU Plugin: Canonical Uniqueness Guard
  * ------------------------------------------------------------
  * Enforces case-insensitive, normalized uniqueness of Glossary
  * terms using `canonical_term` (fallback to Title).
