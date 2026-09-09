@@ -1,0 +1,18 @@
+title = "Experts in CMT gitleaks config"
+
+# Start from gitleaks' built-in ruleset, then allowlist known non-secrets.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Known non-secrets specific to this repo"
+paths = [
+  # Social-links block pattern: the gitleaks 'linkedin-client-secret' rule
+  # matches the 16-char WordPress text domain 'twentytwentyfive' next to the
+  # 'LinkedIn' label. It is an i18n string, not a credential.
+  '''themes/expertsincmt/patterns/page-cv-bio\.php''',
+
+  # reCAPTCHA widget: data-sitekey is a public, client-side key by design
+  # (the secret key is never in the repo).
+  '''themes/expertsincmt/templates/single-dorsal-root\.html''',
+]
