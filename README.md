@@ -29,12 +29,12 @@ CMT is genetically diverse and clinically complex, and most of what is known abo
 
 A custom search engine is built into the site to understand what you mean, not just match the words you type. Ask for a subtype, a gene, a symptom, or an inheritance pattern in whatever words you have, and it resolves your intent and takes you to the right answer. It is the engine behind the promise that you should not need the exact terminology to find the information.
 
-Results appear live as you type, matched terms are highlighted in context, and a near-miss is corrected to the closest subtype or gene rather than turned away. Broad searches hand off into the Subtype Browser or Gene Browser with the matching filter already applied, and even a search that matches nothing offers guided starting points instead of a dead end.
+Results appear live as you type, matched terms are highlighted in context, and a near-miss is corrected to the closest subtype or gene rather than turned away. Broad searches hand off into the Subtype Browser or Gene Browser with the matching filter already applied, and even a search that matches nothing offers guided starting points instead of a dead end. Search a specific variant too, by its protein or cDNA change, its rsID, or its ClinVar accession, and land on that gene's variant table, with a "did you mean" for a near miss.
 
 ## Explore the genetics
 
 - **CMT Subtype Browser:** a searchable, filterable catalog of every named CMT subtype. Filter by CMT type, gene, inheritance pattern, neuropathy type, or chromosome, and open any subtype for its full profile.
-- **Gene Browser:** one entry per CMT gene, with its full name, cytogenetic location, the subtypes it causes, and links to the authoritative external records.
+- **Gene Browser:** one entry per CMT gene, with its full name, cytogenetic location, the subtypes it causes, and links to the authoritative external records. Each gene also has its own page, carrying the pathogenic and likely pathogenic variants ClinVar records for it, read live and grouped by the disease each was reported against.
 - **Variant Mechanisms:** for each subtype, how its variants are understood to cause disease (loss of function, dominant-negative, toxic gain of function, or complex), with the reasoning and confidence level behind each.
 - **Genetic Testing Guide:** what genetic testing for CMT involves, and the popular tests providers use.
 
@@ -56,7 +56,7 @@ The genetic records are curated by hand from the primary genetic and clinical li
 
 ## Versioning
 
-Current release: **4.2.0**. Changes are tracked in [CHANGELOG.md](themes/expertsincmt/CHANGELOG.md), following the [Keep a Changelog](https://keepachangelog.com) format and [Semantic Versioning](https://semver.org).
+Current release: **5.0.0**. Changes are tracked in [CHANGELOG.md](themes/expertsincmt/CHANGELOG.md), following the [Keep a Changelog](https://keepachangelog.com) format and [Semantic Versioning](https://semver.org).
 
 ## License
 
