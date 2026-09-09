@@ -2,7 +2,7 @@
 
 Contributors: Kenneth Raymond
 Requires at least: 7.0
-Tested up to: 7.0
+Tested up to: 7.1
 Requires PHP: 8.0
 License: All rights reserved.
 
@@ -14,7 +14,7 @@ Custom block theme for the Experts in CMT platform, built on the TwentyTwentyFiv
 
 == Changelog ==
 
-See CHANGELOG.md for the full version history. Current version: 4.2.0.
+See CHANGELOG.md for the full version history. Current version: 5.0.0.
 
 
 == Copyright ==
