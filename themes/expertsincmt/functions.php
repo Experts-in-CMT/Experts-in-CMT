@@ -167,6 +167,22 @@ add_action("wp_enqueue_scripts", function () {
     );
 });
 
+/**
+ * Keep the return-state script out of Cloudflare Rocket Loader.
+ *
+ * Rocket Loader rewrites every script tag's type and runs the scripts
+ * after the page has painted. The scroll restore has to run while the
+ * listing is still parsing, before first paint, or the page shows its
+ * top and then jumps. data-cfasync="false" is Cloudflare's documented
+ * per-script opt-out; harmless where Rocket Loader is not in front.
+ */
+add_filter("wp_script_attributes", function (array $attributes): array {
+    if (($attributes["id"] ?? "") === "eic-return-state-js") {
+        $attributes["data-cfasync"] = "false";
+    }
+    return $attributes;
+});
+
 add_action("wp_enqueue_scripts", function () {
     $map = [
         "dorsal-root" => [

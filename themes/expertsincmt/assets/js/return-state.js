@@ -88,10 +88,21 @@
 				if (restoreSt && typeof restoreSt.scrollY === "number") {
 					var target = restoreSt.scrollY;
 					var settle = function () {
-						window.scrollTo(0, target);
+						// Instant, never animated: a smooth scroll here would
+						// play as a visible slide from the top of the page.
+						try {
+							window.scrollTo({ top: target, left: 0, behavior: "instant" });
+						} catch (e) {
+							window.scrollTo(0, target);
+						}
 					};
-					// After first paint, then again after late layout
-					// (card images can change document height).
+					// Now, synchronously. This script loads in the footer, so
+					// the listing's server-rendered markup is already in the
+					// document and the page can scroll to its full height
+					// before the first paint, instead of painting the top and
+					// then jumping. The two later passes only correct for late
+					// layout (card images can change document height).
+					settle();
 					requestAnimationFrame(function () {
 						requestAnimationFrame(settle);
 					});

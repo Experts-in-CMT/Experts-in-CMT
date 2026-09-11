@@ -24,6 +24,10 @@
  *   - Aggregate germline classification only. Records whose aggregate
  *     is VUS, conflicting, benign, or anything other than P, LP, or
  *     P/LP are excluded. No somatic or oncogenicity classifications.
+ *   - Review status of at least one star. A P/LP record ClinVar marks
+ *     "no assertion criteria provided" (zero stars) is excluded at
+ *     every tier: a call with no stated method is not one a reviewer
+ *     would act on. Applied on read (MIN_STARS), so the cache is untouched.
  *   - Notation and routing only, no interpretation. The page presents
  *     what ClinVar states and whether the disease it names is CMT.
  *
@@ -75,6 +79,7 @@ final class EIC_ClinVar_Variants
     const GENE_TTL = 8 * DAY_IN_SECONDS; // belt and braces; the release key is the real invalidator
     const PAGE = 40; // esummary ids per request: v2 docsums run ~90 KB each and NCBI caps the JSON transform at 10 MB
     const MAX = 5000; // hard ceiling per gene
+    const MIN_STARS = 1; // review floor, applied on read: zero stars ("no assertion criteria provided") is out
     /** Fields parse() writes per record; a cached record missing one is stale and refetches. */
     const RECORD_KEYS = ["vcv", "vcv_version", "url", "title", "cdna", "protein", "type", "classification", "review_status", "stars", "last_evaluated", "rsid", "conditions"];
 
@@ -424,6 +429,12 @@ final class EIC_ClinVar_Variants
         $gene = (string) $raw["gene"];
         $variants = [];
         foreach ((array) $raw["variants"] as $v) {
+            // Review floor. The cache holds every P/LP record ClinVar
+            // returned; the floor is a rule, so it lives here with the
+            // others and a change to it never refetches.
+            if ((int) ($v["stars"] ?? 0) < self::MIN_STARS) {
+                continue;
+            }
             $conditions = [];
             foreach ((array) ($v["conditions"] ?? []) as $c) {
                 $name = (string) ($c["name"] ?? "");

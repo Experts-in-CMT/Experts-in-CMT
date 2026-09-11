@@ -11,6 +11,63 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Security headers on every front-end response (`mu-plugins/eic-security-headers.php`)**
+  - Strict-Transport-Security on TLS responses, X-Content-Type-Options nosniff, X-Frame-Options SAMEORIGIN, Referrer-Policy strict-origin-when-cross-origin, Permissions-Policy closing camera, microphone, geolocation, and payment; X-Powered-By removed. Production served none of these.
+  - mu-plugins/eic-security-headers.php
+
+### Changed
+
+- **ClinVar Variants: review floor (`eic-clinvar-variants.php`, `gene-fields-template.php`, `gene-page.js`, `gene-jsonld.php`, `platform-search-render.php`)**
+  - Records ClinVar marks "no assertion criteria provided" (zero review stars) are no longer indexed, at every tier. A pathogenic call with no stated method is not one a reviewer acts on. The floor is a read-time rule (`MIN_STARS`), so no cache refetches; the variant index drops the rows on its next weekly roll or a Rebuild Now.
+  - Card note: "Only aggregate germline records are indexed." Stars explainer: "...two for agreement among multiple submitters, and one for a single submitter with criteria provided. A record with no criteria provided earns no stars and is not indexed." Totals line: "N P/LP variants with assertion criteria at GENE in ClinVar release R."
+  - Dataset description matches the card note; the count property is now "P/LP variants in ClinVar with assertion criteria".
+  - Search miss line: "No indexed pathogenic or likely pathogenic ClinVar record with assertion criteria matches VARIANT in GENE." and, with no gene typed, "...in any CMT gene cataloged by EIC."
+  - mu-plugins/eic-clinvar-variants.php
+  - templates/gene-fields-template.php
+  - assets/js/gene-page.js
+  - inc/acf/gene-jsonld.php
+  - inc/search/platform-search-render.php
+
+- **Gene page: most valuable first, least valuable last (`gene-fields-template.php`, `gene-page.css`, `gene-page.js`)**
+  - Section order is now Relationship to CMT, ClinVar Variants, Gene Function, Indexed Identifiers. Reported in CMT is open on arrival; the other two variant tiers stay collapsed.
+  - The subtype matrix under Relationship to CMT is a closed tier labeled by its count. On a phone the stacked table ran past 2,000 pixels and buried the ClinVar card four screens down; it now sits at the first screen's edge.
+  - The External Records "ClinVar P/LP" chip jumps to the card on the same page instead of leaving the site. The card closes with a "View all GENE ClinVar Records" button to the gene's full ClinVar search, every classification.
+  - ClinVar card explains at the point of need: one line above the tiers ("Pathogenic and likely pathogenic variants in GENE, as classified in ClinVar, are read live from NCBI."), with "Pathogenic" and "variants" linked to their glossary entries. Below the tiers, in order: the totals line, the review-stars explainer as a closed "What the review stars mean" tier, the scope and disclaimer as a footnote, then the button. Same sentences, moved; the first row of data sits about 150px higher on desktop and more on a phone.
+  - templates/gene-fields-template.php
+  - assets/css/gene-page.css
+  - assets/js/gene-page.js
+
+- **Gene Function opens with the symbol (`gene-fields-template.php`)**
+  - "MPZ is an adhesion molecule necessary for normal myelination..." in place of UniProt's mid-sentence opening. A plain capitalized first word drops its capital after the symbol; an acronym or mixed-case token (E3, ATP-dependent, tRNA) keeps its case. The structural record's abstract opens as written.
+  - templates/gene-fields-template.php
+
+- **Gene page: Stored Identifiers renamed Indexed Identifiers (`gene-fields-template.php`)**
+  - Section heading on every gene page, the structural record included.
+  - templates/gene-fields-template.php
+
+### Fixed
+
+- **Return to a browser lands in place without first showing the top of the page (`return-state.js`)**
+  - The scroll restore ran only after first paint, so the listing painted at the top and then jumped. It now restores synchronously as the footer script runs, with the two later passes kept as corrections for late layout; the scroll is instant, never animated.
+  - On production, Cloudflare Rocket Loader defers every script until after paint, which alone reproduces the flash. The return-state script tag now carries `data-cfasync="false"`, Cloudflare's opt-out, so it runs in place.
+  - assets/js/return-state.js
+  - functions.php
+
+- **Gene page script no longer throws on the structural record (`gene-page.js`)**
+  - CMTX3's ClinVar card has no endpoint; the loader tried to write a status line that is not there. It now returns before fetching.
+  - assets/js/gene-page.js
+
+- **Gene page: no more empty paragraphs from the shortcode (`gene-fields-shortcode.php`, `gene-fields-template.php`)**
+  - The block-template renderer expands shortcodes before it renders blocks, so the Shortcode block's own renderer ran wpautop over the finished gene page HTML and left a stray paragraph wherever inline text preceded a block child: a blank band under the identifier grid, a gap at the top of every publication cell, dead space between sections. The shortcode now marks its output and a `pre_render_block` filter returns a marked Shortcode block as-is, ahead of that renderer. Any shortcode can opt in with the same mark. Template comments are PHP comments.
+  - inc/shortcodes/gene-fields-shortcode.php
+  - templates/gene-fields-template.php
+
+- **ClinVar Variants: long genomic names wrap on phones (`gene-page.css`)**
+  - A name with no seam to break at (NC_000001.10:g.(?_161275666)_(161276731_?)del) ran past the card edge at 360px and was cut off. The variant cell now breaks anywhere it must.
+  - assets/css/gene-page.css
+
 ## [5.0.0] - 2026-09-09
 
 ### Added

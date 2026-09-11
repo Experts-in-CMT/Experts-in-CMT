@@ -312,7 +312,7 @@ add_action(
                 ),
                 "url" => $variants_id,
                 "description" => sprintf(
-                    "Pathogenic and likely pathogenic variants in %s, as classified in ClinVar, read live from NCBI. Only aggregate germline records are shown. Uncertain and conflicting classifications are not. Variants reported in Charcot-Marie-Tooth disease (CMT) are listed apart from those reported in other diseases. Experts in CMT makes no claim to the accuracy of ClinVar data. This index is provided for informational purposes only.",
+                    "Pathogenic and likely pathogenic variants in %s, as classified in ClinVar, read live from NCBI. Only aggregate germline records are indexed. Uncertain and conflicting classifications are not, and neither are records submitted without assertion criteria. Variants reported in Charcot-Marie-Tooth disease (CMT) are listed apart from those reported in other diseases. Experts in CMT makes no claim to the accuracy of ClinVar data. This index is provided for informational purposes only.",
                     $symbol
                 ),
                 "inLanguage" => "en-US",
@@ -344,7 +344,7 @@ add_action(
                 $variants_schema["additionalProperty"] = [
                     [
                         "@type" => "PropertyValue",
-                        "name" => "P/LP variants in ClinVar",
+                        "name" => "P/LP variants in ClinVar with assertion criteria",
                         "value" => (int) $cv["total_plp"],
                     ],
                     [

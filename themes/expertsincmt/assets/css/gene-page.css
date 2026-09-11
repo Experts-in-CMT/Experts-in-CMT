@@ -144,6 +144,17 @@
 .gpx .gpx-cond--unspecified{color:var(--gmut);font-style:italic}
 .gpx .gpx-cv-meta{margin:.75rem 0 0;font-size:.85em;color:var(--gmut)}
 .gpx .gpx-cv-meta:empty{display:none}
+/* "View all GENE ClinVar Records": the shared CTA button, trimmed of the
+   25px margins it carries in fact boxes so it sits under the totals line */
+.gpx .gpx-cv-actions{margin:.9rem 0 0}
+.gpx .gpx-cv-all{margin:0}
+/* Below the tiers, in reading order: totals line, the star legend as a
+   closed tier (a legend sits under a table, never over it), then the scope
+   and disclaimer as a footnote. Data first; the explanation where a reader
+   who needs it will look for it. */
+.gpx .gpx-tier--legend[open]>summary{position:static;border-bottom:0}
+.gpx .gpx-tier--legend .gpx-tier__why{padding-top:.2em}
+.gpx .gpx-note--foot{margin:.75rem 0 0;font-size:.85em}
 
 /* Tier tables: fixed proportions so long HGVS names wrap instead of crushing Condition */
 .gpx .gpx-tier__body .gbx-matrix table{table-layout:fixed}
@@ -153,7 +164,9 @@
 .gpx .gpx-tier__body .gbx-matrix th:nth-child(4){width:8%}
 .gpx .gpx-tier__body .gbx-matrix th:nth-child(5){width:25%}
 .gpx .gpx-tier__body .gbx-matrix th:nth-child(6){width:14%}
-.gpx .gpx-tier__body .gbx-matrix td.gbx-st{white-space:normal;overflow-wrap:break-word;font-size:.9em;font-weight:500}
+/* anywhere, not break-word: a genomic name like g.(?_161275666)_(161276731_?)del
+   has no seam to break at, and break-word leaves it wider than a phone */
+.gpx .gpx-tier__body .gbx-matrix td.gbx-st{white-space:normal;overflow-wrap:anywhere;font-size:.9em;font-weight:500}
 .gpx .gpx-tier__body .gbx-matrix td{overflow-wrap:normal;word-break:normal}
 .gpx .gpx-tier__body .gbx-ev{white-space:normal}
 @media(max-width:640px){.gpx .gpx-tier__body .gbx-matrix table{table-layout:auto}}
@@ -163,6 +176,11 @@
 .gpx .gpx-tier__body .gbx-matrix th,.gpx .gpx-tier__body .gbx-matrix td{padding:.5em .8em}
 .gpx .gpx-tier__body .gbx-matrix td.gbx-st{font-size:1em}
 .gpx .gpx-tier__body .gpx-cond{font-size:1em}
+
+/* Subtype matrix under Relationship to CMT: the same closed tier, but five
+   columns sized by content rather than the variant tables' six proportions */
+.gpx .gpx-tier__body--subtypes .gbx-matrix table{table-layout:auto}
+.gpx .gpx-tier__body--subtypes .gbx-matrix th:nth-child(n){width:auto}
 
 /* Inline spinner beside "Loading from ClinVar…" (CSS, no image) */
 .gpx .gpx-cv-status.is-loading::after{content:"";display:inline-block;width:.75em;height:.75em;margin-left:.45em;vertical-align:-.08em;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:gpx-spin .8s linear infinite}

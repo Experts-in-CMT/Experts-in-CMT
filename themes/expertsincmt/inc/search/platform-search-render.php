@@ -80,8 +80,8 @@ function eic_render_platform_search_results(array $results = [])
                     $name_html = '<span class="ps-variant__name">' . esc_html($query) . "</span>";
                     echo '<span class="ps-variant__note">' .
                         ($gene !== ""
-                            ? "No indexed pathogenic or likely pathogenic ClinVar records found for " . $name_html . " in " . esc_html($gene) . "."
-                            : "No indexed pathogenic or likely pathogenic ClinVar record matches " . $name_html . " in any CMT gene cataloged by EIC.") .
+                            ? "No indexed pathogenic or likely pathogenic ClinVar record with assertion criteria matches " . $name_html . " in " . esc_html($gene) . "."
+                            : "No indexed pathogenic or likely pathogenic ClinVar record with assertion criteria matches " . $name_html . " in any CMT gene cataloged by EIC.") .
                         "</span>";
                     if ($card_url) {
                         echo '<a class="ps-variant__card" href="' . esc_url($card_url) . '">View ' . esc_html($gene) . "'s ClinVar Variants</a>";

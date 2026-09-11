@@ -95,7 +95,7 @@
     });
     cueNewTabs(root);
     status.textContent = "";
-    meta.textContent = d.total_plp + " P/LP variant" + (d.total_plp === 1 ? "" : "s") + " at " + d.gene + " in ClinVar release " + d.release + (d.truncated ? " (list truncated)" : "") + ".";
+    meta.textContent = d.total_plp + " P/LP variant" + (d.total_plp === 1 ? "" : "s") + " with assertion criteria at " + d.gene + " in ClinVar release " + d.release + (d.truncated ? " (list truncated)" : "") + ".";
     targetRow();
   }
   // Arrival from search (?v=VCV000041229#gene-variants): open the tier(s)
@@ -115,7 +115,9 @@
     rows[0].scrollIntoView({ block: "center" });
   }
   function load() {
-    if (loaded || loading) { return; }
+    // The structural record's card has no endpoint: nothing to fetch, and
+    // no status line to write to.
+    if (!endpoint || loaded || loading) { return; }
     loading = true;
     status.textContent = "Loading from ClinVar\u2026";
     if (icon) { icon.removeAttribute("hidden"); } else { status.classList.add("is-loading"); }
@@ -125,12 +127,14 @@
       .catch(function () { status.classList.remove("is-loading"); if (icon) { icon.setAttribute("hidden", ""); } status.textContent = "ClinVar is not reachable right now. The tiers will fill when it is."; loading = false; });
   }
   // Sticky tier headers sit below the admin bar when it is present, as the
-  // browsers' headers do.
+  // browsers' headers do. The offsets live on the page root so the subtype
+  // tier under Relationship to CMT shares them with the variant tiers.
+  var page = root.closest(".gpx") || root;
   function stickyTop() {
     var bar = document.getElementById("wpadminbar");
-    root.style.setProperty("--gpx-top", (bar ? bar.offsetHeight : 0) + "px");
-    var sum = root.querySelector(".gpx-tier > summary");
-    root.style.setProperty("--gpx-sum", (sum ? sum.offsetHeight : 0) + "px");
+    page.style.setProperty("--gpx-top", (bar ? bar.offsetHeight : 0) + "px");
+    var sum = page.querySelector(".gpx-tier > summary");
+    page.style.setProperty("--gpx-sum", (sum ? sum.offsetHeight : 0) + "px");
   }
   stickyTop();
   window.addEventListener("resize", stickyTop);
@@ -141,9 +145,11 @@
   // first per ClinVar release. A tier opened before the fetch lands
   // simply fills when it does.
   load();
-  root.querySelectorAll(".gpx-tier").forEach(function (det) {
+  // Every tier on the page, the subtype tier included; only the variant
+  // tiers trigger the ClinVar fetch.
+  page.querySelectorAll(".gpx-tier").forEach(function (det) {
     det.addEventListener("toggle", function () {
-      if (det.open) { load(); return; }
+      if (det.open) { if (root.contains(det)) { load(); } return; }
       // Closed from a pinned header mid-scroll: hold the viewport at the
       // header bar instead of letting the shortened page pull the footer up
       var bar = document.getElementById("wpadminbar");
