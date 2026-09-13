@@ -13,11 +13,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Site Tools hub (`mu-plugins/eic-site-tools.php`)**
+  - Tools > Site Tools: one landing page for every EIC utility, in the Wordfence Login Security layout. A tab strip across the top (All Tools plus Backfills, URL Builders, Import & Export, Maintenance, Media, Search & Index), a title row with the signed-in user and environment, a status banner with the tool count and the last tool opened (Resume, Subtype Maintenance, and Back up: Subtype Export actions), tool cards in a grid with a badge each (Dry-run gated, Read only, Run once, Scan first, Rebuilds, Insert only), and a three-step How it works strip: back up, dry run, commit.
+  - Tools are discovered, not listed: every page under Tools or Settings whose slug begins with `eic-` appears with its own title and capability check. A slug-keyed registry supplies category, description, icon, and badge; an unregistered page lands in Other tools. Filters `eic_site_tools_registry` and `eic_site_tools_categories` extend both.
+  - mu-plugins/eic-site-tools.php
+
 - **Security headers on every front-end response (`mu-plugins/eic-security-headers.php`)**
   - Strict-Transport-Security on TLS responses, X-Content-Type-Options nosniff, X-Frame-Options SAMEORIGIN, Referrer-Policy strict-origin-when-cross-origin, Permissions-Policy closing camera, microphone, geolocation, and payment; X-Powered-By removed. Production served none of these.
   - mu-plugins/eic-security-headers.php
 
 ### Changed
+
+- **Every EIC tool page opens as a tab of the hub (`eic-admin-tools.php`, `eic-admin-tools.css`)**
+  - The shared header shell now renders the Site Tools tab strip with the tool's category highlighted and an All tools link above the title, in place of the navy brand bar (kept only as a fallback when the hub file is absent). Tool pages widen to 1200px to match the hub so the strip and panel line up; tab labels no longer wrap, and below 1100px the strip wraps as a row of pills over a detached panel.
+  - Stylesheet gains the tabs, panel, status banner, cards, badges, and steps; existing button, form, and notice rules are unchanged.
+  - mu-plugins/eic-admin-tools.php
+  - mu-plugins/eic-admin-tools.css
 
 - **ClinVar Variants: review floor (`eic-clinvar-variants.php`, `gene-fields-template.php`, `gene-page.js`, `gene-jsonld.php`, `platform-search-render.php`)**
   - Records ClinVar marks "no assertion criteria provided" (zero review stars) are no longer indexed, at every tier. A pathogenic call with no stated method is not one a reviewer acts on. The floor is a read-time rule (`MIN_STARS`), so no cache refetches; the variant index drops the rows on its next weekly roll or a Rebuild Now.

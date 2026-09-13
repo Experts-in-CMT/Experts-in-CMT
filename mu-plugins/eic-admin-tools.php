@@ -18,7 +18,8 @@
  *     automatically with no list to maintain, and core wp-admin
  *     is never touched.
  *   - Provides a shared header-shell helper so every tool opens
- *     with the same branded bar, title, and card body:
+ *     with the same tab strip (from eic-site-tools.php), title,
+ *     and card body:
  *
  *         eic_admin_tool_open( 'Tool Title', 'Optional subtitle' );
  *         ...tool markup...
@@ -76,12 +77,30 @@ if (!function_exists("eic_admin_tool_open")) {
      */
     function eic_admin_tool_open(string $title, string $subtitle = ""): void
     {
+        $slug = isset($_GET["page"]) ? sanitize_key(wp_unslash($_GET["page"])) : "";
+
         echo '<div class="wrap eic-tool">';
-        echo '<div class="eic-tool__bar">';
-        echo '<span class="eic-tool__brand">Experts in CMT</span>';
-        echo '<span class="eic-tool__kicker">Site Tools</span>';
-        echo "</div>";
+
+        // Tab strip from the Site Tools hub (eic-site-tools.php), with
+        // this tool's category highlighted. Falls back to the plain
+        // brand bar if the hub is not loaded.
+        if (class_exists("EIC_Site_Tools")) {
+            EIC_Site_Tools::tabs(EIC_Site_Tools::category_of($slug));
+        } else {
+            echo '<div class="eic-tool__bar">';
+            echo '<span class="eic-tool__brand">Experts in CMT</span>';
+            echo '<span class="eic-tool__kicker">Site Tools</span>';
+            echo "</div>";
+        }
+
+        echo '<div class="eic-tool__panel">';
         echo '<div class="eic-tool__head">';
+        if (class_exists("EIC_Site_Tools")) {
+            printf(
+                '<a class="eic-tool__back" href="%s"><span class="dashicons dashicons-arrow-left-alt2" aria-hidden="true"></span> All tools</a>',
+                esc_url(add_query_arg("page", EIC_Site_Tools::SLUG, admin_url("tools.php")))
+            );
+        }
         echo '<h1 class="eic-tool__title">' . esc_html($title) . "</h1>";
         if ($subtitle !== "") {
             echo '<p class="eic-tool__sub">' . esc_html($subtitle) . "</p>";
@@ -99,6 +118,7 @@ if (!function_exists("eic_admin_tool_close")) {
     function eic_admin_tool_close(): void
     {
         echo "</div>"; // .eic-tool__body
+        echo "</div>"; // .eic-tool__panel
         echo "</div>"; // .eic-tool.wrap
     }
 }
