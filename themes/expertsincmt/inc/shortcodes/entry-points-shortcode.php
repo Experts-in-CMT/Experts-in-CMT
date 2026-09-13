@@ -218,7 +218,7 @@ add_shortcode("eic_entry_points", function ($atts) {
             "cards" => [
                 [
                     "title" => "CMT Classifications",
-                    "url"   => home_url("/cmt-classifications/"),
+                    "url"   => home_url("/genetics/cmt-classifications/"),
                     "icon"  => $icon_book,
                     "lead"  => "What’s in a name?",
                     "items" => [
@@ -362,7 +362,7 @@ add_shortcode("eic_entry_points", function ($atts) {
                 ],
                 [
                     "title" => "CMT Classifications",
-                    "url"   => home_url("/cmt-classifications/"),
+                    "url"   => home_url("/genetics/cmt-classifications/"),
                     "icon"  => $icon_book,
                     "lead"  => "What’s in a name?",
                     "items" => [

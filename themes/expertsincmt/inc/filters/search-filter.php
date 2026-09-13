@@ -40,13 +40,10 @@ if (!shortcode_exists("search_filter")) {
         // Anchor + base URL resolution (mirrors subtype-browser-filter.php)
         $anchor = "results";
 
-        $base = get_permalink(get_queried_object_id());
-        if (!$base) {
-            $genes_page = get_page_by_path("genes");
-            $base = $genes_page
-                ? get_permalink($genes_page->ID)
-                : home_url("/genes/");
-        }
+        // Submit back to the current page; degrade to the site root
+        // when there is no queried object (dependency-free default so
+        // a copy of this template seed is correct anywhere).
+        $base = get_permalink(get_queried_object_id()) ?: home_url("/");
 
         $action_url = esc_url($base . "#" . $anchor);
         $reset_url = esc_url($base . "#" . $anchor);

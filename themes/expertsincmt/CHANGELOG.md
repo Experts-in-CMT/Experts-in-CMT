@@ -22,6 +22,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Strict-Transport-Security on TLS responses, X-Content-Type-Options nosniff, X-Frame-Options SAMEORIGIN, Referrer-Policy strict-origin-when-cross-origin, Permissions-Policy closing camera, microphone, geolocation, and payment; X-Powered-By removed. Production served none of these.
   - mu-plugins/eic-security-headers.php
 
+- **Inheritance integrity check in Subtype Maintenance (`eic-subtype-maintenance.php`)**
+  - Check 7: flags orphan `inheritance_pattern` / `_inheritance_pattern` postmeta left by a retired field name (removed on apply) and any classified subtype whose `inheritance` is empty or off its registered choices (review only; Check 1 reconciles against the taxonomy). Scan first, read only until applied.
+  - mu-plugins/eic-subtype-maintenance.php
+
 ### Changed
 
 - **Every EIC tool page opens as a tab of the hub (`eic-admin-tools.php`, `eic-admin-tools.css`)**
@@ -78,6 +82,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **ClinVar Variants: long genomic names wrap on phones (`gene-page.css`)**
   - A name with no seam to break at (NC_000001.10:g.(?_161275666)_(161276731_?)del) ran past the card edge at 360px and was cut off. The variant cell now breaks anywhere it must.
   - assets/css/gene-page.css
+
+- **Subtype cards read the inheritance field that exists (`fragment-loop-subtype-browser.php`, `dr-showcase-shortcode.php`)**
+  - The Subtype Browser card and the Dorsal Root spotlight called `get_field("inheritance_pattern")`, a name the `subtype` type never registered, and fell back to the inheritance taxonomy to render at all. They now read `inheritance`, the field that stores the value. Display is unchanged; the read resolves to the real field.
+  - inc/content/loops/partials/fragment-loop-subtype-browser.php
+  - inc/shortcodes/dr-showcase-shortcode.php
 
 ## [5.0.0] - 2026-09-09
 

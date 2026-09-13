@@ -84,6 +84,58 @@ if (function_exists("eic_search_log_event")) {
     ]);
 }
 
+// RECOGNIZED-BUT-EMPTY YEAR → honest, tailored message (no generic
+// no-results block, no entry cards). The year was understood; the
+// database simply holds no discoveries from it yet.
+if (!$has_results && !empty($results["_empty_year"])) {
+    $year = (int) $results["_empty_year"];
+    $browser_url = function_exists("eic_subtype_browser_page_url")
+        ? eic_subtype_browser_page_url()
+        : "";
+
+    // Land on the browser sorted by year of discovery (newest first)
+    $sorted_url = $browser_url
+        ? add_query_arg("gd_sort", "newest", $browser_url) . "#results"
+        : "";
+
+    $html = '<div class="ps-no-results">';
+    $html .=
+        '<p class="ps-no-results-title">No CMT subtypes in the database were first described in ' .
+        $year .
+        ".</p>";
+    if ($sorted_url) {
+        $html .=
+            '<p class="ps-no-results-browse">Browse discoveries by year in the <a href="' .
+            esc_url($sorted_url) .
+            '">CMT Subtype Browser</a>.</p>';
+    }
+    $html .= "</div>";
+
+    return $html;
+}
+
+// CONTRADICTORY GENE + QUALIFIER → the gene exists, but not with the
+// qualifier the reader typed (e.g. "recessive PMP2"). Offer the query
+// that matches the gene's reality instead of a misleading result.
+if (!$has_results && !empty($results["_did_you_mean"]["query"])) {
+    $dym = $results["_did_you_mean"];
+
+    $html = '<div class="ps-no-results">';
+    $html .=
+        '<p class="ps-no-results-title">No results for “' .
+        esc_html($query) .
+        "”.</p>";
+    $html .=
+        '<p class="ps-no-results-subtitle">Did you mean <a href="' .
+        esc_url($dym["url"]) .
+        '">' .
+        esc_html($dym["query"]) .
+        "</a>?</p>";
+    $html .= "</div>";
+
+    return $html;
+}
+
 // NO RESULTS → message + "did you mean" suggestions (no heading)
 if (!$has_results) {
     $suggestions = function_exists("eic_ps_no_results_suggestions")

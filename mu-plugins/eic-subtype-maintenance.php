@@ -163,6 +163,11 @@ function eic_maint_checks()
                 "6. Internal cross-link markup (strip CMS artifact attributes)",
             "scan" => "eic_maint_scan_internal_links",
         ],
+        "inheritance_integrity" => [
+            "label" =>
+                "7. Inheritance integrity (ghost inheritance_pattern meta; off-spec inheritance)",
+            "scan" => "eic_maint_scan_inheritance_integrity",
+        ],
     ];
 }
 
@@ -929,6 +934,87 @@ function eic_maint_apply_internal_links($findings)
                 ["post_content" => $new],
                 ["ID" => $f["id"]]
             );
+            clean_post_cache($f["id"]);
+            $n++;
+        }
+    }
+    return $n;
+}
+
+/* ============================================================
+ * Check 7: inheritance integrity (permanent tripwire)
+ * ============================================================
+ * Two failure modes this guards against, both of which once caused a
+ * production scare:
+ *   (a) GHOST META. `inheritance_pattern` was never a registered field
+ *       (the real field is `inheritance`, key field_inheritance). Any
+ *       inheritance_pattern / _inheritance_pattern postmeta is orphan
+ *       cruft (stale imports, restores) and is removable on apply.
+ *   (b) OFF-SPEC VALUE. A classified subtype whose `inheritance` value is
+ *       empty or not one of the field's six canonical choices. Flagged for
+ *       review only; Check 1 performs the taxonomy-authoritative fix.
+ *
+ * The canonical choice set is derived from eic_maint_inheritance_choices()
+ * so there is a single source of truth for the legal values.
+ */
+function eic_maint_scan_inheritance_integrity()
+{
+    // The six legal stored values, from the same map Check 1 writes.
+    $canonical = array_values(eic_maint_inheritance_choices());
+    $out = [];
+
+    foreach (eic_maint_ids() as $pid) {
+        // (a) Ghost postmeta. Read raw (not an ACF field), catching every
+        // stored row under either key.
+        $ghost = [];
+        foreach (["inheritance_pattern", "_inheritance_pattern"] as $k) {
+            $rows = get_post_meta($pid, $k, false);
+            if (!empty($rows)) {
+                $ghost[] = $k . (count($rows) > 1 ? " (x" . count($rows) . ")" : "");
+            }
+        }
+        if ($ghost) {
+            $out[] = [
+                "id" => $pid,
+                "title" => get_the_title($pid),
+                "current" => "ghost meta: " . implode(", ", $ghost),
+                "proposed" => "delete orphan row(s)",
+                "op" => "remove_ghost",
+            ];
+        }
+
+        // (b) Off-spec inheritance on a classified subtype (read-only flag).
+        $terms = wp_get_object_terms($pid, "inheritance", ["fields" => "names"]);
+        if (!is_wp_error($terms) && $terms) {
+            $acf = (string) get_field("inheritance", $pid);
+            if ($acf === "" || !in_array($acf, $canonical, true)) {
+                $out[] = [
+                    "id" => $pid,
+                    "title" => get_the_title($pid),
+                    "current" => $acf === "" ? "(empty)" : $acf,
+                    "note" =>
+                        "inheritance is empty or not one of the six canonical choices. " .
+                        "Fix via Check 1 (taxonomy authoritative).",
+                    "manual" => true,
+                ];
+            }
+        }
+    }
+    return $out;
+}
+
+function eic_maint_apply_inheritance_integrity($findings)
+{
+    // The apply handler passes only non-manual findings, so every entry here
+    // is a ghost-meta removal. The op guard is belt-and-suspenders.
+    $n = 0;
+    foreach ($findings as $f) {
+        if (($f["op"] ?? "") !== "remove_ghost") {
+            continue;
+        }
+        $removed = delete_post_meta($f["id"], "inheritance_pattern");
+        $removed = delete_post_meta($f["id"], "_inheritance_pattern") || $removed;
+        if ($removed) {
             clean_post_cache($f["id"]);
             $n++;
         }

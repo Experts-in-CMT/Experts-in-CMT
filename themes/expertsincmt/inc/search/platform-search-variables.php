@@ -337,6 +337,10 @@ function eic_ps_intent_resolvers(): array
         "eic_ps_resolve_variant",
         "eic_ps_resolve_phrase_clamps",
         "eic_ps_resolve_chromosome",
+        // Gene + qualifier intersection wins over the umbrella clamps:
+        // "autosomal recessive MFN2" is the recessive MFN2 subtypes,
+        // not every recessive subtype.
+        "eic_ps_resolve_gene_qualified",
         "eic_ps_resolve_inheritance_clamp",
         "eic_ps_resolve_neuropathy_clamp",
         "eic_ps_resolve_subtype_tokens",
@@ -346,6 +350,11 @@ function eic_ps_intent_resolvers(): array
         "eic_ps_resolve_type_wholequery",
         "eic_ps_resolve_gene_symbol",
         "eic_ps_resolve_gene_alias",
+        // A bare 4-digit year reaching this depth (gene/subtype/type
+        // already declined) is unambiguously a year-of-discovery query.
+        // It HARD STOPS even when empty, so a yearless year like 2026
+        // never demotes to a general content search.
+        "eic_ps_resolve_year",
         "eic_ps_resolve_extended",
         "eic_ps_resolve_typo_fallback",
     ];
@@ -516,6 +525,9 @@ function eic_ps_resolve_inheritance_clamp(string $q, array $ctx): ?array
         return null; // jurisdiction gate: defer to semantics
     }
 
+    // (gene + inheritance is handled earlier by the qualified-gene
+    // resolver; a bare inheritance query with no gene reaches here.)
+
     $inheritance_map = [
         "autosomal-dominant" => ["autosomal", "dominant"],
         "autosomal-recessive" => ["autosomal", "recessive"],
@@ -599,6 +611,8 @@ function eic_ps_resolve_neuropathy_clamp(string $q, array $ctx): ?array
     if ($ctx["compound_intermediate"]) {
         return null; // jurisdiction gate: defer to semantics
     }
+
+    // (gene + neuropathy is handled earlier by the qualified-gene resolver)
 
     $neuropathy_terms = ["demyelinating", "axonal", "intermediate"];
 
@@ -801,6 +815,12 @@ function eic_ps_resolve_bare_cmt(string $q, array $ctx): ?array
         }
     }
 
+    // A named gene (PRX, MPZ — no digit, so the checks above miss it)
+    // is a genetic discriminator: "CMT ... PRX" is not bare CMT.
+    if (eic_ps_query_gene_symbol($ctx) !== null) {
+        return null;
+    }
+
     // Only block when it is *truly* bare CMT
     if (!$has_cmt || $has_genetic_discriminator) {
         return null;
@@ -991,6 +1011,356 @@ function eic_ps_gene_tokens(array $tokens): array
 }
 
 /**
+ * The specific causative gene named in the query, if any subtype
+ * carries it. Umbrella clamps (inheritance, neuropathy) defer to this
+ * so a compound query resolves to the most specific intent:
+ * "CMT autosomal recessive PRX" is a PRX (→ CMT4F) query, not a dump
+ * of every recessive subtype. Cached per request.
+ */
+function eic_ps_query_gene_symbol(array $ctx): ?string
+{
+    static $cache = [];
+
+    $key = implode(" ", $ctx["tokens"]);
+    if (array_key_exists($key, $cache)) {
+        return $cache[$key];
+    }
+
+    $gene_tokens = eic_ps_gene_tokens($ctx["tokens"]);
+
+    // Exact match first
+    foreach ($gene_tokens as $sym) {
+        $hit = get_posts([
+            "post_type" => "subtype",
+            "post_status" => "publish",
+            "posts_per_page" => 1,
+            "fields" => "ids",
+            "meta_query" => [
+                ["key" => "gene_symbol", "value" => $sym, "compare" => "="],
+            ],
+        ]);
+        if (!empty($hit)) {
+            return $cache[$key] = $sym;
+        }
+    }
+
+    // Fuzzy fallback: a misspelled gene-like token ("pmp223" → PMP22)
+    // resolves to its nearest real symbol, so the compound-query chain
+    // (intersection, contradiction repair) works on typos too. Guarded
+    // tight — 4+ chars, a 3-char shared prefix, edit distance <= 2 —
+    // so ordinary words never masquerade as genes.
+    $symbols = eic_ps_all_gene_symbols();
+    $best = null;
+    $best_dist = 3;
+
+    foreach ($gene_tokens as $sym) {
+        if (strlen($sym) < 4) {
+            continue;
+        }
+        foreach ($symbols as $real) {
+            if (
+                abs(strlen($sym) - strlen($real)) > 2 ||
+                strncmp($sym, $real, 3) !== 0
+            ) {
+                continue;
+            }
+            $d = levenshtein($sym, $real);
+            if ($d <= 2 && $d < $best_dist) {
+                $best_dist = $d;
+                $best = $real;
+            }
+        }
+    }
+
+    return $cache[$key] = $best;
+}
+
+/**
+ * Distinct published gene symbols (uppercase; UNKNOWN excluded).
+ * Index-backed, cached — the fuzzy vocabulary for gene typos.
+ */
+function eic_ps_all_gene_symbols(): array
+{
+    static $symbols = null;
+
+    if (is_array($symbols)) {
+        return $symbols;
+    }
+
+    $symbols = [];
+    foreach (eic_ps_subtype_meta_index() as $fields) {
+        $g = strtoupper(trim($fields["gene_symbol"] ?? ""));
+        if ($g !== "" && $g !== "UNKNOWN") {
+            $symbols[$g] = true;
+        }
+    }
+
+    return $symbols = array_keys($symbols);
+}
+
+/**
+ * The inheritance slug named in the query, if any ("autosomal-recessive").
+ */
+function eic_ps_query_inheritance_slug(string $q): ?string
+{
+    $map = [
+        "autosomal-dominant" => ["autosomal", "dominant"],
+        "autosomal-recessive" => ["autosomal", "recessive"],
+        "x-linked-dominant" => ["x linked", "dominant"],
+        "x-linked-recessive" => ["x linked", "recessive"],
+    ];
+
+    foreach ($map as $slug => $signals) {
+        $ok = true;
+        foreach ($signals as $s) {
+            if (strpos($q, $s) === false) {
+                $ok = false;
+                break;
+            }
+        }
+        if ($ok) {
+            return $slug;
+        }
+    }
+
+    return null;
+}
+
+/**
+ * ============================================================
+ *  Resolver: Gene + Qualifier Intersection (full intent)
+ * ============================================================
+ *
+ * When a query names a gene AND one or more qualifiers (inheritance,
+ * neuropathy, type), the intent is the AND of all of them, not the
+ * whole gene set and not the whole umbrella. "autosomal recessive
+ * MFN2" is the recessive MFN2 subtypes only (CMT2A2B, CMT2B4).
+ *
+ * Runs before the umbrella clamps. A gene with no qualifier returns
+ * null (the plain gene resolver handles it downstream). An empty
+ * intersection means a qualifier contradicts the gene's reality
+ * (e.g. "recessive PMP2" — PMP2 is dominant): rather than mislead
+ * with the gene's non-matching subtypes, it offers a "did you mean"
+ * that swaps the contradicting qualifier for the gene's real value.
+ */
+function eic_ps_resolve_gene_qualified(string $q, array $ctx): ?array
+{
+    $gene = eic_ps_query_gene_symbol($ctx);
+    if ($gene === null) {
+        return null;
+    }
+
+    $meta_query = [
+        ["key" => "gene_symbol", "value" => $gene, "compare" => "="],
+    ];
+    $tax_query = [];
+    $applied = [];
+
+    // Track each qualifier by dimension so a contradiction can be
+    // repaired against the gene's real values below.
+    $qualifiers = [];
+
+    // Inheritance (taxonomy)
+    $inh_slug = eic_ps_query_inheritance_slug($q);
+    if ($inh_slug) {
+        $t = get_term_by("slug", $inh_slug, "inheritance");
+        if ($t && !is_wp_error($t)) {
+            $tax_query[] = [
+                "taxonomy" => "inheritance",
+                "field" => "term_id",
+                "terms" => [$t->term_id],
+            ];
+            $applied[] = str_replace("-", " ", $inh_slug);
+            $qualifiers["inheritance"] = [
+                "key" => $inh_slug,
+                "name" => $t->name,
+            ];
+        }
+    }
+
+    // Neuropathy (taxonomy)
+    foreach (["demyelinating", "axonal", "intermediate"] as $nt) {
+        if (strpos($q, $nt) !== false) {
+            $t = get_term_by("slug", $nt, "neuropathy");
+            if ($t && !is_wp_error($t)) {
+                $tax_query[] = [
+                    "taxonomy" => "neuropathy",
+                    "field" => "term_id",
+                    "terms" => [$t->term_id],
+                ];
+                $applied[] = $nt;
+                $qualifiers["neuropathy"] = [
+                    "key" => $nt,
+                    "name" => $t->name,
+                ];
+            }
+            break;
+        }
+    }
+
+    // Type classification (meta)
+    $type_map = eic_ps_type_classification_anchors();
+    foreach ($ctx["tokens"] as $tok) {
+        $tn = strtolower(str_replace(["-", "_"], "", $tok));
+        if ($tn !== "cmt" && isset($type_map[$tn])) {
+            $meta_query[] = [
+                "key" => "type_classification",
+                "value" => $type_map[$tn],
+                "compare" => "=",
+            ];
+            $applied[] = strtoupper($type_map[$tn]);
+            $qualifiers["type"] = [
+                "key" => strtolower($type_map[$tn]),
+                "name" => strtoupper($type_map[$tn]),
+            ];
+            break;
+        }
+    }
+
+    // No qualifier: not a compound query — defer to the plain gene resolver
+    if (empty($qualifiers)) {
+        return null;
+    }
+
+    $args = [
+        "post_type" => "subtype",
+        "post_status" => "publish",
+        "posts_per_page" => -1,
+        "fields" => "ids",
+    ];
+    if (count($meta_query) > 1) {
+        $meta_query["relation"] = "AND";
+    }
+    $args["meta_query"] = $meta_query;
+    if (!empty($tax_query)) {
+        if (count($tax_query) > 1) {
+            $tax_query["relation"] = "AND";
+        }
+        $args["tax_query"] = $tax_query;
+    }
+
+    $ids = get_posts($args);
+
+    // Empty intersection: a qualifier contradicts the gene. Offer a
+    // corrected query instead of the gene's non-matching subtypes.
+    if (empty($ids)) {
+        $suggestion = eic_ps_gene_qualifier_correction($gene, $qualifiers);
+
+        if ($suggestion === null) {
+            return []; // no sensible correction → terminal no-results
+        }
+
+        return [
+            "subtypes" => [],
+            "types" => [],
+            "content" => [],
+            "meta" => [
+                "note" => "gene/qualifier contradiction",
+                "did_you_mean" => $suggestion,
+            ],
+        ];
+    }
+
+    $types = [];
+    foreach ($ids as $id) {
+        $tc = eic_ps_subtype_field($id, "type_classification");
+        if ($tc !== "") {
+            $types[] = strtolower(trim($tc));
+        }
+    }
+
+    return [
+        "subtypes" => array_values(array_unique($ids)),
+        "types" => array_values(array_unique($types)),
+        "content" => eic_ps_content_search($gene),
+        "meta" => [
+            "note" => "gene + " . implode(" + ", $applied),
+            "highlight" => [$gene],
+        ],
+    ];
+}
+
+/**
+ * Build a "did you mean" that repairs a contradictory gene+qualifier
+ * query. The gene is the anchor of truth: for each user qualifier the
+ * gene cannot satisfy, swap in the gene's real value; keep the ones it
+ * can. If no single dimension is the culprit (each valid alone, the
+ * combination impossible), suggest the gene alone.
+ *
+ * Returns ["query" => phrase, "url" => search link] or null.
+ */
+function eic_ps_gene_qualifier_correction(string $gene, array $qualifiers): ?array
+{
+    $gene_ids = get_posts([
+        "post_type" => "subtype",
+        "post_status" => "publish",
+        "posts_per_page" => -1,
+        "fields" => "ids",
+        "meta_query" => [
+            ["key" => "gene_symbol", "value" => $gene, "compare" => "="],
+        ],
+    ]);
+
+    if (empty($gene_ids)) {
+        return null;
+    }
+
+    // The gene's real values per dimension (key => display name)
+    $real = ["inheritance" => [], "neuropathy" => [], "type" => []];
+    foreach ($gene_ids as $gid) {
+        foreach (
+            wp_get_post_terms($gid, "inheritance", ["fields" => "all"])
+            as $t
+        ) {
+            // Lowercase so the suggestion reads uniformly ("axonal",
+            // "autosomal dominant") next to the uppercase gene/type
+            $real["inheritance"][$t->slug] = strtolower($t->name);
+        }
+        foreach (
+            wp_get_post_terms($gid, "neuropathy", ["fields" => "all"])
+            as $t
+        ) {
+            $real["neuropathy"][$t->slug] = strtolower($t->name);
+        }
+        $tc = eic_ps_subtype_field($gid, "type_classification");
+        if ($tc !== "") {
+            $real["type"][strtolower(trim($tc))] = strtoupper(trim($tc));
+        }
+    }
+
+    $parts = [];
+    $swapped = false;
+
+    foreach ($qualifiers as $dim => $qual) {
+        if (isset($real[$dim][$qual["key"]])) {
+            // The gene can satisfy this one; the contradiction is elsewhere
+            $parts[] = $qual["name"];
+        } else {
+            $swapped = true;
+            // Swap for the gene's real value only when it is unambiguous
+            if (count($real[$dim]) === 1) {
+                $parts[] = reset($real[$dim]);
+            }
+            // 0 or many → drop this dimension from the suggestion
+        }
+    }
+
+    // No dimension was individually wrong → the combination is the
+    // problem; suggest the gene alone, which always resolves.
+    if (!$swapped) {
+        $parts = [];
+    }
+
+    $query = trim("CMT " . trim(implode(" ", $parts) . " " . $gene));
+    $query = preg_replace("/\s+/", " ", $query);
+
+    return [
+        "query" => $query,
+        "url" => home_url("/?s=" . rawurlencode($query) . "#results"),
+    ];
+}
+
+/**
  * ============================================================
  *  Resolver: Gene Symbol → Subtype Discovery (authoritative)
  * ============================================================
@@ -1124,12 +1494,74 @@ function eic_ps_resolve_gene_alias(string $q, array $ctx): ?array
 
 /**
  * ============================================================
+ *  Resolver: Year of Discovery (authoritative, hard stop)
+ * ============================================================
+ *
+ * A bare 4-digit year in a plausible range (1886, the year CMT
+ * was first described, through next calendar year) is a
+ * year-of-discovery query. By the time resolution reaches here,
+ * every more specific intent (gene, subtype, type, semantics)
+ * has already declined, so the year is the authoritative signal.
+ *
+ * It HARD STOPS whether or not any subtype matches: a recognized
+ * year with no discoveries (2026, a gap year) is a real, honest
+ * empty result, not a reason to fall through to a general content
+ * search that would surface posts merely mentioning the number.
+ * The result builder derives the gene bucket from the matched
+ * subtypes, so the subtype-gene shape comes for free.
+ */
+function eic_ps_resolve_year(string $q, array $ctx): ?array
+{
+    $max_year = (int) date("Y") + 1;
+    $year = null;
+
+    foreach ($ctx["tokens"] as $token) {
+        if (ctype_digit($token) && strlen($token) === 4) {
+            $n = (int) $token;
+            if ($n >= 1886 && $n <= $max_year) {
+                $year = $token;
+                break;
+            }
+        }
+    }
+
+    if ($year === null) {
+        return null; // no plausible year → let extended discovery run
+    }
+
+    $year_matches = get_posts([
+        "post_type" => "subtype",
+        "post_status" => "publish",
+        "posts_per_page" => -1,
+        "fields" => "ids",
+        "meta_query" => [
+            [
+                "key" => "year_of_discovery",
+                "value" => (string) (int) $year,
+                "compare" => "=",
+            ],
+        ],
+    ]);
+
+    return [
+        "subtypes" => array_values(array_unique($year_matches)),
+        "meta" => [
+            "label" => "First described in " . $year,
+            "note" => "year of discovery",
+            "year" => $year,
+            "empty_year" => empty($year_matches),
+        ],
+    ];
+}
+
+/**
+ * ============================================================
  *  Resolver: Extended Discovery (accumulating, last resort)
  * ============================================================
  *
- * Number-letter patterns, ACF metadata (year, publications,
- * authors), single-term inheritance widening, taxonomy allowlist,
- * and the general content fallback. Always terminal.
+ * Number-letter patterns, ACF metadata (publications, authors),
+ * single-term inheritance widening, taxonomy allowlist, and the
+ * general content fallback. Always terminal.
  */
 function eic_ps_resolve_extended(string $q, array $ctx): ?array
 {
@@ -1169,34 +1601,8 @@ function eic_ps_resolve_extended(string $q, array $ctx): ?array
         }
     }
 
-    // ------------------------------------------------------------
-    // Resolver: Year of Discovery (4-digit tokens)
-    // ------------------------------------------------------------
-    foreach ($tokens as $token) {
-        if (!ctype_digit($token) || strlen($token) !== 4) {
-            continue;
-        }
-
-        $year_matches = get_posts([
-            "post_type" => "subtype",
-            "posts_per_page" => -1,
-            "fields" => "ids",
-            "meta_query" => [
-                [
-                    "key" => "year_of_discovery",
-                    "value" => (string) (int) $token,
-                    "compare" => "=",
-                ],
-            ],
-        ]);
-
-        if (!empty($year_matches)) {
-            $resolved_subtype_ids = array_merge(
-                $resolved_subtype_ids,
-                $year_matches
-            );
-        }
-    }
+    // (Year-of-discovery resolution moved to its own hard-stopping
+    // resolver, eic_ps_resolve_year, ahead of this one.)
 
     // ------------------------------------------------------------
     // Resolvers: Publication metadata (LIKE, per token >= 3 chars)
@@ -1209,9 +1615,17 @@ function eic_ps_resolve_extended(string $q, array $ctx): ?array
         "alt_authors",
     ];
 
+    // "charcot"/"marie"/"tooth"/"disease" are in (nearly) every
+    // subtype's publication data — the disease name itself — so
+    // matching them clamps the whole catalog and, worse, suppresses
+    // the content bucket. Skip these no-signal tokens here so a query
+    // like "charcot foot" falls through to the content search that
+    // actually surfaces the Charcot-foot article and glossary term.
+    $stop = eic_ps_domain_stopwords();
+
     foreach ($publication_keys as $meta_key) {
         foreach ($tokens as $token) {
-            if (strlen($token) < 3) {
+            if (strlen($token) < 3 || isset($stop[$token])) {
                 continue;
             }
 
@@ -1475,7 +1889,13 @@ function eic_ps_resolve_typo_fallback(string $q, array $ctx): ?array
 
     $strong = [];
     foreach (eic_ps_fuzzy_candidates($q) as $cand) {
-        if ($cand["score"] <= 2 && !empty($cand["subtype_ids"])) {
+        // Semantic candidates carry no subtype_ids: they resolve via
+        // their curated entry, handled below
+        if (
+            $cand["score"] <= 2 &&
+            (($cand["kind"] ?? "") === "semantic" ||
+                !empty($cand["subtype_ids"]))
+        ) {
             $strong[] = $cand;
         }
     }
@@ -1487,12 +1907,36 @@ function eic_ps_resolve_typo_fallback(string $q, array $ctx): ?array
     // Keep only the best-scoring tier, capped at 3 corrections
     $best = min(array_column($strong, "score"));
 
+    // A semantic alias at the best score wins as a whole concept
+    // (Roussy-Lévy, Dejerine-Sottas): re-run its curated entry so the
+    // correction lands on the real classification/subtype target, not
+    // a name guess. "rousy" → "roussy" → the Roussy-Lévy entry.
+    foreach ($strong as $cand) {
+        if (
+            $cand["score"] === $best &&
+            ($cand["kind"] ?? "") === "semantic"
+        ) {
+            $payload = eic_ps_semantic_run(
+                $cand["semantic_key"],
+                $cand["semantic_term"]
+            );
+            if (!empty($payload)) {
+                $payload["meta"]["note"] = "fuzzy correction";
+                $payload["meta"]["corrected_label"] = $cand["label"];
+                return $payload;
+            }
+        }
+    }
+
     $ids = [];
     $labels = [];
 
     foreach ($strong as $cand) {
         if ($cand["score"] !== $best || count($labels) >= 3) {
             continue;
+        }
+        if (empty($cand["subtype_ids"])) {
+            continue; // semantic candidates were handled above
         }
 
         foreach ($cand["subtype_ids"] as $sid) {
@@ -1620,6 +2064,10 @@ function eic_ps_semantic_code_table(): array
         "cmt3" => [
             "match" => [
                 "substrings" => ["cmt3", "dss", "dejerine", "sottas"],
+                // French surnames people spell every which way; fuzzy
+                // so "dejerin"/"dejarine"/"sotas" resolve here (early,
+                // with the #cmt3 anchor) rather than a bare content hit
+                "fuzzy" => ["dejerine", "sottas"],
             ],
             "payload" => [
                 "content" => [["cmt-classifications", "page"]],
@@ -1637,6 +2085,7 @@ function eic_ps_semantic_code_table(): array
         "roussy_levy" => [
             "match" => [
                 "substrings" => ["roussy", "levy", "levi"],
+                "fuzzy" => ["roussy"],
             ],
             "payload" => [
                 "content" => [["cmt-classifications", "page"]],
@@ -1760,8 +2209,18 @@ function eic_ps_semantic_run(string $key, string $normalized_query): array
 
     $entry = $table[$key];
 
+    // Exact match first; if it misses, try a fuzzy hit on the entry's
+    // designated name terms (Dejerine, Roussy) so misspellings resolve
+    // here, early, with the curated anchor and a correction banner.
+    $fuzzy_term = null;
     if (!eic_ps_semantic_matches($normalized_query, $entry["match"] ?? [])) {
-        return [];
+        $fuzzy_term = eic_ps_semantic_fuzzy_hit(
+            $normalized_query,
+            $entry["match"] ?? []
+        );
+        if ($fuzzy_term === null) {
+            return [];
+        }
     }
 
     $payload =
@@ -1809,7 +2268,66 @@ function eic_ps_semantic_run(string $key, string $normalized_query): array
         );
     }
 
+    // A fuzzy (misspelled) hit tells the reader what we resolved to
+    if ($fuzzy_term !== null) {
+        $payload["meta"]["note"] = "fuzzy correction";
+        $payload["meta"]["corrected_label"] =
+            $payload["meta"]["label"] ??
+            ($entry["highlight"][0] ?? $fuzzy_term);
+    }
+
     return $payload;
+}
+
+/**
+ * Domain stopwords: terms true of (nearly) every subtype because they
+ * are the disease name or its generic descriptors. They carry no
+ * discriminating signal for metadata matching, so a single one would
+ * clamp the whole catalog. Keyed for O(1) lookup; filterable.
+ */
+function eic_ps_domain_stopwords(): array
+{
+    return array_fill_keys(
+        (array) apply_filters("eic_ps_domain_stopwords", [
+            "charcot",
+            "marie",
+            "tooth",
+            "cmt",
+            "disease",
+            "syndrome",
+            "hereditary",
+        ]),
+        true
+    );
+}
+
+/**
+ * Fuzzy hit on an entry's designated name terms (edit distance <= 2,
+ * tokens >= 5 chars). Returns the matched canonical term, or null.
+ * Only the entry's `fuzzy` list is eligible, so collision-prone short
+ * forms never fuzzy-match.
+ */
+function eic_ps_semantic_fuzzy_hit(string $normalized_query, array $spec): ?string
+{
+    if (empty($spec["fuzzy"])) {
+        return null;
+    }
+
+    foreach (preg_split("/\s+/", $normalized_query) as $tok) {
+        if (strlen($tok) < 5) {
+            continue;
+        }
+        foreach ($spec["fuzzy"] as $term) {
+            if (
+                abs(strlen($tok) - strlen($term)) <= 2 &&
+                levenshtein($tok, $term) <= 2
+            ) {
+                return $term;
+            }
+        }
+    }
+
+    return null;
 }
 
 /**
@@ -1907,13 +2425,43 @@ function eic_ps_resolve_content_ref(array $ref): ?WP_Post
             : [$ref[1]];
 
     foreach ($types as $pt) {
-        $post = get_page_by_path($ref[0], OBJECT, $pt);
+        $post = eic_ps_page_by_slug((string) $ref[0], $pt);
         if ($post) {
             return $post;
         }
     }
 
     return null;
+}
+
+/**
+ * ============================================================
+ *  Move-Proof Page Resolver
+ * ============================================================
+ *
+ * get_page_by_path() matches the FULL hierarchical path, so the
+ * moment a page gains a parent (cmt-classifications →
+ * genetics/cmt-classifications) every bare-slug lookup of it
+ * silently returns null. This tries the exact path first (honoring
+ * an intended parent), then falls back to the leaf slug regardless
+ * of parent, so an editorial move never drops a curated reference.
+ */
+function eic_ps_page_by_slug(string $path, string $post_type): ?WP_Post
+{
+    $post = get_page_by_path($path, OBJECT, $post_type);
+    if ($post instanceof WP_Post) {
+        return $post;
+    }
+
+    $found = get_posts([
+        "post_type" => $post_type,
+        "post_status" => "publish",
+        "name" => basename($path),
+        "posts_per_page" => 1,
+        "no_found_rows" => true,
+    ]);
+
+    return !empty($found) ? $found[0] : null;
 }
 
 /**

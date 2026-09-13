@@ -46,13 +46,15 @@ document.addEventListener('DOMContentLoaded', function () {
 	}
 
 	// Handoff-less overflow: the server ships every pill plus a hidden
-	// "Show all N" button; activating the collapse here means a no-JS
-	// visit simply sees the full list. Runs on load and after each swap.
+	// "Showing N of M ... View all M" line; activating the collapse here
+	// means a no-JS visit simply sees the full list (and never the line,
+	// which would be false uncollapsed). Runs on load and after each swap.
 	function initCollapsibles() {
 		root.querySelectorAll('.ps-list[data-collapsible]').forEach(function (list) {
 			list.classList.add('is-collapsed');
-			const btn = list.parentElement.querySelector('.ps-show-all');
-			if (btn) { btn.hidden = false; }
+			const line = list.parentElement.querySelector('.ps-show-all');
+			const p = line && line.closest('.ps-view-all');
+			if (p) { p.hidden = false; }
 		});
 	}
 

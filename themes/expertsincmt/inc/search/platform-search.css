@@ -416,7 +416,8 @@ mark.ps-highlight {
   text-decoration: underline;
 }
 
-.platform-search-results .ps-view-all a::after {
+.platform-search-results .ps-view-all a::after,
+.platform-search-results .ps-view-all .ps-show-all::after {
   content: " →";
   text-decoration: none;
   display: inline-block;

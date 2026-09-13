@@ -381,6 +381,14 @@ function eic_platform_search_build_results($payload, $query_normalized)
     if (!empty($variables["meta"]["corrected_label"])) {
         $results["_corrected"] = (string) $variables["meta"]["corrected_label"];
     }
+    if (!empty($variables["meta"]["did_you_mean"])) {
+        $results["_did_you_mean"] = $variables["meta"]["did_you_mean"];
+    }
+    // Recognized-but-empty year (year resolver): the renderer shows a
+    // tailored empty-year message instead of the generic no-results block
+    if (!empty($variables["meta"]["empty_year"])) {
+        $results["_empty_year"] = (string) $variables["meta"]["year"];
+    }
 
     // Variant entries (variant resolver): rendered as their own group
     // above the rest; the gene, subtypes, and content ride along below
@@ -921,7 +929,11 @@ function eic_platform_search_build_results($payload, $query_normalized)
 
 function get_permalink_by_slug($slug, $post_type)
 {
-    $post = get_page_by_path($slug, OBJECT, $post_type);
+    // Move-proof: resolves by leaf slug when the page has been
+    // reparented (e.g. cmt-classifications → genetics/cmt-classifications).
+    $post = function_exists("eic_ps_page_by_slug")
+        ? eic_ps_page_by_slug((string) $slug, (string) $post_type)
+        : get_page_by_path($slug, OBJECT, $post_type);
 
     if (!$post) {
         return "";
@@ -1014,6 +1026,43 @@ function eic_ps_fuzzy_candidates(string $raw_query): array
     }
 
     // ------------------------------------------------------------
+    // Semantic-alias vocabulary: archaic names and gene aliases
+    // (Roussy, Dejerine, Sottas, sorbitol, ...) so a typo of one
+    // auto-corrects like a subtype/gene typo. Only alphabetic terms
+    // >= 5 chars: shorter forms collide under edit distance, and the
+    // semantic entries' own substring rules already catch those.
+    // ------------------------------------------------------------
+    if (function_exists("eic_ps_semantic_table")) {
+        foreach (eic_ps_semantic_table() as $key => $entry) {
+            $terms = array_merge(
+                $entry["match"]["tokens"] ?? [],
+                $entry["match"]["substrings"] ?? []
+            );
+            $label =
+                $entry["payload"]["meta"]["label"] ??
+                ($entry["highlight"][0] ?? "");
+
+            foreach ($terms as $t) {
+                if (
+                    strlen($t) < 5 ||
+                    !ctype_alpha($t) ||
+                    isset($candidates[$t])
+                ) {
+                    continue;
+                }
+                $candidates[$t] = [
+                    "label" => $label !== "" ? $label : $t,
+                    "kind" => "semantic",
+                    "semantic_key" => $key,
+                    "semantic_term" => $t,
+                    "url" => "", // resolved lazily by the suggestions path
+                    "subtype_ids" => [],
+                ];
+            }
+        }
+    }
+
+    // ------------------------------------------------------------
     // Score every candidate against every token
     // ------------------------------------------------------------
     $scored = [];
@@ -1083,7 +1132,18 @@ function eic_ps_no_results_suggestions(string $raw_query, int $max = 5): array
     $suggestions = [];
 
     foreach (eic_ps_fuzzy_candidates($raw_query) as $cand) {
-        if ($cand["url"] === "") {
+        $url = $cand["url"];
+
+        // Semantic candidates carry no URL until resolved: land on
+        // their curated target (classification page or first subtype)
+        if ($url === "" && ($cand["kind"] ?? "") === "semantic") {
+            $url = eic_ps_semantic_landing_url(
+                $cand["semantic_key"],
+                $cand["semantic_term"]
+            );
+        }
+
+        if ($url === "") {
             continue;
         }
 
@@ -1092,7 +1152,7 @@ function eic_ps_no_results_suggestions(string $raw_query, int $max = 5): array
                 $cand["kind"] === "gene"
                     ? $cand["label"] . " (gene)"
                     : $cand["label"],
-            "url" => $cand["url"],
+            "url" => $url,
         ];
 
         if (count($suggestions) >= $max) {
@@ -1101,6 +1161,35 @@ function eic_ps_no_results_suggestions(string $raw_query, int $max = 5): array
     }
 
     return $suggestions;
+}
+
+/**
+ * Landing URL for a semantic entry: its curated content target (with
+ * anchor) if any, else its first subtype. Empty when neither exists.
+ */
+function eic_ps_semantic_landing_url(string $key, string $term): string
+{
+    if (!function_exists("eic_ps_semantic_run")) {
+        return "";
+    }
+
+    $payload = eic_ps_semantic_run($key, $term);
+    if (empty($payload)) {
+        return "";
+    }
+
+    if (!empty($payload["content"][0])) {
+        $anchor = !empty($payload["meta"]["anchor"])
+            ? "#" . $payload["meta"]["anchor"]
+            : "";
+        return get_permalink($payload["content"][0]) . $anchor;
+    }
+
+    if (!empty($payload["subtypes"][0])) {
+        return get_permalink($payload["subtypes"][0]);
+    }
+
+    return "";
 }
 
 /**

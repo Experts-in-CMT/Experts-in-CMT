@@ -249,10 +249,16 @@ function eic_render_platform_search_results(array $results = [])
         </ul>
 
         <?php if ($ps_overflow) {
-            // Hidden until JS activates the collapse
-            echo '<p class="ps-view-all"><button type="button" class="ps-show-all" hidden>Show all ' .
+            // The whole line is hidden until JS activates the collapse:
+            // a no-JS visit shows every pill, so a "Showing 5 of N" line
+            // would be false there. JS unhides it when it collapses.
+            echo '<p class="ps-view-all" hidden>Showing ' .
+                (int) $ps_preview .
+                " of " .
                 (int) $ps_subtype_count .
-                " subtypes</button></p>";
+                ' subtypes. <button type="button" class="ps-show-all">View all ' .
+                (int) $ps_subtype_count .
+                "</button></p>";
         } ?>
 
         <?php if (
@@ -265,9 +271,11 @@ function eic_render_platform_search_results(array $results = [])
                 count($results["subtypes"]) .
                 " of " .
                 (int) $results["subtypes_total"] .
-                ' matching subtypes. <a href="' .
+                ' subtypes. <a href="' .
                 esc_url($results["more_url"]) .
-                '">See them all in the CMT Subtype Browser</a></p>';
+                '">Explore all ' .
+                (int) $results["subtypes_total"] .
+                ' in the CMT Subtype Browser</a></p>';
         } ?>
     </div>
 <?php endif; ?>
@@ -317,9 +325,11 @@ function eic_render_platform_search_results(array $results = [])
                 count($results["genes"]) .
                 " of " .
                 (int) $results["genes_total"] .
-                ' matching genes. <a href="' .
+                ' genes. <a href="' .
                 esc_url($genes_more) .
-                '">See them all in the ' .
+                '">Explore all ' .
+                (int) $results["genes_total"] .
+                " in the " .
                 esc_html($genes_dest) .
                 "</a></p>";
         } ?>

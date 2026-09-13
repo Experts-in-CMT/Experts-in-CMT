@@ -87,7 +87,7 @@ if (!function_exists("eic_dr_render_subtype_spotlight")) {
         // Inheritance: the ACF field, else the taxonomy term names (as the
         // genes card does).
         $inherit = function_exists("get_field")
-            ? get_field("inheritance_pattern", $post_id) ?: ""
+            ? get_field("inheritance", $post_id) ?: ""
             : "";
         if ($inherit === "") {
             $terms = wp_get_post_terms($post_id, "inheritance", [

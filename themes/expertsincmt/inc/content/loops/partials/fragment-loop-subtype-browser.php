@@ -476,7 +476,7 @@ if ($q && $q->have_posts()) {
 
         $year_discovery = get_field("year_of_discovery") ?: "";
         $inherit_label =
-            get_field("inheritance_pattern") ?:
+            get_field("inheritance") ?:
             implode(
                 ", ",
                 wp_get_post_terms(get_the_ID(), "inheritance", [
