@@ -13,6 +13,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Breathing questions surface the CMT and Breathing content (`platform-search.php`, `platform-search-variables.php`)**
+  - A query mentioning `breathing`, `respiratory`, or `lung` now leads with the CMT and Breathing hub page followed by the dedicated breathing articles, where native relevance had buried the hub under pages that only mention the word once. Shares the post-build topic-anchor step with the genetic-testing guidance.
+  - inc/search/platform-search.php
+  - inc/search/platform-search-variables.php
+
+- **Gene plus a residue position surfaces that site's variants (`eic-variant-index.php`, `platform-search-variants.php`)**
+  - A query like `MPZ R98` (gene plus reference residue and position, no final amino acid) now returns every cataloged variant at that position (R98C, R98H, R98P), ordered reported-in-CMT first then by review stars, where before it fell through to the plain gene result. A bare position with no gene is ignored, so it never triggers a site-wide dump, and complete variants like `MPZ R98H` are unchanged.
+  - mu-plugins/eic-variant-index.php
+  - inc/search/platform-search-variants.php
+
+- **Testing questions surface the genetic-testing guidance (`platform-search.php`, `platform-search-variables.php`)**
+  - A query expressing a testing or inheritance-across-generations intent (`tested`, `testing`, `genetic test`, or `skip a generation`) now always returns the Genetic Testing page, the "Does CMT Skip a Generation?" article, and "Do I Need a Genetic Test to Know if I Have CMT?", shown first and added on top of whatever else resolves. Injected at the single post-build step so it rides along with every intent, so "I have CMT2a. How do I get my dad tested" returns CMT2A and the testing guidance together.
+  - inc/search/platform-search.php
+  - inc/search/platform-search-variables.php
+
 - **Site Tools hub (`mu-plugins/eic-site-tools.php`)**
   - Tools > Site Tools: one landing page for every EIC utility, in the Wordfence Login Security layout. A tab strip across the top (All Tools plus Backfills, URL Builders, Import & Export, Maintenance, Media, Search & Index), a title row with the signed-in user and environment, a status banner with the tool count and the last tool opened (Resume, Subtype Maintenance, and Back up: Subtype Export actions), tool cards in a grid with a badge each (Dry-run gated, Read only, Run once, Scan first, Rebuilds, Insert only), and a three-step How it works strip: back up, dry run, commit.
   - Tools are discovered, not listed: every page under Tools or Settings whose slug begins with `eic-` appears with its own title and capability check. A slug-keyed registry supplies category, description, icon, and badge; an unregistered page lands in Other tools. Filters `eic_site_tools_registry` and `eic_site_tools_categories` extend both.
@@ -63,6 +78,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - templates/gene-fields-template.php
 
 ### Fixed
+
+- **Concept-word searches no longer conjure a spurious subtype (`platform-search-variables.php`)**
+  - A query that is itself a glossary term (`pathogenic`, `variant`, `monogenic`) now skips the publication-metadata subtype matching, so a generic word that appears in a single paper's title no longer produces an unrelated Type, Subtype, and Gene. These queries return content only, led by the term's own glossary entry.
+  - inc/search/platform-search-variables.php
+
+- **The exact term leads the content results (`platform-search.php`)**
+  - A query that is itself a glossary term or page title (`pathogenic`, `variant`, `monogenic`) now floats that exact match to the top of the content section, ahead of hub pages and native-relevance prose, where the term's own definition had been buried several items down.
+  - inc/search/platform-search.php
+
+- **Inheritance abbreviations resolve (`platform-search-variables.php`)**
+  - `AR` and `AD` as a whole query (plus `XLR` and `XLD`) now resolve to their inheritance pattern, autosomal recessive, autosomal dominant, and the X-linked forms, where before the bare two-letter abbreviation fell through to a generic search.
+  - inc/search/platform-search-variables.php
+
+- **Concept queries surface prose and glossary content (`platform-search-variables.php`)**
+  - A query like `pathogenic` that made a weak subtype match through publication metadata no longer suppresses the content bucket. The extended resolver now always runs a content search, so the glossary entry and related articles surface alongside the subtype.
+  - inc/search/platform-search-variables.php
+
+- **Alias validator stops false-warning on valid pinned content (`eic-search-tools.php`)**
+  - The content check used a plain hierarchical-path lookup, so a published post whose permalink carries a prefix (for example `/dorsal-root/<slug>/`) was reported as missing even though search resolves it by its leaf slug. The check now uses the same move-proof resolver search does, so only genuinely absent content warns.
+  - mu-plugins/eic-search-tools.php
+
+- **Alias editor no longer drops a row on save after one is removed (`eic-search-tools.php`)**
+  - A new row took its index from the card count, so removing a row and adding another gave two cards the same index; on save they collapsed in POST and one saved alias was silently lost. Cards are now renumbered to their position after every add and remove, so indices never collide.
+  - mu-plugins/eic-search-tools.php
+
+- **Alias editor labels no longer print raw PHP (`eic-search-tools.php`)**
+  - A malformed hint tag rendered the literal text `?php echo esc_html( $hint ); ?>` after every field label in Tools > EIC Search > Aliases. The hint is removed; each label now reads as a plain field name.
+  - mu-plugins/eic-search-tools.php
+
+- **Spelled-out "CMT type N" resolves to the CMT-N class (`platform-search-variables.php`)**
+  - `CMT type 2` now resolves to the CMT2 classification exactly as `cmt2` does, for every real type class (1, 2, 4, X, DI, RI, and the rest). The collapse is gated on the class map, so a non-class identifier such as `CMT type N` (the literal CMT2N subtype) is left untouched and curated semantic terms still match it.
+  - inc/search/platform-search-variables.php
+
+- **Variant search accepts dot-separated gene and change (`platform-search-variants.php`)**
+  - `HSPB3.P121L` and `HSPB3.c.P121L` now split into gene and variant the way the spaced and hyphenated forms already did, so the variant resolver fires instead of falling through to a plain search. Full HGVS tokens (`c.1271C>T`, `p.Thr424Met`) still parse whole and are untouched.
+  - inc/search/platform-search-variants.php
+
+- **Gene symbols longer than six characters resolve as genes (`platform-search-variables.php`)**
+  - A gene-token window capped at six characters dropped real symbols like `SLC12A6` and `SLC25A46`, so they missed the gene resolver and fell through to a weak match. The gate now also accepts any token that is an actual gene symbol in the dataset, whatever its length, while ordinary long words still do not qualify.
+  - inc/search/platform-search-variables.php
 
 - **Return to a browser lands in place without first showing the top of the page (`return-state.js`)**
   - The scroll restore ran only after first paint, so the listing painted at the top and then jumped. It now restores synchronously as the footer script runs, with the two later passes kept as corrections for late layout; the scroll is instant, never animated.

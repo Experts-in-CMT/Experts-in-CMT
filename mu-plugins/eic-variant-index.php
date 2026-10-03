@@ -226,7 +226,17 @@ final class EIC_Variant_Index
                 }
             }
             if ($r2 === "" && $suffix === "") {
-                return null;
+                // Residue + position only (R98, p.Arg98): a position query, not
+                // a complete variant. Marked partial so the resolver surfaces a
+                // gene's variants at this position only when a gene scopes it;
+                // a bare partial with no gene is ignored.
+                return [
+                    "kind" => "pp",
+                    "key" => $r1 . $pos,
+                    "display" => $r1 . $pos,
+                    "explicit" => !empty($m[1]) || strlen($m[2]) === 3,
+                    "partial" => true,
+                ];
             }
             $key = self::protein_key($r1 . $pos . $r2 . $suffix);
             // A suffix word (fs, del, dup...) is variant syntax in its own
@@ -600,6 +610,59 @@ final class EIC_Variant_Index
             return strnatcasecmp($a["gene"] . $a["vkey"], $b["gene"] . $b["vkey"]);
         });
         return array_slice($out, 0, max(1, $max));
+    }
+
+    /**
+     * Every protein variant at a residue position: the partial key is the
+     * reference residue plus the position (R98), returning R98C, R98H, R98P.
+     * Scoped to a single gene (a bare position is too broad site-wide).
+     * Sorted like near(): reported-in-CMT first, then by review stars.
+     *
+     * @return array[] rows in the lookup() shape
+     */
+    public static function lookup_position(string $key, string $gene): array
+    {
+        global $wpdb;
+        $key = strtoupper(trim($key));
+        if ($gene === "" || !preg_match('/^([A-Z])(\d+)$/', $key, $m)) {
+            return [];
+        }
+        [$all, $r1, $pos] = $m;
+        $table = self::table();
+        $like = $wpdb->esc_like($r1 . $pos) . "%";
+        $rows = $wpdb->get_results(
+            $wpdb->prepare(
+                "SELECT * FROM {$table} WHERE kind = 'p' AND gene = %s AND vkey LIKE %s LIMIT 400",
+                strtoupper($gene),
+                $like
+            ),
+            ARRAY_A
+        );
+        $out = [];
+        foreach ((array) $rows as $r) {
+            // Exact position: vkey is ref+pos+alt(+suffix); the position digits
+            // must equal the query so R98 never catches R980 or R9.
+            if (!preg_match('/^([A-Z])(\d+)([A-Z*=].*)$/', (string) $r["vkey"], $x)) {
+                continue;
+            }
+            if ($x[1] !== $r1 || $x[2] !== $pos) {
+                continue;
+            }
+            $out[$r["gene"] . "|" . $r["vcv"]] = $r;
+        }
+        $out = array_values($out);
+        usort($out, function ($a, $b) {
+            $ta = $a["tier"] === "A" ? 0 : 1;
+            $tb = $b["tier"] === "A" ? 0 : 1;
+            if ($ta !== $tb) {
+                return $ta <=> $tb;
+            }
+            if ((int) $a["stars"] !== (int) $b["stars"]) {
+                return (int) $b["stars"] <=> (int) $a["stars"];
+            }
+            return strnatcasecmp($a["gene"] . $a["vkey"], $b["gene"] . $b["vkey"]);
+        });
+        return $out;
     }
 
     /**

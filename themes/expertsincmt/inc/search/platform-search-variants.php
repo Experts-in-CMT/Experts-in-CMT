@@ -108,7 +108,7 @@ function eic_ps_variant_tokens(string $raw): array
             $out[] = $tok;
             continue;
         }
-        foreach (preg_split('/[-:\/,;]+/', $tok) as $part) {
+        foreach (preg_split('/[-:\/,;.]+/', $tok) as $part) {
             if ($part !== "") {
                 $out[] = $part;
             }
@@ -199,9 +199,14 @@ function eic_ps_resolve_variant(string $q, array $ctx): ?array
     foreach ($parsed as $key => $p) {
         if ($scope_genes) {
             foreach ($scope_genes as $gene) {
-                $rows = EIC_Variant_Index::lookup($key, $gene);
-                if (!$rows) {
-                    $rows = EIC_Variant_Index::lookup_cached($key, $gene);
+                if (!empty($p["partial"])) {
+                    // Residue + position (MPZ R98): every variant at the site.
+                    $rows = EIC_Variant_Index::lookup_position($key, $gene);
+                } else {
+                    $rows = EIC_Variant_Index::lookup($key, $gene);
+                    if (!$rows) {
+                        $rows = EIC_Variant_Index::lookup_cached($key, $gene);
+                    }
                 }
                 if ($rows) {
                     foreach ($rows as $row) {
@@ -209,10 +214,13 @@ function eic_ps_resolve_variant(string $q, array $ctx): ?array
                     }
                     $any_found = true;
                 } else {
-                    // Did you mean: same residues, position a digit off
+                    // Did you mean: same residues, position a digit off (a
+                    // partial has no second residue, so no near miss applies)
                     $near = [];
-                    foreach (EIC_Variant_Index::near($key, $gene) as $row) {
-                        $near[] = eic_ps_variant_entry($row, $p);
+                    if (empty($p["partial"])) {
+                        foreach (EIC_Variant_Index::near($key, $gene) as $row) {
+                            $near[] = eic_ps_variant_entry($row, $p);
+                        }
                     }
                     $entries[] = [
                         "found" => false,
@@ -227,6 +235,11 @@ function eic_ps_resolve_variant(string $q, array $ctx): ?array
                 }
             }
         } else {
+            // A residue+position partial with no gene to scope it is too broad
+            // to resolve site-wide; let it fall through to other resolvers.
+            if (!empty($p["partial"])) {
+                continue;
+            }
             $rows = EIC_Variant_Index::lookup($key);
             if ($rows) {
                 foreach ($rows as $row) {

@@ -42,6 +42,46 @@ function eic_platform_search_normalize_input($raw)
 }
 
 /**
+ * Prepend curated content IDs to a results set's content bucket as lead
+ * items, de-duplicating so a pinned page that another path also surfaced
+ * is not repeated. Builds the same item shape the resolvers emit. Shared
+ * by the topic anchors (testing guidance, breathing). A no-op on an empty
+ * ID list.
+ */
+function eic_ps_prepend_content(array $results, array $ids): array
+{
+    if (empty($ids)) {
+        return $results;
+    }
+
+    $items = [];
+    foreach ($ids as $id) {
+        $pt = get_post_type_object(get_post_type($id));
+        $items[] = [
+            "id" => $id,
+            "label" => get_the_title($id),
+            "url" => get_permalink($id),
+            "type" => $pt->labels->singular_name ?? "Content",
+            "excerpt" => eic_build_search_excerpt($id, []),
+        ];
+    }
+
+    $set = array_flip($ids);
+    $existing = array_values(
+        array_filter($results["content"] ?? [], function ($c) use ($set) {
+            return empty($c["id"]) || !isset($set[(int) $c["id"]]);
+        })
+    );
+
+    $results["content"] = array_merge($items, $existing);
+    if (isset($results["content_total"])) {
+        $results["content_total"] = count($results["content"]);
+    }
+
+    return $results;
+}
+
+/**
  * ============================================================
  *  Resolver Entry Point
  * ============================================================
@@ -105,6 +145,23 @@ function eic_platform_search_resolve($raw_query)
         $intent_payload,
         $query_normalized
     );
+
+    // Topic anchors: curated guidance prepended at the single post-build choke
+    // point, so it leads for every build path (including build_results' early
+    // returns for explicit subtype and type) and rides on top of whatever else
+    // resolved. Each helper returns content IDs (first = lead) or nothing.
+    if (function_exists("eic_ps_testing_intent_content")) {
+        $results = eic_ps_prepend_content(
+            $results,
+            eic_ps_testing_intent_content($query_normalized)
+        );
+    }
+    if (function_exists("eic_ps_breathing_intent_content")) {
+        $results = eic_ps_prepend_content(
+            $results,
+            eic_ps_breathing_intent_content($query_normalized)
+        );
+    }
 
     $payload = [
         "query_raw" => $raw_query,
@@ -713,10 +770,13 @@ function eic_platform_search_build_results($payload, $query_normalized)
         $content = array_values($content_map);
 
         // --------------------------------------------------------
-        // HUB PINNING (Opt B)
+        // CONTENT ORDERING: exact match, then hub, then the rest
         // --------------------------------------------------------
+        $exact = [];
         $hub = [];
         $rest = [];
+
+        $q_norm = str_replace(" ", "", $query_normalized);
 
         foreach ($content as $item) {
             $post_id = $item["id"];
@@ -730,21 +790,35 @@ function eic_platform_search_build_results($payload, $query_normalized)
             $slug = $post->post_name;
             $pt = $post->post_type;
 
+            // The query's own definition leads: a slug or title matching the
+            // query exactly (the "Pathogenic" glossary entry for "pathogenic")
+            // floats above hub pages and native-relevance prose, which would
+            // otherwise bury the one result that IS the term.
+            $slug_norm = str_replace("-", "", $slug);
+            $title_norm = str_replace(
+                " ",
+                "",
+                eic_platform_search_normalize_input($post->post_title)
+            );
+            $is_exact = $slug_norm === $q_norm || $title_norm === $q_norm;
+
             // canonical hub conditions
             $is_hub =
                 $pt === "page" &&
                 ($slug === $query_normalized ||
                     strpos($slug, $query_normalized) !== false);
 
-            if ($is_hub) {
+            if ($is_exact) {
+                $exact[] = $item;
+            } elseif ($is_hub) {
                 $hub[] = $item;
             } else {
                 $rest[] = $item;
             }
         }
 
-        // hub(s) first, preserve WP order otherwise
-        $results["content"] = array_merge($hub, $rest);
+        // exact match(es) first, then hub(s), then WP order
+        $results["content"] = array_merge($exact, $hub, $rest);
     }
 
     // Types — de-dup + canonical order (FINAL)

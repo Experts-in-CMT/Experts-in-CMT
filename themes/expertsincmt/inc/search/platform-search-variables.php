@@ -60,6 +60,27 @@ function eic_ps_type_classification_anchors(): array
 }
 
 /**
+ * Collapse spelled-out "cmt type N" into the compact class token
+ * ("cmt type 2" -> "cmt2") so the type resolver sees the form it
+ * expects. Gated on the anchor map: only a real type class collapses,
+ * so a non-class identifier (e.g. "cmt type n", the literal CMT2N
+ * subtype term) is left untouched and curated semantic rows still match.
+ */
+function eic_ps_collapse_type_phrase(string $q): string
+{
+    $anchors = eic_ps_type_classification_anchors();
+
+    return preg_replace_callback(
+        '/\bcmt\s+type\s+([a-z0-9]{1,4})\b/i',
+        function ($m) use ($anchors) {
+            $candidate = "cmt" . strtolower($m[1]);
+            return isset($anchors[$candidate]) ? $candidate : $m[0];
+        },
+        $q
+    );
+}
+
+/**
  * ============================================================
  *  Type Classification → Pill Family (color)
  * ============================================================
@@ -390,8 +411,105 @@ function eic_ps_build_context(string $normalized_query): array
  *  Entry Point
  * ============================================================
  */
+/**
+ * Testing / family-testing intent: a query about getting tested, genetic
+ * testing, or whether CMT skips a generation should always surface the
+ * platform's testing guidance, on top of whatever else resolves. The pages
+ * are curated and fixed, resolved by slug (move-proof) and cached per request.
+ * Returns content post IDs, or an empty array when the query shows no such
+ * intent.
+ */
+function eic_ps_testing_intent_content(string $q): array
+{
+    static $ids = null;
+
+    $collapsed = str_replace(" ", "", $q);
+    $intent =
+        strpos($collapsed, "tested") !== false ||
+        strpos($collapsed, "testing") !== false ||
+        strpos($q, "genetic test") !== false ||
+        strpos($q, "skip a generation") !== false;
+
+    if (!$intent) {
+        return [];
+    }
+    if ($ids !== null) {
+        return $ids;
+    }
+
+    // slug => post type (leaf-slug resolution survives a page move)
+    $pages = [
+        "genetic-testing" => "page",
+        "does-cmt-skip-a-generation" => "post",
+        "do-i-need-cmt-genetic-testing" => "what-is-cmt",
+    ];
+    $out = [];
+    foreach ($pages as $slug => $pt) {
+        $post = function_exists("eic_ps_page_by_slug")
+            ? eic_ps_page_by_slug($slug, $pt)
+            : get_page_by_path($slug, OBJECT, $pt);
+        if ($post instanceof WP_Post) {
+            $out[] = (int) $post->ID;
+        }
+    }
+
+    return $ids = $out;
+}
+
+/**
+ * Breathing / respiratory intent: a query about breathing, respiratory, or
+ * lung involvement should surface the CMT and Breathing hub page first, then
+ * the dedicated breathing articles, ahead of pages that merely mention the
+ * word. Returns content post IDs (hub first), or an empty array when the query
+ * shows no such intent. Cached per request.
+ */
+function eic_ps_breathing_intent_content(string $q): array
+{
+    static $ids = null;
+
+    $collapsed = str_replace(" ", "", $q);
+    $intent =
+        strpos($collapsed, "breathing") !== false ||
+        strpos($collapsed, "respiratory") !== false ||
+        strpos($collapsed, "lung") !== false;
+
+    if (!$intent) {
+        return [];
+    }
+    if ($ids !== null) {
+        return $ids;
+    }
+
+    $out = [];
+
+    // Hub page first (leaf-slug resolution survives a page move)
+    $hub = function_exists("eic_ps_page_by_slug")
+        ? eic_ps_page_by_slug("cmt-and-breathing", "page")
+        : get_page_by_path("cmt-and-breathing", OBJECT, "page");
+    if ($hub instanceof WP_Post) {
+        $out[] = (int) $hub->ID;
+    }
+
+    // Then the dedicated breathing articles (the CPT)
+    $cpt = get_posts([
+        "post_type" => "breathing",
+        "post_status" => "publish",
+        "posts_per_page" => -1,
+        "fields" => "ids",
+        "orderby" => "menu_order title",
+        "order" => "ASC",
+        "no_found_rows" => true,
+    ]);
+    foreach ($cpt as $id) {
+        $out[] = (int) $id;
+    }
+
+    return $ids = $out;
+}
+
 function eic_platform_search_variable_subtypes(string $normalized_query): array
 {
+    $normalized_query = eic_ps_collapse_type_phrase($normalized_query);
     $ctx = eic_ps_build_context($normalized_query);
 
     foreach (eic_ps_intent_resolvers() as $resolver) {
@@ -534,6 +652,20 @@ function eic_ps_resolve_inheritance_clamp(string $q, array $ctx): ?array
         "x-linked-dominant" => ["x linked", "dominant"],
         "x-linked-recessive" => ["x linked", "recessive"],
     ];
+
+    // Whole-query abbreviations map straight to a pattern: "AR" -> autosomal
+    // recessive, "AD" -> autosomal dominant (x-linked forms too). The empty
+    // signal list below always matches, so the term resolves directly.
+    $abbreviations = [
+        "ar" => "autosomal-recessive",
+        "ad" => "autosomal-dominant",
+        "xld" => "x-linked-dominant",
+        "xlr" => "x-linked-recessive",
+    ];
+    $whole = trim($q);
+    if (isset($abbreviations[$whole])) {
+        $inheritance_map = [$abbreviations[$whole] => []];
+    }
 
     foreach ($inheritance_map as $term_slug => $signals) {
         $matched = true;
@@ -1000,9 +1132,18 @@ function eic_ps_resolve_type_wholequery(string $q, array $ctx): ?array
 function eic_ps_gene_tokens(array $tokens): array
 {
     $gene_tokens = [];
+    // Real gene vocabulary (uppercase, cached) so symbols longer than the
+    // 6-char heuristic window (SLC12A6, SLC25A46) still resolve as genes,
+    // while ordinary long words never leak in.
+    $vocab = function_exists("eic_ps_all_gene_symbols")
+        ? array_flip(eic_ps_all_gene_symbols())
+        : [];
 
     foreach ($tokens as $token) {
-        if (strlen($token) >= 3 && strlen($token) <= 6 && ctype_alnum($token)) {
+        if (!ctype_alnum($token) || strlen($token) < 3) {
+            continue;
+        }
+        if (strlen($token) <= 6 || isset($vocab[strtoupper($token)])) {
             $gene_tokens[] = strtoupper($token);
         }
     }
@@ -1572,6 +1713,17 @@ function eic_ps_resolve_extended(string $q, array $ctx): ?array
     $resolved_content_ids = [];
     $highlight = [];
 
+    // A query that is itself a glossary term is a concept lookup, not a subtype
+    // search. For these, the publication-metadata matching below is skipped so a
+    // generic word that happens to appear in a paper title (e.g. "pathogenic" in
+    // a PSAT1 reference) does not conjure a spurious subtype, gene, and type.
+    // Content resolution still surfaces the glossary entry and related prose.
+    $is_concept_term = (bool) get_page_by_path(
+        sanitize_title($q),
+        OBJECT,
+        "glossary"
+    );
+
     // ------------------------------------------------------------
     // Number–letter discovery (strict tokens: 1a, 2e, x1)
     // ------------------------------------------------------------
@@ -1623,30 +1775,32 @@ function eic_ps_resolve_extended(string $q, array $ctx): ?array
     // actually surfaces the Charcot-foot article and glossary term.
     $stop = eic_ps_domain_stopwords();
 
-    foreach ($publication_keys as $meta_key) {
-        foreach ($tokens as $token) {
-            if (strlen($token) < 3 || isset($stop[$token])) {
-                continue;
-            }
+    if (!$is_concept_term) {
+        foreach ($publication_keys as $meta_key) {
+            foreach ($tokens as $token) {
+                if (strlen($token) < 3 || isset($stop[$token])) {
+                    continue;
+                }
 
-            $pub_matches = get_posts([
-                "post_type" => "subtype",
-                "posts_per_page" => -1,
-                "fields" => "ids",
-                "meta_query" => [
-                    [
-                        "key" => $meta_key,
-                        "value" => $token,
-                        "compare" => "LIKE",
+                $pub_matches = get_posts([
+                    "post_type" => "subtype",
+                    "posts_per_page" => -1,
+                    "fields" => "ids",
+                    "meta_query" => [
+                        [
+                            "key" => $meta_key,
+                            "value" => $token,
+                            "compare" => "LIKE",
+                        ],
                     ],
-                ],
-            ]);
+                ]);
 
-            if (!empty($pub_matches)) {
-                $resolved_subtype_ids = array_merge(
-                    $resolved_subtype_ids,
-                    $pub_matches
-                );
+                if (!empty($pub_matches)) {
+                    $resolved_subtype_ids = array_merge(
+                        $resolved_subtype_ids,
+                        $pub_matches
+                    );
+                }
             }
         }
     }
@@ -1816,6 +1970,15 @@ function eic_ps_resolve_extended(string $q, array $ctx): ?array
     // ------------------------------------------------------------
     // Final return (merge basic + ACF resolution)
     // ------------------------------------------------------------
+    // Always surface prose and glossary content for the query, so a weak
+    // subtype match (e.g. a publication-metadata hit for "pathogenic") never
+    // suppresses the glossary entry or article the reader actually wants. The
+    // all-empty case already returned via the content fallback above.
+    $resolved_content_ids = array_merge(
+        $resolved_content_ids,
+        eic_ps_content_search($q)
+    );
+
     $final_subtypes = array_values(
         array_unique(array_merge($matches, $resolved_subtype_ids))
     );

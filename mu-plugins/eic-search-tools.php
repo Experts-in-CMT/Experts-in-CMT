@@ -428,8 +428,16 @@ function eic_search_alias_validate_row(array $row): array
 
     foreach (eic_search_alias_csv($row["content"] ?? "") as $slug) {
         $found = false;
+        $path = trim($slug, "/");
         foreach ($content_types as $pt) {
-            if (get_page_by_path($slug, OBJECT, $pt)) {
+            // Match the search-time resolver (full hierarchical path, then a
+            // publish-only leaf-slug fallback) so a valid pinned post whose
+            // permalink carries a prefix (e.g. /dorsal-root/<slug>/) is not
+            // flagged as missing when it resolves fine at search time.
+            $hit = function_exists("eic_ps_page_by_slug")
+                ? eic_ps_page_by_slug($path, $pt)
+                : get_page_by_path($path, OBJECT, $pt);
+            if ($hit) {
                 $found = true;
                 break;
             }
@@ -688,10 +696,7 @@ function eic_search_tools_render_alias_tab(): void
                 <div class="eic-alias-buckets">
                     <?php foreach ($buckets as [$field, $label, $ph, $hint]): ?>
                         <div>
-                            <label><?php echo esc_html($label); ?>
-                                <span class="eic-hint">· ?php echo esc_html(
-                                    $hint
-                                ); ?></span></label>
+                            <label><?php echo esc_html($label); ?></label>
                             <input type="text"
                                 name="alias[<?php echo (int) $i; ?>][<?php echo esc_attr(
     $field
@@ -715,17 +720,27 @@ function eic_search_tools_render_alias_tab(): void
     (function () {
         var wrap = document.getElementById('eic-alias-cards');
 
+        // Renumber every card's field names to its current position so two
+        // rows can never share an index (which would collapse in POST and
+        // silently drop a saved alias). Runs after every add and remove.
+        function reindex() {
+            wrap.querySelectorAll('.eic-alias-card').forEach(function (card, i) {
+                card.querySelectorAll('input, select').forEach(function (el) {
+                    el.name = el.name.replace(/^alias\[\d+\]/, 'alias[' + i + ']');
+                });
+            });
+        }
+
         document.getElementById('eic-alias-add').addEventListener('click', function () {
             var cards = wrap.querySelectorAll('.eic-alias-card');
             var next = cards[cards.length - 1].cloneNode(true);
-            var index = cards.length;
 
             next.querySelectorAll('input, select').forEach(function (el) {
-                el.name = el.name.replace(/\[\d+\]/, '[' + index + ']');
                 if (el.tagName === 'INPUT') { el.value = ''; }
                 else { el.selectedIndex = 0; }
             });
             wrap.appendChild(next);
+            reindex();
         });
 
         wrap.addEventListener('click', function (e) {
@@ -735,6 +750,7 @@ function eic_search_tools_render_alias_tab(): void
             else {
                 cards[0].querySelectorAll('input').forEach(function (el) { el.value = ''; });
             }
+            reindex();
         });
     })();
     </script>
